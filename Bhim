@@ -1,0 +1,13 @@
+import pandas as pd
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import webbrowser
+
+# Load the Excel sheets
+df1 = pd.read_excel('period1.xlsx')  # Update with the actual filename of period 1 sheet
+df2 = pd.read_excel('period2.xlsx')  # Update with the actual filename of period 2 sheet
+
+# Create the Dash app
+app = dash.Dash(__name__)
