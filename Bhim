@@ -104,3 +104,32 @@ for index, row in df.iterrows():
 output_file = 'path/to/your/output_file.xlsx'
 df.to_excel(output_file, index=False)
 
+import pandas as pd
+
+# Load the Excel file
+excel_file = 'path/to/your/file.xlsx'
+df = pd.read_excel(excel_file)
+
+# Initialize variables
+start_row = None
+delete_range = False
+
+# Iterate over each row
+for index, row in df.iterrows():
+    if delete_range:
+        if 'CUSIP:' in row.values:
+            # Stop deleting rows when 'CUSIP:' is found
+            delete_range = False
+        else:
+            # Delete the rows within the range
+            df.drop(index, inplace=True)
+    elif start_row is not None and 'CUSIP:' in row.values:
+        # Identify the next 'CUSIP:' row
+        delete_range = True
+    elif 'NORA' in row.values:
+        # Identify the 'NORA' row
+        start_row = index
+
+# Save the modified DataFrame to a new Excel file
+output_file = 'path/to/your/output_file.xlsx'
+df.to_excel(output_file, index=False)
