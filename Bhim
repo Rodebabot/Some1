@@ -11,3 +11,26 @@ df2 = pd.read_excel('period2.xlsx')  # Update with the actual filename of period
 
 # Create the Dash app
 app = dash.Dash(__name__)
+import pandas as pd
+
+data = pd.read_excel("NEWWW.xlsx")
+
+data_list = data.values.tolist()
+
+for row in data_list:
+
+	idx_of_cusip = row.index('cusip')
+	
+	numbers = row[1:idx_of_cusip]
+
+	numbers_int_to_str = [str(number) for number in numbers]
+
+	combined_numbers = ' '.join(numbers_int_to_str)
+
+	row[1] = combined_numbers
+
+	del row[2:idx_of_cusip]
+
+back_to_df = pd.DataFrame(data_list)
+
+back_to_df.to_excel('output.xlsx', index=False)
