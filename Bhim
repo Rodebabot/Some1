@@ -34,3 +34,37 @@ for row in data_list:
 back_to_df = pd.DataFrame(data_list)
 
 back_to_df.to_excel('output.xlsx', index=False)
+
+from openpyxl import load_workbook
+
+def delete_rows_between_keywords(filename, sheetname, start_keyword, end_keyword):
+    # Load the workbook
+    workbook = load_workbook(filename)
+    # Select the worksheet
+    worksheet = workbook[sheetname]
+    
+    rows_to_delete = []  # Store rows to be deleted
+    
+    # Iterate through each row
+    for row in worksheet.iter_rows(min_row=1, min_col=1, max_col=1, values_only=True):
+        if row[0] == start_keyword:
+            start_row = row[0].row
+        elif row[0] == end_keyword:
+            end_row = row[0].row
+            # Add rows to be deleted
+            rows_to_delete.extend(range(start_row + 1, end_row + 1))
+    
+    # Delete rows in reverse order to avoid shifting row indexes
+    for row in reversed(rows_to_delete):
+        worksheet.delete_rows(row)
+    
+    # Save the modified workbook
+    workbook.save(f"modified_{filename}")
+
+# Example usage
+filename = "your_file.xlsx"
+sheetname = "Sheet1"
+start_keyword = "NORA"
+end_keyword = "CUSIP:"
+
+delete_rows_between_keywords(filename, sheetname, start_keyword, end_keyword)
