@@ -214,8 +214,7 @@ def fix_row(row):
 	idx_check+=1
 
 	updated_row.append(row[idx_check])
-	idx_check+=1
-    
+
 	updated_row = ','.join(updated_row)
 	return updated_row
 
@@ -229,20 +228,47 @@ indices = find_indices(lines, search_text)
 indices.append(-1)
 
 final = []
-
+transactions = []
+# iterate over every section of "NOMURA SECURITIES INTL"
 for i in range(len(indices) - 1):
     start = indices[i]
     end = indices[i+1]
     data = lines[start:end]
+
+    # ignore the last 2 sections of "NOMURA SECURITIES INTL" 
+    if(len(data)<10):
+    	continue
+
+    # remove last '1' right before next "NOMURA SECURITIES INTL" section
+    if(len(data[-1])<=4):
+    	data.pop()
+
     first_prefix = get_first_prefix(start, end)
 
     security_totals_indicies = find_indices(data, 'SECURITY TOTALS')
-    
-    data = data[10:security_totals_indicies[-1]]
+
+    try:
+        final_security_totals_index = security_totals_indicies[-1]
+    except:
+    	pass
+
+    try:
+	    if('TRANSACTION COUNT' in data[security_totals_indicies[-1]+1]): # check line right after last 'SECURITY TOTALS'
+	        data = data[10:security_totals_indicies[-1]]
+	        #transactions.append(data[security_totals_indicies[-1]+1])
+	    else:
+	    	data = data[10:end-1]
+    except:
+        #data = data[10:end-1]
+        pass
+
+
     data.insert(0,'SECURITY TOTALS')
     
     to_remove, second_prefix = get_second_prefix(data)
 
+
+    
     data = [each[:-1] for each in data]
     data = [item for i, item in enumerate(data) if i not in to_remove]
 
@@ -254,8 +280,8 @@ for i in range(len(indices) - 1):
         temp.append(first_second_prefix_combined)
         second_prefix_updated.append(temp)
 
-    
 
+   
     for x in range(len(second_prefix_updated)):
         counter = 0
         for y in data[1:]:
@@ -267,9 +293,11 @@ for i in range(len(indices) - 1):
             final.append(temp)
 
 
+
 final = [i[0] for i in final]
 split_list = [string.split(",") for string in final]
 
+# Convert the split list into a DataFrame
 df = pd.DataFrame(split_list)
 df_no_duplicates = df.drop_duplicates()
 display(df_no_duplicates)
