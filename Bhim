@@ -1,135 +1,277 @@
 import pandas as pd
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
-import webbrowser
 
-# Load the Excel sheets
-df1 = pd.read_excel('period1.xlsx')  # Update with the actual filename of period 1 sheet
-df2 = pd.read_excel('period2.xlsx')  # Update with the actual filename of period 2 sheet
+pd.set_option('display.max_columns', None)
 
-# Create the Dash app
-app = dash.Dash(__name__)
-import pandas as pd
+def read_file(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    return lines
 
-data = pd.read_excel("NEWWW.xlsx")
+def find_indices(lines, search_text):
+    indices = []
+    for i, line in enumerate(lines):
+        if search_text in line:
+            indices.append(i)
+    return indices
 
-data_list = data.values.tolist()
+def get_first_prefix(start, end):
 
-for row in data_list:
+    from_to_date = ' '
+    try:
+        from_to_date = lines[start + 3].strip()
+    except:
+        pass
 
-	idx_of_cusip = row.index('cusip')
-	
-	numbers = row[1:idx_of_cusip]
+    section = ' '
+    try:
+        section = lines[start + 4]
+        section = section.split(':')[1].strip()
+    except:
+    	pass
 
-	numbers_int_to_str = [str(number) for number in numbers]
+    line_column = ' '
+    line = ' '
+    column = ' '
+    try:
+        line_column = lines[start + 9].strip()
+        line_column = line_column.split(':')[1].strip()
+        line_column = line_column.replace('\t','')
+        line_column = line_column.replace(' ','')
+        line,column = line_column.split(',')
+    except:
+    	pass
 
-	combined_numbers = ' '.join(numbers_int_to_str)
+    first_prefix = ''
+    #first_prefix.extend((from_to_date, section, line, column))
+    first_prefix = from_to_date+','+section+','+line+','+column+','
+    return first_prefix
 
-	row[1] = combined_numbers
+def fix_second_prefix(row):
+    updated_row=''
 
-	del row[2:idx_of_cusip]
+    security= ' '
+    try:
+        security = row.split('CUSIP')[0]
+        security = security.split(':')[1]
+        security = security.replace('\t','').strip()
+    except:
+    	pass
 
-back_to_df = pd.DataFrame(data_list)
+    cusip = ' '
+    try:
+        cusip = row.split('CUSIP:')[1]
+        cusip = cusip.split('ISS')[0].strip()
+    except:
+    	pass
 
-back_to_df.to_excel('output.xlsx', index=False)
+    iss_dte = ' '
+    try:
+        iss_dte = row.split('ANNC')[0]
+        iss_dte = iss_dte.split('ISS DTE:')[1].strip()
+    except:
+    	pass
 
-from openpyxl import load_workbook
+    annc_dte = ' '
+    try:
+        annc_dte = row.split('MAT')[0]
+        annc_dte = annc_dte.split('ANNC DTE:')[1].strip()
+    except:
+    	pass
 
-def delete_rows_between_keywords(filename, sheetname, start_keyword, end_keyword):
-    # Load the workbook
-    workbook = load_workbook(filename)
-    # Select the worksheet
-    worksheet = workbook[sheetname]
+    mat_rfx_dte = ' '
+    try:
+        mat_rfx_dte = row.split('MAT')[1]
+        mat_rfx_dte = mat_rfx_dte.split(':')[1].strip()
+    except:
+    	pass
+
+    updated_row = security+','+cusip+','+iss_dte+','+annc_dte+','+mat_rfx_dte+','
+    return updated_row
+
+def get_second_prefix(data):
+    to_remove=[]
+    second_prefix = []
+    for i, line in enumerate(data):
+        if("SECURITY TOTALS" in line):
+            cleaned = fix_second_prefix(data[i+1])
+            second_prefix.append(cleaned)
+            to_remove.append(i+1)
+    return to_remove, second_prefix
+
+
+def is_float(string):
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
+def is_int(string):
+    try:
+        int(string)
+        return True
+    except ValueError:
+        return False
+
+def fix_row(row):
+	row = row.replace('\t',' ')
+	row = row[2:]
+	row = row.split(' ')
+	updated_row = []
+
+	row = [i for i in row if i.strip() not in ['', ' ', '\t']]
+
+	idx_check=0
+
+	if(row[idx_check].isdigit()):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(row[idx_check].isdigit()):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])==3):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])==1):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])==4):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])==1):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])>6):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(('/' in row[idx_check]) and ('/' in row[idx_check+1])):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if('/' in row[idx_check]):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if((is_float(row[idx_check]) or is_int(row[idx_check]) or '-' in row[idx_check]) and (is_float(row[idx_check+1]) or is_int(row[idx_check+1])  or '-' in row[idx_check])):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(is_float(row[idx_check]) or is_int(row[idx_check]) or '-' in row[idx_check]):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	if(len(row[idx_check])<=2):
+		updated_row.append(row[idx_check])
+	else:
+		idx_check-=1
+		updated_row.append('')
+	idx_check+=1
+
+	updated_row.append(row[idx_check])
+	idx_check+=1
+
+	updated_row.append(row[idx_check])
+	idx_check+=1
+
+	updated_row.append(row[idx_check])
+	idx_check+=1
     
-    rows_to_delete = []  # Store rows to be deleted
+	updated_row = ','.join(updated_row)
+	return updated_row
+
+
+
+filename = 'example.txt'
+search_text = 'NOMURA SECURITIES INTL'
+
+lines = read_file(filename)
+indices = find_indices(lines, search_text)
+indices.append(-1)
+
+final = []
+
+for i in range(len(indices) - 1):
+    start = indices[i]
+    end = indices[i+1]
+    data = lines[start:end]
+    first_prefix = get_first_prefix(start, end)
+
+    security_totals_indicies = find_indices(data, 'SECURITY TOTALS')
     
-    # Iterate through each row
-    for row in worksheet.iter_rows(min_row=1, min_col=1, max_col=1, values_only=True):
-        if row[0] == start_keyword:
-            start_row = row[0].row
-        elif row[0] == end_keyword:
-            end_row = row[0].row
-            # Add rows to be deleted
-            rows_to_delete.extend(range(start_row + 1, end_row + 1))
+    data = data[10:security_totals_indicies[-1]]
+    data.insert(0,'SECURITY TOTALS')
     
-    # Delete rows in reverse order to avoid shifting row indexes
+    to_remove, second_prefix = get_second_prefix(data)
 
+    data = [each[:-1] for each in data]
+    data = [item for i, item in enumerate(data) if i not in to_remove]
 
+    second_prefix_updated = []
 
-    for row in reversed(rows_to_delete):
-        worksheet.delete_rows(row)
+    for each in second_prefix:
+        temp = []
+        first_second_prefix_combined = first_prefix+each[:-1]
+        temp.append(first_second_prefix_combined)
+        second_prefix_updated.append(temp)
+
     
-    # Save the modified workbook
-    workbook.save(f"modified_{filename}")
 
-# Example usage
-filename = "your_file.xlsx"
-sheetname = "Sheet1"
-start_keyword = "NORA"
-end_keyword = "CUSIP:"
-
-delete_rows_between_keywords(filename, sheetname, start_keyword, end_keyword)
-
-
+    for x in range(len(second_prefix_updated)):
+        counter = 0
+        for y in data[1:]:
+            if('SECURITY TOTALS' in y):
+                counter+=1
+                continue
+            temp = second_prefix_updated[counter].copy()
+            temp[0] = temp[0]+','+fix_row(y)
+            final.append(temp)
 
 
+final = [i[0] for i in final]
+split_list = [string.split(",") for string in final]
 
+df = pd.DataFrame(split_list)
+df_no_duplicates = df.drop_duplicates()
+display(df_no_duplicates)
 
-
-import pandas as pd
-
-# Load the Excel file
-excel_file = 'path/to/your/file.xlsx'
-df = pd.read_excel(excel_file)
-
-# Initialize variables
-start_row = None
-delete_range = False
-
-# Iterate over each row
-for index, row in df.iterrows():
-    if delete_range:
-        # Delete the rows within the range
-        df.drop(index, inplace=True)
-    elif start_row is not None and 'CUSIP:' in row.values:
-        # Identify the next 'CUSIP:' row
-        delete_range = True
-    elif 'NORA' in row.values:
-        # Identify the 'NORA' row
-        start_row = index
-
-# Save the modified DataFrame to a new Excel file
-output_file = 'path/to/your/output_file.xlsx'
-df.to_excel(output_file, index=False)
-
-import pandas as pd
-
-# Load the Excel file
-excel_file = 'path/to/your/file.xlsx'
-df = pd.read_excel(excel_file)
-
-# Initialize variables
-start_row = None
-delete_range = False
-
-# Iterate over each row
-for index, row in df.iterrows():
-    if delete_range:
-        if 'CUSIP:' in row.values:
-            # Stop deleting rows when 'CUSIP:' is found
-            delete_range = False
-        else:
-            # Delete the rows within the range
-            df.drop(index, inplace=True)
-    elif start_row is not None and 'CUSIP:' in row.values:
-        # Identify the next 'CUSIP:' row
-        delete_range = True
-    elif 'NORA' in row.values:
-        # Identify the 'NORA' row
-        start_row = index
-
-# Save the modified DataFrame to a new Excel file
-output_file = 'path/to/your/output_file.xlsx'
-df.to_excel(output_file, index=False)
+df_no_duplicates.to_csv('a.csv', index=False)
