@@ -1,23 +1,2 @@
-# Assuming you have a list of selected rows as 'selected_rows'
-selected_rows = [...]
+...
 
-# Step 1: Check if there are multiple rows selected
-if len(selected_rows) > 1:
-    # Step 2: If only one row is selected, continue with the other block of code
-    # Assuming 'client_reference' is the index of the 'client reference' column
-    client_reference_values = set(row['client_reference'] for row in selected_rows)
-    
-    # Step 3: Check if the values in the 'client reference' column are the same for all selected rows
-    if len(client_reference_values) == 1:
-        # Step 4: If the values are the same, continue with the other block of code
-        # Your code block here
-        # ...
-        pass
-    else:
-        # Step 5: If the values are different, show an error message
-        print("Error: Selected rows have different 'client reference' values.")
-else:
-    # Only one row selected, continue with the other block of code
-    # Your code block here
-    # ...
-    pass
