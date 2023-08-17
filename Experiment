@@ -67,3 +67,56 @@ if files:
 
         new_file_name = f"{file_name_without_extension}_{suffix}{file_extension}"
         os.rename(os.path.join(folder_path, file_name), os.path.join(folder_path, new_file_name))
+
+
+
+
+
+
+
+
+
+
+
+
+import os
+import datetime
+
+folder_path = "/path/to/your/folder"
+files = os.listdir(folder_path)
+
+date_format = "%Y%m%d%H%M%S"
+file_datetime_list = []
+
+for file_name in files:
+    date_time_part = file_name[:14]  # Extract the first 14 characters for the datetime part
+    try:
+        file_datetime = datetime.datetime.strptime(date_time_part, date_format)
+        file_datetime_list.append(file_datetime)
+    except ValueError:
+        pass
+
+file_datetime_list.sort()
+
+today = datetime.datetime.now().replace(microsecond=0)
+suffixes = ["Sod", "Mod", "Eod", "Final"]
+
+for i, file_datetime in enumerate(file_datetime_list):
+    delta = (today - file_datetime).days
+
+    if delta == 0:
+        suffix = suffixes[0]
+    elif delta == 1:
+        suffix = suffixes[1]
+    elif delta == 2:
+        suffix = suffixes[2]
+    elif delta == 3:
+        suffix = suffixes[3]
+    else:
+        suffix = ""
+
+    old_file_name = files[i]
+    file_name_without_extension, file_extension = os.path.splitext(old_file_name)
+    new_file_name = f"{file_name_without_extension}_{suffix}{file_extension}"
+
+    os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
