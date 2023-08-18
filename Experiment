@@ -120,3 +120,54 @@ for i, file_datetime in enumerate(file_datetime_list):
     new_file_name = f"{file_name_without_extension}_{suffix}{file_extension}"
 
     os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import os
+
+folder_path = "/path/to/your/folder"
+files = os.listdir(folder_path)
+
+if len(files) == 1:
+    old_file_name = files[0]
+    new_file_name = f"SOD_{old_file_name}"
+    os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+elif len(files) == 2:
+    for file_name in files:
+        if "SOD" not in file_name:
+            old_file_name = file_name
+            new_file_name = f"MOD_{old_file_name}"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
+elif len(files) == 3:
+    suffix = None
+    for file_name in files:
+        if "SOD" not in file_name and "MOD" not in file_name:
+            old_file_name = file_name
+            new_file_name = f"EOD_{old_file_name}"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
