@@ -72,3 +72,52 @@ def main():
 if __name__ == "__main__":
     main()
 
+
+
+
+
+
+
+
+from pynput import keyboard, mouse
+import time
+
+events = []
+
+def on_key_release(key):
+    if key == keyboard.Key.shift:
+        return False
+
+def on_click(x, y, button, pressed):
+    events.append(('click', x, y, button, pressed))
+
+def on_type(key):
+    events.append(('type', key.char))
+
+def record():
+    with keyboard.Listener(on_release=on_key_release) as key_listener, \
+         mouse.Listener(on_click=on_click) as mouse_listener:
+        print("Recording started. Press 'Shift + Enter' to stop recording.")
+        key_listener.join()
+        mouse_listener.join()
+
+def replay():
+    for event in events:
+        if event[0] == 'click':
+            x, y, button, pressed = event[1], event[2], event[3], event[4]
+            if pressed:
+                mouse.Controller().position = (x, y)
+                mouse.Controller().click(button)
+        elif event[0] == 'type':
+            key = event[1]
+            keyboard.Controller().type(key)
+        time.sleep(0.1)  # Adjust the delay if needed
+
+def main():
+    record()
+    print("Recording stopped. Replaying actions...")
+    replay()
+    print("Replay completed.")
+
+if __name__ == "__main__":
+    main()
