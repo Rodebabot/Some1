@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+# Load your data into a pandas DataFrame
+# Make sure the date column is named 'ds' and the volume column is named 'y'
+data = pd.read_csv('your_data.csv')
+data['ds'] = pd.to_datetime(data['ds'])
+data.set_index('ds', inplace=True)
+
+# Ask the user for the desired prediction date
+desired_date = pd.to_datetime(input("Enter the desired prediction date (mm/dd/yyyy): "))
+
+# Prepare data for SARIMA model
+y = data['y']
+
+# Initialize and fit the SARIMA model
+order = (1, 1, 1)  # You can adjust the order based on your data
+seasonal_order = (1, 1, 1, 12)  # Considering monthly seasonality
+sarima_model = SARIMAX(y, order=order, seasonal_order=seasonal_order)
+sarima_result = sarima_model.fit(disp=False)
+
+# Forecast the next 12 months
+forecast = sarima_result.get_forecast(steps=12)
+
+# Extract the predicted volume for the desired date
+predicted_volume = forecast.predicted_mean[desired_date]
+
+print(f"Predicted volume for {desired_date}: {predicted_volume}")
+
+# Plot the actual data and SARIMA predictions
+plt.figure(figsize=(10, 6))
+plt.plot(y.index, y, label='Actual Data')
+plt.plot(forecast.predicted_mean.index, forecast.predicted_mean, label='SARIMA Predictions')
+plt.axvline(x=desired_date, color='r', linestyle='--', label='Desired Prediction Date')
+plt.fill_between(forecast.conf_int().index, forecast.conf_int()['lower y'], forecast.conf_int()['upper y'], color='gray', alpha=0.2)
+plt.xlabel('Date')
+plt.ylabel('Volume')
+plt.title('SARIMA Predictions vs Actual Data')
+plt.legend()
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+plt.show()
