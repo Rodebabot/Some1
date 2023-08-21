@@ -32,3 +32,43 @@ df = pd.DataFrame(data)
 # Save the DataFrame to an Excel file
 df.to_excel("output_excel_file.xlsx", index=False)
 
+
+
+
+
+import pyautogui
+import keyboard
+
+recorded_actions = []
+
+def record_event(e):
+    recorded_actions.append(e.name)
+
+def main():
+    print("Recording started. Press 'Shift + Enter' to stop recording.")
+    
+    keyboard.hook(record_event)
+    
+    while True:
+        if keyboard.is_pressed('shift') and keyboard.is_pressed('enter'):
+            break
+    
+    keyboard.unhook_all()
+    
+    print("Recording stopped. Replaying actions...")
+    
+    pyautogui.PAUSE = 1  # Adjust the pause between actions if needed
+    
+    for action in recorded_actions:
+        if action == "esc":
+            pyautogui.press(action)
+        elif action == "space":
+            pyautogui.press(action)
+        else:
+            pyautogui.typewrite(action)
+    
+    print("Replay completed.")
+
+if __name__ == "__main__":
+    main()
+
