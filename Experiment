@@ -171,3 +171,35 @@ elif len(files) == 3:
             new_file_name = f"EOD_{old_file_name}"
             os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
             break
+
+
+
+
+
+import pandas as pd
+from fbprophet import Prophet
+
+# Load data from Excel
+data = pd.read_excel('your_excel_file.xlsx')
+
+# Preprocess data
+data.rename(columns={'Date_Column_Name': 'ds', 'Volume_Column_Name': 'y'}, inplace=True)
+
+# Initialize and fit the Prophet model
+model = Prophet()
+model.fit(data)
+
+# Create future dataframe for 12 months ahead
+future = model.make_future_dataframe(periods=12, freq='M')
+
+# Predict the next 12 months
+forecast = model.predict(future)
+
+# Extract the next 12 months and their forecasted volumes
+next_12_months_forecast = forecast[['ds', 'yhat']].tail(12)
+
+# Rename the columns
+next_12_months_forecast.rename(columns={'ds': 'Next 12 Months', 'yhat': 'Forecasted Volume'}, inplace=True)
+
+print(next_12_months_forecast)
+
