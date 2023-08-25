@@ -349,7 +349,24 @@ for email in inbox:
     # Check if the combination of sender and subject exists in the DataFrame
     matched_row = df[(df['SenderName'] == sender) & (df['Subject'] == subject)]
 
-    if not matched_row.empty:
+    if not matched_row.empty:⁷
+
+
+
+
+
+import pandas as pd
+
+# Load the CSV file with custom delimiter
+csv_file_path = 'path_to_your_csv_file.csv'
+data = pd.read_csv(csv_file_path, delimiter=',,')
+
+# Convert and save as Excel file
+excel_file_path = 'output_excel_file.xlsx'
+data.to_excel(excel_file_path, index=False)
+
+print("CSV file with custom delimiter converted to Excel successfully!")
+
         # Get the folder location from the first matched row
         folder_location = matched_row.iloc[0]['FolderLocation']
 
