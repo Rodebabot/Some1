@@ -205,4 +205,31 @@ predicted_volumes = forecast.predicted_mean.reset_index()
 predicted_volumes.columns = ['Date', 'Predicted Volume']
 predicted_volumes.set_index('Date', inplace=True)
 
+
+
 print(predicted_volumes)
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Load the CSV file with custom delimiter
+csv_file_path = 'path_to_your_csv_file.csv'
+sheet_name = input("Enter the name of the sheet you want to convert: ")
+data = pd.read_csv(csv_file_path, sep=',,', engine='python', header=None, sheet_name=sheet_name)
+
+# Extract the file name without extension
+file_name = csv_file_path.split('/')[-1].split('.')[0]
+
+# Convert and save as Excel file with the same name
+excel_file_path = f'{file_name}.xlsx'
+data.to_excel(excel_file_path, index=False, sheet_name=sheet_name)
+
+print(f"Sheet '{sheet_name}' from CSV file with custom delimiter converted to Excel: {excel_file_path}")
+
