@@ -203,3 +203,53 @@ next_12_months_forecast.rename(columns={'ds': 'Next 12 Months', 'yhat': 'Forecas
 
 print(next_12_months_forecast)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+# Load the Excel sheet into a pandas DataFrame
+excel_file = 'your_file.xlsx'
+df = pd.read_excel(excel_file)
+
+# Extract 'Volume' and 'Exceptions' columns
+volume = df['Volume'].values
+exceptions = df['Exceptions'].values
+
+# Calculate correlation
+correlation = np.corrcoef(volume, exceptions)[0, 1]
+
+# Reshape the data for regression
+X = volume.reshape(-1, 1)
+y = exceptions
+
+# Create a Linear Regression model
+regressor = LinearRegression()
+regressor.fit(X, y)
+
+# Get the regression equation coefficients
+slope = regressor.coef_[0]
+intercept = regressor.intercept_
+
+# Create the regression equation string
+regression_equation = f"Exceptions = {slope:.2f} * Volume + {intercept:.2f}"
+
+print("Correlation:", correlation)
+print("Regression Equation:", regression_equation)
