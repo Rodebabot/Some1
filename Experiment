@@ -356,3 +356,97 @@ def update_graph(selected_columns):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from datetime import datetime, timedelta
+
+# Load your data into a pandas DataFrame
+# Make sure the date column is named 'ds' and the volume columns are named 'y1', 'y2', 'y3', and 'y4'
+data = pd.read_csv('your_data.csv')
+data['ds'] = pd.to_datetime(data['ds'])
+data.set_index('ds', inplace=True)
+
+# List of volume columns
+volume_columns = ['y1', 'y2', 'y3', 'y4']
+
+# Create a Dash app
+app = dash.Dash(__name__)
+
+app.layout = html.Div([
+    dcc.Dropdown(
+        id='volume-dropdown',
+        options=[{'label': column, 'value': column} for column in volume_columns],
+        value=['y1'],  # Default to the first volume column
+        multi=True  # Allow selecting multiple columns
+    ),
+    dcc.Graph(id='volume-graph'),
+    html.Div(id='predicted-table')
+])
+
+@app.callback(
+    [Output('volume-graph', 'figure'),
+     Output('predicted-table', 'children')],
+    [Input('volume-dropdown', 'value')]
+)
+def update_graph(selected_columns):
+    graphs = []
+    tables = []
+
+    for column in selected_columns:
+        # Prepare data for SARIMA model
+        y = data[column]
+
+        # Initialize and fit the SARIMA model on the full data
+        order = (1, 1, 1)  # You can adjust the order based on your data
+        seasonal_order = (1, 1, 1, 12)  # Considering monthly seasonality
+        sarima_model = SARIMAX(y, order=order, seasonal_order=seasonal_order)
+        sarima_result = sarima_model.fit(disp=False)
+
+        # Forecast the next 12 months
+        last_date = y.index[-1]
+        next_12_months = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=12, freq='M')
+        forecast = sarima_result.get_forecast(steps=12)
+
+        # Create a table of predicted volume for the next 12 months
+        predicted_volumes = forecast.predicted_mean.reset_index()
+        predicted_volumes.columns = ['Month', 'Predicted Volume']
+        predicted_volumes['Month'] = next_12_months
+        predicted_volumes.set_index('Month', inplace=True)
+
+        # Create a line graph for the selected column
+        graphs.append({
+            'data': [
+                {'x': y.index, 'y': y, 'mode': 'lines', 'name': f'Actual Data ({column})'},
+                {'x': predicted_volumes.index, 'y': predicted_volumes['Predicted Volume'], 'mode': 'lines', 'name': f'Predicted Data ({column})'}
+            ],
+            'layout': {
+                'title': f'Actual vs Predicted Volume ({column})',
+                'xaxis': {'title': 'Date'},
+                'yaxis': {'title': 'Volume'}
+            }
+        })
+
+        # Create a table for the predicted volume
+        tables.append(html.Div([
+            html.H4(f'Predicted Volume Table ({column})'),
+            html.Table([
+                html.Tr([html.Th('Month'), html.Th('Predicted Volume')]),
+                *[html.Tr([html.Td(index.strftime('%B %Y')), html.Td(round(value, 2))]) for index, value in predicted_volumes.iterrows()]
+            ])
+        ]))
+
+    return graphs, tables
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
