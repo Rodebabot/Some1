@@ -31,3 +31,23 @@ for email in inbox:
 
 print("Attachments from today's emails saved successfully.")
 
+
+import pandas as pd
+
+# Define the file path for your CSV file
+csv_file_path = 'your_file.csv'
+
+# Import the CSV into a DataFrame
+df = pd.read_csv(csv_file_path)
+
+# Display the first few rows of the DataFrame
+print(df.head())
+
+# Export the DataFrame to an Excel file with the same name
+excel_file_path = csv_file_path.replace('.csv', '.xlsx')
+df.to_excel(excel_file_path, index=False)
+
+print(f'DataFrame exported to {excel_file_path}')
+
+
+
