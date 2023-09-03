@@ -32,22 +32,32 @@ for email in inbox:
 print("Attachments from today's emails saved successfully.")
 
 
+import os
 import pandas as pd
 
-# Define the file path for your CSV file
-csv_file_path = 'your_file.csv'
+# Define the directory path where your CSV files are located
+directory_path = '/path/to/your/directory'
 
-# Import the CSV into a DataFrame
-df = pd.read_csv(csv_file_path)
+# List all files in the directory
+files = os.listdir(directory_path)
 
-# Display the first few rows of the DataFrame
-print(df.head())
+# Iterate through the files in the directory
+for file in files:
+    if file.endswith('.csv'):
+        # Create the full path for the CSV file
+        csv_file_path = os.path.join(directory_path, file)
 
-# Export the DataFrame to an Excel file with the same name
-excel_file_path = csv_file_path.replace('.csv', '.xlsx')
-df.to_excel(excel_file_path, index=False)
+        # Import the CSV into a DataFrame
+        df = pd.read_csv(csv_file_path)
 
-print(f'DataFrame exported to {excel_file_path}')
+        # Define the Excel file path with the same name but .xlsx extension
+        excel_file_path = os.path.join(directory_path, file.replace('.csv', '.xlsx'))
+
+        # Export the DataFrame to the Excel file
+        df.to_excel(excel_file_path, index=False)
+
+        print(f'{file} converted to {excel_file_path}')
+
 
 
 
