@@ -70,17 +70,17 @@ destination_folder = '/path/to/destination/folder'
 
 # Iterate through files in the source folder
 for filename in os.listdir(source_folder):
-    if "Final move" in filename:
-        # Move files containing "Final move" to the destination folder
+    if "final" in filename.lower():
+        # Move files containing 'final' in their name to the destination folder
         source_path = os.path.join(source_folder, filename)
         destination_path = os.path.join(destination_folder, filename)
         shutil.move(source_path, destination_path)
+    else:
+        # Delete other files in the source folder
+        file_path = os.path.join(source_folder, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
-# Delete all other folders in the source folder
-for foldername in os.listdir(source_folder):
-    folder_path = os.path.join(source_folder, foldername)
-    if os.path.isdir(folder_path):
-        shutil.rmtree(folder_path)
+print("Files containing 'final' in their name have been moved to the destination folder.")
+print("All other files in the source folder have been deleted.")
 
-print("Files with 'Final move' in their name have been moved to the destination folder.")
-print("All other folders in the source folder have been deleted.")
