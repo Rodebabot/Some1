@@ -84,3 +84,33 @@ for filename in os.listdir(source_folder):
 print("Files containing 'final' in their name have been moved to the destination folder.")
 print("All other files in the source folder have been deleted.")
 
+
+
+
+
+
+import os
+import shutil
+
+# Define the paths to the folders
+folder1 = 'f1'
+folder2 = 'f2'
+
+# List all files in folder1
+files_in_f1 = os.listdir(folder1)
+
+# Iterate through the files in folder1
+for file_name in files_in_f1:
+    file_path_f1 = os.path.join(folder1, file_name)
+    file_path_f2 = os.path.join(folder2, file_name)
+
+    # Check if the file from folder1 exists in folder2
+    if not os.path.exists(file_path_f2):
+        # Copy the file from folder1 to folder2
+        shutil.copy2(file_path_f1, folder2)
+        print(f"Copied {file_name} from f1 to f2.")
+    else:
+        print(f"{file_name} already exists in f2.")
+
+print("File check and copy operation completed.")
+
