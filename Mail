@@ -1,0 +1,16 @@
+import win32com.client
+
+def on_new_mail(item):
+    # Check the sender's job title and display a warning if needed
+    sender = item.Sender
+    sender_job_title = sender.PropertyAccessor.GetProperty("http://schemas.microsoft.com/mapi/proptag/0x3A17001F")  # Job Title
+    if sender_job_title == "Manager":
+        print("Warning: You received an email from a Manager.")
+
+outlook = win32com.client.DispatchWithEvents("Outlook.Application", win32com.client.CDispatch)
+inbox = outlook.GetNamespace("MAPI").GetDefaultFolder(6)  # 6 represents the Inbox folder
+inbox.Items.ItemAdd += on_new_mail
+
+# Keep the script running to handle events
+import pythoncom
+pythoncom.PumpMessages()
