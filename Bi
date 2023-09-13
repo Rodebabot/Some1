@@ -1,0 +1,51 @@
+import pandas as pd
+import webbrowser
+import tkinter as tk
+from tkinter import ttk
+
+# Load your Excel file into a DataFrame
+data = pd.read_excel('your_excel_file.xlsx')
+
+# Function to update suggestions as the user types
+def update_suggestions(event):
+    keyword = entry.get()
+    filtered_data = data[data['Keyword'].str.contains(keyword, case=False)]
+    
+    if not filtered_data.empty:
+        suggestions = filtered_data['Keyword'].tolist()
+        suggestion_box['values'] = suggestions
+    else:
+        suggestion_box['values'] = []
+
+# Function to open the selected dashboard URL
+def open_dashboard(event):
+    keyword = entry.get()
+    filtered_data = data[data['Keyword'] == keyword]
+    
+    if not filtered_data.empty:
+        url = filtered_data.iloc[0]['URL']
+        webbrowser.open(url)
+        status_label.config(text=f"Opening dashboard for keyword: {keyword}")
+    else:
+        status_label.config(text=f"Keyword '{keyword}' not found in the data.")
+
+# Create the main application window
+root = tk.Tk()
+root.title("Power BI Dashboard Opener")
+
+# Create and configure the search bar with suggestions
+frame = ttk.Frame(root)
+frame.pack(padx=10, pady=10)
+label = ttk.Label(frame, text="Enter a keyword or dashboard name:")
+label.pack()
+entry = ttk.Entry(frame)
+entry.pack()
+entry.bind('<KeyRelease>', update_suggestions)  # Bind the event handler
+suggestion_box = ttk.Combobox(frame, values=[], state="readonly")
+suggestion_box.pack()
+suggestion_box.bind('<<ComboboxSelected>>', open_dashboard)  # Bind the event handler
+status_label = ttk.Label(root, text="")
+status_label.pack()
+
+# Start the GUI application
+root.mainloop()
