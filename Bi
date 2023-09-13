@@ -63,3 +63,89 @@ status_label.pack()
 
 # Start the GUI application
 root.mainloop()
+
+
+
+
+
+
+
+
+import pandas as pd
+import webbrowser
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk  # Import Pillow
+
+# Load your Excel file into a DataFrame
+data = pd.read_excel('your_excel_file.xlsx')
+
+selected_dashboard_url = None  # Store the selected URL
+
+# Function to update suggestions as the user types
+def update_suggestions(event):
+    keyword = entry.get()
+    filtered_data = data[data['Keyword'].str.contains(keyword, case=False)]
+    
+    if not filtered_data.empty:
+        suggestions = filtered_data['Keyword'].tolist()
+        suggestion_box['values'] = suggestions
+    else:
+        suggestion_box['values'] = []
+
+# Function to store the selected URL when a suggestion is chosen
+def select_suggestion(event):
+    keyword = suggestion_box.get()
+    filtered_data = data[data['Keyword'] == keyword]
+    
+    global selected_dashboard_url
+    if not filtered_data.empty:
+        selected_dashboard_url = filtered_data.iloc[0]['URL']
+
+# Function to open the selected dashboard URL
+def open_dashboard():
+    global selected_dashboard_url
+    if selected_dashboard_url:
+        webbrowser.open(selected_dashboard_url)
+        status_label.config(text=f"Opening selected dashboard.")
+    else:
+        status_label.config(text="No dashboard selected.")
+
+# Create the main application window
+root = tk.Tk()
+root.title("Power BI Dashboard Opener")
+
+# Load and display a logo
+logo_image = Image.open('your_logo.png')
+logo_photo = ImageTk.PhotoImage(logo_image)
+
+# Create a custom style for the application
+style = ttk.Style()
+style.configure("TFrame", background="#f0f0f0")
+style.configure("TLabel", background="#f0f0f0")
+style.configure("TButton", background="#0078d4", foreground="white")
+style.map("TButton", background=[("active", "#005a9e")])
+
+# Create and configure the search bar with suggestions
+frame = ttk.Frame(root, style="TFrame")
+frame.pack(padx=10, pady=10)
+logo_label = ttk.Label(frame, image=logo_photo)
+logo_label.pack()
+label = ttk.Label(frame, text="Enter a keyword or dashboard name:", style="TLabel")
+label.pack()
+entry = ttk.Entry(frame)
+entry.pack()
+entry.bind('<KeyRelease>', update_suggestions)  # Bind the event handler
+suggestion_box = ttk.Combobox(frame, values=[], state="readonly")
+suggestion_box.pack()
+suggestion_box.bind('<<ComboboxSelected>>', select_suggestion)  # Bind the event handler
+
+# Create a submit button with a custom style
+submit_button = ttk.Button(frame, text="Submit", command=open_dashboard, style="TButton")
+submit_button.pack()
+
+status_label = ttk.Label(root, text="", style="TLabel")
+status_label.pack()
+
+# Start the GUI application
+root.mainloop()
