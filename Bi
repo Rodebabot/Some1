@@ -1,3 +1,4 @@
+
 import pandas as pd
 import webbrowser
 import tkinter as tk
@@ -5,6 +6,8 @@ from tkinter import ttk
 
 # Load your Excel file into a DataFrame
 data = pd.read_excel('your_excel_file.xlsx')
+
+selected_dashboard_url = None  # Store the selected URL
 
 # Function to update suggestions as the user types
 def update_suggestions(event):
@@ -17,17 +20,23 @@ def update_suggestions(event):
     else:
         suggestion_box['values'] = []
 
-# Function to open the selected dashboard URL
-def open_dashboard(event):
-    keyword = entry.get()
+# Function to store the selected URL when a suggestion is chosen
+def select_suggestion(event):
+    keyword = suggestion_box.get()
     filtered_data = data[data['Keyword'] == keyword]
     
+    global selected_dashboard_url
     if not filtered_data.empty:
-        url = filtered_data.iloc[0]['URL']
-        webbrowser.open(url)
-        status_label.config(text=f"Opening dashboard for keyword: {keyword}")
+        selected_dashboard_url = filtered_data.iloc[0]['URL']
+
+# Function to open the selected dashboard URL
+def open_dashboard():
+    global selected_dashboard_url
+    if selected_dashboard_url:
+        webbrowser.open(selected_dashboard_url)
+        status_label.config(text=f"Opening selected dashboard.")
     else:
-        status_label.config(text=f"Keyword '{keyword}' not found in the data.")
+        status_label.config(text="No dashboard selected.")
 
 # Create the main application window
 root = tk.Tk()
@@ -43,7 +52,12 @@ entry.pack()
 entry.bind('<KeyRelease>', update_suggestions)  # Bind the event handler
 suggestion_box = ttk.Combobox(frame, values=[], state="readonly")
 suggestion_box.pack()
-suggestion_box.bind('<<ComboboxSelected>>', open_dashboard)  # Bind the event handler
+suggestion_box.bind('<<ComboboxSelected>>', select_suggestion)  # Bind the event handler
+
+# Create a submit button
+submit_button = ttk.Button(frame, text="Submit", command=open_dashboard)
+submit_button.pack()
+
 status_label = ttk.Label(root, text="")
 status_label.pack()
 
