@@ -25,3 +25,42 @@ elif len(files) == 3:
             new_file_name = f"{date_part}_EOD"
             os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
             break
+
+
+
+
+
+
+import os
+
+folder_path = "/path/to/your/folder"
+files = os.listdir(folder_path)
+
+if len(files) == 1:
+    old_file_name = files[0]
+    base_file_name, file_extension = os.path.splitext(old_file_name)
+    date_part = base_file_name.split("_")[0]  # Extract the date part from the filename
+    new_base_file_name = f"{date_part}_SOD"
+    new_file_name = f"{new_base_file_name}{file_extension}"
+    os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+elif len(files) == 2:
+    for file_name in files:
+        if "SOD" not in file_name:
+            old_file_name = file_name
+            base_file_name, file_extension = os.path.splitext(old_file_name)
+            date_part = base_file_name.split("_")[0]  # Extract the date part from the filename
+            new_base_file_name = f"{date_part}_MOD"
+            new_file_name = f"{new_base_file_name}{file_extension}"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
+elif len(files) == 3:
+    suffix = None
+    for file_name in files:
+        if "SOD" not in file_name and "MOD" not in file_name:
+            old_file_name = file_name
+            base_file_name, file_extension = os.path.splitext(old_file_name)
+            date_part = base_file_name.split("_")[0]  # Extract the date part from the filename
+            new_base_file_name = f"{date_part}_EOD"
+            new_file_name = f"{new_base_file_name}{file_extension}"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
