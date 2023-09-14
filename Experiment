@@ -1,4 +1,4 @@
-import pandas as pd
+4import pandas as pd
 import win32com.client
 import os
 from datetime import datetime
@@ -107,10 +107,56 @@ for file_name in files_in_f1:
     # Check if the file from folder1 exists in folder2
     if not os.path.exists(file_path_f2):
         # Copy the file from folder1 to folder2
+
+
+
+
+
+
+
+
+
+
         shutil.copy2(file_path_f1, folder2)
         print(f"Copied {file_name} from f1 to f2.")
     else:
         print(f"{file_name} already exists in f2.")
+
+
+
+
+
+
+
+
+import os
+
+folder_path = "/path/to/your/folder"
+files = os.listdir(folder_path)
+
+if len(files) == 1:
+    old_file_name = files[0]
+    date_part = old_file_name[:14]  # Extract the first 14 characters for the datetime part
+    new_file_name = f"{date_part}_SOD"
+    os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+elif len(files) == 2:
+    for file_name in files:
+        if "SOD" not in file_name:
+            old_file_name = file_name
+            date_part = old_file_name[:14]  # Extract the first 14 characters for the datetime part
+            new_file_name = f"{date_part}_MOD"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
+elif len(files) == 3:
+    suffix = None
+    for file_name in files:
+        if "SOD" not in file_name and "MOD" not in file_name:
+            old_file_name = file_name
+            date_part = old_file_name[:14]  # Extract the first 14 characters for the datetime part
+            new_file_name = f"{date_part}_EOD"
+            os.rename(os.path.join(folder_path, old_file_name), os.path.join(folder_path, new_file_name))
+            break
+
 
 print("File check and copy operation completed.")
 
