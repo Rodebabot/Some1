@@ -20,3 +20,27 @@ for source_folder, destination_folder in zip(source_folders, destination_folders
         shutil.move(source_file_path, destination_file_path)
 
 
+
+
+import os
+import shutil
+
+# Define the source folders and destination folder for non-CSV files
+source_folders = ["path/to/source/folder1", "path/to/source/folder2"]
+other_folder = "path/to/other/folder"
+
+# Ensure the destination folder for other files exists, create it if not
+os.makedirs(other_folder, exist_ok=True)
+
+# Iterate through each source folder
+for source_folder in source_folders:
+    # Iterate through files in the source folder
+    for filename in os.listdir(source_folder):
+        source_path = os.path.join(source_folder, filename)
+
+        # Check if it's not a CSV file
+        if not filename.endswith(".csv"):
+            # Move non-CSV files to the other folder
+            shutil.move(source_path, os.path.join(other_folder, filename))
+
+print("Non-CSV files have been moved to the specified folder.")
