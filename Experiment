@@ -96,18 +96,37 @@ for directory in directories:
                 old_file_name = file_name
                 base_file_name, file_extension = os.path.splitext(old_file_name)
                 date_part = base_file_name.split("_")[0]  # Extract the date part from the filename
-                new_base_file_name = f"{date_part}_MOD"
-                new_file_name = f"{new_base_file_name}{file_extension}"
-                os.rename(os.path.join(directory, old_file_name), os.path.join(directory, new_file_name))
-                break
-    elif len(files) == 3:
-        suffix = None
-        for file_name in files:
-            if "SOD" not in file_name and "MOD" not in file_name:
-                old_file_name = file_name
-                base_file_name, file_extension = os.path.splitext(old_file_name)
-                date_part = base_file_name.split("_")[0]  # Extract the date part from the filename
-                new_base_file_name = f"{date_part}_EOD"
-                new_file_name = f"{new_base_file_name}{file_extension}"
-                os.rename(os.path.join(directory, old_file_name), os.path.join(directory, new_file_name))
-                break
+
+
+
+
+
+
+
+
+
+
+import os
+import shutil
+
+# List of source folders and their corresponding destination folders
+source_folders = ['source_folder1', 'source_folder2', 'source_folder3']
+destination_folders = ['destination_folder1', 'destination_folder2', 'destination_folder3']
+
+# Iterate through the source-destination pairs
+for source_folder, destination_folder in zip(source_folders, destination_folders):
+    source_path = source_folder
+    destination_path = destination_folder
+
+    # List all files in the source folder
+    files_to_move = os.listdir(source_path)
+
+    # Move each file to the corresponding destination folder
+    for file_name in files_to_move:
+        source_file_path = os.path.join(source_path, file_name)
+        destination_file_path = os.path.join(destination_path, file_name)
+        shutil.move(source_file_path, destination_file_path)
+
+
+
+
