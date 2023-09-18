@@ -82,3 +82,35 @@ for email in inbox:
             break  # Exit the loop
 
 print(f"Processed {emails_processed} emails.")
+
+
+
+
+
+**Day 1: Introduction to Python**
+- Session 1: Welcome to Python and its importance.
+- Session 2: Setting up Python on your computer.
+
+**Days 2-5: Python Basics**
+- Session 3-6: Variables, data types, and basic operations.
+- Session 7-10: Control structures (if statements, loops).
+
+**Days 6-9: Functions and Modules**
+- Session 11-14: Understanding functions and creating your own.
+- Session 15-18: Introduction to Python modules and libraries.
+
+**Days 10-13: Data Structures**
+- Session 19-22: Lists and tuples.
+- Session 23-26: Dictionaries and sets.
+
+**Days 14-17: File Handling and Exception Handling**
+- Session 27-30: Reading and writing files.
+- Session 31-34: Handling errors with exception handling.
+
+**Days 18-20: Mini Projects**
+- Session 35-37: Building simple Python projects to apply what you've learned.
+- Session 38-40: Final projects and Q&A sessions.
+
+Throughout the training, encourage participants to practice what they learn by working on small exercises and projects outside of the training sessions. Provide additional resources like online tutorials and documentation to help them deepen their understanding of Python.
+
+Remember to adapt the curriculum based on your participants' progress and needs, and allow time for questions and discussions during each session.
