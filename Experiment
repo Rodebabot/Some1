@@ -20,33 +20,7 @@ for source_folder, destination_folder in zip(source_folders, destination_folders
 
         # Check if the file already exists in the destination folder
         if not os.path.exists(destination_file_path):
-            # Use shutil.copy() to copy the file
-            shutil.copy(source_file_path, destination_file_path)
-
-
-
-
-
-
-import pandas as pd
-import win32com.client
-import os
-from datetime import datetime, timedelta
-
-# Load the Excel file into a pandas DataFrame
-excel_file = 'path_to_your_excel_file.xlsx'
-df = pd.read_excel(excel_file)
-
-# Connect to Outlook
-outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-
-# Replace 'SubfolderName' with the name of the subfolder where you want to check for emails
-inbox = outlook.GetDefaultFolder(6).Folders['SubfolderName'].Items
-
-# Set the maximum number of emails to process
-max_emails_to_process = 6
-
-# Set the 
+            # Use shutil.copy() to 
 
 
 
@@ -73,11 +47,11 @@ outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 # Replace 'SubfolderName' with the name of the subfolder where you want to check for emails
 inbox = outlook.GetDefaultFolder(6).Folders['SubfolderName'].Items
 
-# Initialize a counter for processed emails
-emails_processed = 0
+# Initialize a counter for checked emails
+emails_checked = 0
 
-# Limit the loop to a maximum of 400 emails
-max_emails_to_process = 400
+# Limit the loop to a maximum of 400 checked emails
+max_emails_to_check = 400
 
 # Loop through each email in the subfolder
 for email in inbox:
@@ -105,12 +79,11 @@ for email in inbox:
                 attachment.SaveAsFile(attachment_filename)
                 print(f"Attachment '{attachment.FileName}' saved to '{attachment_filename}'")
 
-        # Increment the emails processed counter
-        emails_processed += 1
+    # Increment the emails checked counter
+    emails_checked += 1
 
-        # Check if the maximum number of emails has been reached
-        if emails_processed >= max_emails_to_process:
-            break  # Exit the loop
+    # Check if the maximum number of checked emails has been reached
+    if emails_checked >= max_emails_to_check:
+        break  # Exit the loop
 
-print(f"Processed {emails_processed} emails.")
-
+print(f"Checked {emails_checked} emails.")
