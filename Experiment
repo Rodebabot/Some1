@@ -82,3 +82,70 @@ while iterations < max_iterations:
 
 print(f"Completed {iterations} iterations.")
 
+
+
+
+
+
+
+
+
+
+import pandas as pd
+import win32com.client
+import os
+from datetime import datetime
+
+# Load the Excel file into a pandas DataFrame
+excel_file = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(excel_file)
+
+# Connect to Outlook
+outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+
+# Replace 'SubfolderName' with the name of the subfolder where you want to check for emails
+inbox = outlook.GetDefaultFolder(6).Folders['SubfolderName'].Items
+
+# Initialize counters
+emails_processed = 0
+iterations = 0
+
+# Set limits
+max_emails_to_process = 6
+max_iterations = 200
+
+# Loop while either 6 emails are processed or 200 iterations are reached, whichever comes first
+while emails_processed < max_emails_to_process and iterations < max_iterations:
+    # Loop through each email in the subfolder
+    for email in inbox:
+        try:
+            sender = email.SenderEmailAddress
+        except Exception as e:
+            print(f"Error getting sender email address: {str(e)}")
+            continue  # Skip this email and continue to the next one
+
+        subject = email.Subject
+        received_date = email.ReceivedTime.date()
+        today = datetime.today().date()
+
+        # Check if the email was received today and if the combination of sender and subject exists in the DataFrame
+        if received_date == today and not df[(df['SenderName'] == sender) & (df['Subject'] == subject)].empty:
+            # Get the folder locations from the matched row and split them by comma
+            folder_locations = df[(df['SenderName'] == sender) & (df['Subject'] == subject)].iloc[0]['FolderLocation'].split(',')
+
+            # Save the attachments in each corresponding location with dd-mm-yyyy timestamp
+            timestamp = datetime.now().strftime("%d-%m-%Y")
+            for folder_location in folder_locations:
+                folder_location = folder_location.strip()  # Remove leading/trailing whitespace
+                for attachment in email.Attachments:
+                    attachment_filename = os.path.join(folder_location, f"{timestamp}_{attachment.FileName}")
+                    attachment.SaveAsFile(attachment_filename)
+                    print(f"Attachment '{attachment.FileName}' saved to '{attachment_filename}'")
+
+            # Increment the emails processed counter
+            emails_processed += 1
+
+    # Increment the iterations counter
+    iterations += 1
+
+print(f"Processed {emails_processed} emails in {iterations} iterations.")
