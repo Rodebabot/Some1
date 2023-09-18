@@ -163,3 +163,20 @@ for email in inbox:
         break
 
 print(f"Processed {emails_processed} emails.")
+
+
+
+
+
+from timeout_decorator import timeout
+
+@timeout(5)  # Set the timeout period to 5 seconds
+def your_code_here():
+    # Your code that you want to limit the execution time of
+    # ...
+
+try:
+    your_code_here()
+except TimeoutError:
+    print("Execution timed out!")
+
