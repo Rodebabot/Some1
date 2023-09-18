@@ -1,46 +1,16 @@
 import os
-import shutil
 
-# List of source folders and their corresponding destination folders
-source_folders = ['source_folder1', 'source_folder2', 'source_folder3']
-destination_folders = ['destination_folder1', 'destination_folder2', 'destination_folder3']
+def delete_files_in_directories(directory_list):
+    for directory in directory_list:
+        if os.path.exists(directory):
+            for root, _, files in os.walk(directory):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    os.remove(file_path)
+                    print(f"Deleted: {file_path}")
+        else:
+            print(f"Directory not found: {directory}")
 
-# Iterate through the source-destination pairs
-for source_folder, destination_folder in zip(source_folders, destination_folders):
-    source_path = source_folder
-    destination_path = destination_folder
-
-    # List all files in the source folder
-    files_to_move = os.listdir(source_path)
-
-    # Move each file to the corresponding destination folder
-    for file_name in files_to_move:
-        source_file_path = os.path.join(source_path, file_name)
-        destination_file_path = os.path.join(destination_path, file_name)
-        shutil.move(source_file_path, destination_file_path)
-
-
-
-
-import os
-import shutil
-
-# Define the source folders and destination folder for non-CSV files
-source_folders = ["path/to/source/folder1", "path/to/source/folder2"]
-other_folder = "path/to/other/folder"
-
-# Ensure the destination folder for other files exists, create it if not
-os.makedirs(other_folder, exist_ok=True)
-
-# Iterate through each source folder
-for source_folder in source_folders:
-    # Iterate through files in the source folder
-    for filename in os.listdir(source_folder):
-        source_path = os.path.join(source_folder, filename)
-
-        # Check if it's not a CSV file
-        if not filename.endswith(".csv"):
-            # Move non-CSV files to the other folder
-            shutil.move(source_path, os.path.join(other_folder, filename))
-
-print("Non-CSV files have been moved to the specified folder.")
+# Example usage:
+directories_to_clear = ['/path/to/directory1', '/path/to/directory2']
+delete_files_in_directories(directories_to_clear)
