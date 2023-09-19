@@ -185,3 +185,12 @@ for filename in os.listdir(folder_path):
         break  # Exit the loop
 
 print(f"Processed {emails_processed} emails in {iterations} iterations.")
+
+
+
+
+
+
+
+
+=IF(C2<>"", CONCATENATEIF($A$2:$A$100, C2, $B$2:$B$100, ", "), "")
