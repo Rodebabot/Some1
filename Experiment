@@ -140,6 +140,39 @@ for email in inbox:
         # Increment the emails processed counter
         emails_processed += 1
 
+
+
+
+
+
+
+
+
+
+
+import os
+
+# Specify the folder path
+folder_path = '/path/to/your/folder/'
+
+# Iterate through files in the folder
+for filename in os.listdir(folder_path):
+    # Check if the file name contains repeated suffixes
+    if filename.count('-SOD') > 1:
+        new_filename = filename.replace('-SOD', '', 1)
+    elif filename.count('-MOD') > 1:
+        new_filename = filename.replace('-MOD', '', 1)
+    elif filename.count('-EOD') > 1:
+        new_filename = filename.replace('-EOD', '', 1)
+    elif filename.count('-FINAL') > 1:
+        new_filename = filename.replace('-FINAL', '', 1)
+    else:
+        new_filename = filename  # No repeated suffixes found, keep the original name
+    
+    # Rename the file
+    os.rename(os.path.join(folder_path, filename), os.path.join(folder_path, new_filename))
+
+
         # Check if the maximum number of emails has been reached
         if emails_processed >= max_emails_to_process:
             break  # Exit the loop
