@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import webbrowser
 
 # Function to handle the "Submit" button
 def submit():
@@ -9,11 +10,11 @@ def submit():
     keyword = keyword_var.get()
     
     # Implement your search functionality here
-    # For demonstration purposes, print the selected values
-    print(f"Department: {department}")
-    print(f"Sub-Department: {sub_department}")
-    print(f"Manager: {manager}")
-    print(f"Keyword: {keyword}")
+    # For demonstration purposes, construct a sample URL
+    selected_dashboard_url = f"https://example.com/dashboard?department={department}&sub_department={sub_department}&manager={manager}&keyword={keyword}"
+    
+    # Open the URL using webbrowser.open
+    webbrowser.open(selected_dashboard_url)
 
 # Create the main application window
 root = tk.Tk()
@@ -49,4 +50,3 @@ submit_button.grid(row=4, columnspan=2)
 
 # Start the GUI application
 root.mainloop()
-
