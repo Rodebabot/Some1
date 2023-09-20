@@ -1,135 +1,62 @@
 import pandas as pd
+import webbrowser
 import tkinter as tk
 from tkinter import ttk
-import webbrowser
 
-# Load your Excel file into a DataFrame
-data = pd.read_excel('your_excel_file.xlsx')
+# Load the Excel file into a DataFrame
+excel_file = "your_excel_file.xlsx"
+df = pd.read_excel(excel_file)
 
-# Create a dictionary to store suggestions for each field
-suggestions = {
-    'Department': data['Department'].unique(),
-    'Sub-Department': [],
-    'Manager': [],
-    'Keyword': []
-}
-
-# Initialize current step and selections
-current_step = 0
-selections = {}
-
-# Function to handle the "Submit" button
-def submit():
-    global current_step
+# Create a function to open the URL based on user selections
+def open_selected_url():
+    continent = continent_var.get()
+    country = country_var.get()
+    state = state_var.get()
+    district = district_var.get()
     
-    if current_step == 0:
-        # You can set the department_var here
-        department_var.set('SSG')  # Replace 'SSG' with your desired department
-        department = department_var.get()
-        selections['Department'] = department
-        
-        # Filter data for sub-department suggestions
-        sub_department_suggestions = data[data['Department'] == department]['Sub-Department'].unique()
-        suggestions['Sub-Department'] = sub_department_suggestions
-        sub_department_var.set('')  # Clear the current sub-department selection
-        sub_department_entry['values'] = sub_department_suggestions
-        current_step += 1
-        update_step_label()
-    elif current_step == 1:
-        sub_department = sub_department_var.get()
-        selections['Sub-Department'] = sub_department
-        
-        # Filter data for manager suggestions
-        manager_suggestions = data[(data['Department'] == selections['Department']) &
-                                   (data['Sub-Department'] == sub_department)]['Manager'].unique()
-        suggestions['Manager'] = manager_suggestions
-        manager_var.set('')  # Clear the current manager selection
-        manager_entry['values'] = manager_suggestions
-        current_step += 1
-        update_step_label()
-    elif current_step == 2:
-        manager = manager_var.get()
-        selections['Manager'] = manager
-        
-        # Filter data for keyword suggestions
-        keyword_suggestions = data[(data['Department'] == selections['Department']) &
-                                   (data['Sub-Department'] == selections['Sub-Department']) &
-                                   (data['Manager'] == manager)]['Keyword'].unique()
-        suggestions['Keyword'] = keyword_suggestions
-        keyword_var.set('')  # Clear the current keyword entry
-        keyword_entry['values'] = keyword_suggestions
-        current_step += 1
-        update_step_label()
-    elif current_step == 3:
-        keyword = keyword_var.get()
-        selections['Keyword'] = keyword
-        
-        # Filter data based on all selections
-        filtered_data = data[(data['Department'] == selections['Department']) &
-                             (data['Sub-Department'] == selections['Sub-Department']) &
-                             (data['Manager'] == selections['Manager']) &
-                             (data['Keyword'] == keyword)]
-        
-        # Check if a matching record was found
-        if not filtered_data.empty:
-            # Get the URL from the first matching record (you can adjust this logic if needed)
-            selected_dashboard_url = filtered_data.iloc[0]['URL']
-            
-            # Open the URL using webbrowser.open
-            webbrowser.open(selected_dashboard_url)
-        else:
-            status_label.config(text="No matching dashboard found.")
+    # Find the corresponding URL in the DataFrame
+    selected_row = df.loc[(df['Continent'] == continent) &
+                          (df['Country'] == country) &
+                          (df['State'] == state) &
+                          (df['District'] == district)]
     
-def update_step_label():
-    step_label.config(text=f"Step {current_step + 1}: Select {list(suggestions.keys())[current_step]}")
+    if not selected_row.empty:
+        url = selected_row.iloc[0]['URL']
+        webbrowser.open(url)
 
-# Create the main application window
+# Create a GUI window
 root = tk.Tk()
-root.title("Power BI Dashboard Opener")
+root.title("URL Opener")
 
-# Create and configure labels and entry fields
-frame = ttk.Frame(root)
-frame.pack(padx=10, pady=10)
+# Create dropdowns for continent, country, state, and district
+continent_var = tk.StringVar()
+country_var = tk.StringVar()
+state_var = tk.StringVar()
+district_var = tk.StringVar()
 
-step_label = ttk.Label(frame, text="", style="TLabel")
-step_label.grid(row=0, columnspan=2)
-update_step_label()
+continent_label = ttk.Label(root, text="Continent:")
+continent_label.pack()
+continent_dropdown = ttk.Combobox(root, textvariable=continent_var, values=df['Continent'].unique())
+continent_dropdown.pack()
 
-if current_step == 0:
-    # You can set the department_var here
-    department_var.set('SSG')  # Replace 'SSG' with your desired department
-    ttk.Label(frame, text="Select a department:").grid(row=1, column=0)
-    department_var = tk.StringVar()
-    department_entry = ttk.Combobox(frame, textvariable=department_var)
-    department_entry.grid(row=1, column=1)
-    department_entry['values'] = suggestions['Department']
-    
-if current_step == 1:
-    ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
-    sub_department_var = tk.StringVar()
-    sub_department_entry = ttk.Combobox(frame, textvariable=sub_department_var)
-    sub_department_entry.grid(row=1, column=1)
-    sub_department_entry['values'] = suggestions['Sub-Department']
-    
-if current_step == 2:
-    ttk.Label(frame, text="Select a manager:").grid(row=1, column=0)
-    manager_var = tk.StringVar()
-    manager_entry = ttk.Combobox(frame, textvariable=manager_var)
-    manager_entry.grid(row=1, column=1)
-    manager_entry['values'] = suggestions['Manager']
-    
-if current_step == 3:
-    ttk.Label(frame, text="Enter a keyword:").grid(row=1, column=0)
-    keyword_var = tk.StringVar()
-    keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
-    keyword_entry.grid(row=1, column=1)
+country_label = ttk.Label(root, text="Country:")
+country_label.pack()
+country_dropdown = ttk.Combobox(root, textvariable=country_var, values=df['Country'].unique())
+country_dropdown.pack()
 
-# Create a "Submit" button
-submit_button = ttk.Button(frame, text="Submit", command=submit)
-submit_button.grid(row=2, columnspan=2)
+state_label = ttk.Label(root, text="State:")
+state_label.pack()
+state_dropdown = ttk.Combobox(root, textvariable=state_var, values=df['State'].unique())
+state_dropdown.pack()
 
-status_label = ttk.Label(root, text="", style="TLabel")
-status_label.pack()
+district_label = ttk.Label(root, text="District:")
+district_label.pack()
+district_dropdown = ttk.Combobox(root, textvariable=district_var, values=df['District'].unique())
+district_dropdown.pack()
+
+# Create a Submit button to open the URL
+submit_button = ttk.Button(root, text="Submit", command=open_selected_url)
+submit_button.pack()
 
 # Start the GUI application
 root.mainloop()
