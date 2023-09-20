@@ -9,20 +9,22 @@ df = pd.read_excel(excel_file)
 
 # Create a function to open the URL based on user selections
 def open_selected_url():
-    continent = continent_var.get()
-    country = country_var.get()
-    state = state_var.get()
-    district = district_var.get()
+    continent = continent_var.get().strip()
+    country = country_var.get().strip()
+    state = state_var.get().strip()
+    district = district_var.get().strip()
     
     # Find the corresponding URL in the DataFrame
-    selected_row = df.loc[(df['Continent'] == continent) &
-                          (df['Country'] == country) &
-                          (df['State'] == state) &
-                          (df['District'] == district)]
+    selected_row = df.loc[(df['Continent'].str.strip() == continent) &
+                          (df['Country'].str.strip() == country) &
+                          (df['State'].str.strip() == state) &
+                          (df['District'].str.strip() == district)]
     
     if not selected_row.empty:
         url = selected_row.iloc[0]['URL']
         webbrowser.open(url)
+    else:
+        print("No matching URL found.")
 
 # Create a GUI window
 root = tk.Tk()
