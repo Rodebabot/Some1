@@ -58,5 +58,8 @@ district_dropdown.pack()
 submit_button = ttk.Button(root, text="Submit", command=open_selected_url)
 submit_button.pack()
 
+# Set the window size
+root.geometry("400x300")
+
 # Start the GUI application
 root.mainloop()
