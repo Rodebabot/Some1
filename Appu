@@ -23,6 +23,8 @@ def submit():
     global current_step
     
     if current_step == 0:
+        # You can set the department_var here
+        department_var.set('SSG')  # Replace 'SSG' with your desired department
         department = department_var.get()
         selections['Department'] = department
         
@@ -94,6 +96,8 @@ step_label.grid(row=0, columnspan=2)
 update_step_label()
 
 if current_step == 0:
+    # You can set the department_var here
+    department_var.set('SSG')  # Replace 'SSG' with your desired department
     ttk.Label(frame, text="Select a department:").grid(row=1, column=0)
     department_var = tk.StringVar()
     department_entry = ttk.Combobox(frame, textvariable=department_var)
