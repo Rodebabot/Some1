@@ -1,0 +1,85 @@
+import pandas as pd
+import webbrowser
+import tkinter as tk
+from tkinter import ttk
+from PIL import Image, ImageTk  # Import Pillow
+
+# Load your extended Excel file into a DataFrame
+data = pd.read_excel('your_extended_excel_file.xlsx')
+
+selected_dashboard_url = None  # Store the selected URL
+selected_department = None     # Store the selected department
+selected_sub_department = None # Store the selected sub-department
+selected_manager = None        # Store the selected manager
+
+# Function to update suggestions as the user types
+def update_suggestions(event, data_column, suggestion_var):
+    keyword = event.widget.get()
+    filtered_data = data[data_column].str.contains(keyword, case=False, na=False)
+    
+    if not filtered_data.empty:
+        suggestions = filtered_data.unique()
+        suggestion_var.set(suggestions)
+    else:
+        suggestion_var.set([])
+
+# Function to open the selected dashboard URL
+def open_dashboard():
+    global selected_dashboard_url
+    if selected_dashboard_url:
+        webbrowser.open(selected_dashboard_url)
+        status_label.config(text=f"Opening selected dashboard.")
+    else:
+        status_label.config(text="No dashboard selected.")
+
+# Create the main application window
+root = tk.Tk()
+root.title("Power BI Dashboard Opener")
+
+# Load and display a logo
+logo_image = Image.open('your_logo.png')
+logo_photo = ImageTk.PhotoImage(logo_image)
+
+# Create a custom style for the application
+style = ttk.Style()
+style.configure("TFrame", background="#f0f0f0")
+style.configure("TLabel", background="#f0f0f0")
+style.configure("TButton", background="#0078d4", foreground="white")
+style.map("TButton", background=[("active", "#005a9e")])
+
+# Create and configure the search bar with suggestions
+frame = ttk.Frame(root, style="TFrame")
+frame.pack(padx=10, pady=10)
+logo_label = ttk.Label(frame, image=logo_photo)
+logo_label.pack()
+# Ask the user to specify the department
+label_department = ttk.Label(frame, text="Select a department:", style="TLabel")
+label_department.pack()
+entry_department_var = tk.StringVar()
+entry_department = ttk.Entry(frame, textvariable=entry_department_var)
+entry_department.pack()
+entry_department.bind('<KeyRelease>', lambda event, data_column='Department', suggestion_var=entry_department_var: update_suggestions(event, data_column, suggestion_var))
+# Ask the user to specify the sub-department
+label_sub_department = ttk.Label(frame, text="Select a sub-department:", style="TLabel")
+label_sub_department.pack()
+entry_sub_department_var = tk.StringVar()
+entry_sub_department = ttk.Entry(frame, textvariable=entry_sub_department_var)
+entry_sub_department.pack()
+entry_sub_department.bind('<KeyRelease>', lambda event, data_column='Sub-Department', suggestion_var=entry_sub_department_var: update_suggestions(event, data_column, suggestion_var))
+# Ask the user to specify the manager
+label_manager = ttk.Label(frame, text="Select a manager:", style="TLabel")
+label_manager.pack()
+entry_manager_var = tk.StringVar()
+entry_manager = ttk.Entry(frame, textvariable=entry_manager_var)
+entry_manager.pack()
+entry_manager.bind('<KeyRelease>', lambda event, data_column='Manager', suggestion_var=entry_manager_var: update_suggestions(event, data_column, suggestion_var))
+
+# Create a submit button with a custom style
+submit_button = ttk.Button(frame, text="Submit", command=open_dashboard, style="TButton")
+submit_button.pack()
+
+status_label = ttk.Label(root, text="", style="TLabel")
+status_label.pack()
+
+# Start the GUI application
+root.mainloop()
