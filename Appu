@@ -109,7 +109,7 @@ manager_entry.grid(row=2, column=1)
 
 ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
 keyword_var = tk.StringVar()
-keyword_entry = ttk.Combobox(frame, textvariable=keyword_var)
+keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
 keyword_entry.grid(row=3, column=1)
 
 # Create a "Submit" button
