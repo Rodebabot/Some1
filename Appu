@@ -51,7 +51,7 @@ state_dropdown.pack()
 
 district_label = ttk.Label(root, text="District:")
 district_label.pack()
-district_dropdown = ttk.Combobox(root, textvariable=district_var, values=df['District'].unique())
+district_dropdown = ttk.Combobox(root, textvariable=district_var, values=df['District'].unique(), state='readonly')
 district_dropdown.pack()
 
 # Create a Submit button to open the URL
