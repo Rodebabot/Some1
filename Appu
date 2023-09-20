@@ -1,67 +1,76 @@
 import pandas as pd
-import webbrowser
 import tkinter as tk
 from tkinter import ttk
+import webbrowser
 
-# Load the Excel file into a DataFrame
-excel_file = "your_excel_file.xlsx"
-df = pd.read_excel(excel_file)
+# Load your Excel file into a DataFrame
+data = pd.read_excel('your_excel_file.xlsx')
 
-# Create a function to open the URL based on user selections
-def open_selected_url():
-    continent = continent_var.get()
-    country = country_var.get()
-    state = state_var.get()
-    district = district_var.get()
+# Function to handle the "Submit" button
+def submit():
+    department = department_var.get().lower()  # Convert to lowercase
+    sub_department = sub_department_var.get().lower()  # Convert to lowercase
+    manager = manager_var.get().lower()  # Convert to lowercase
+    keyword = keyword_var.get().lower()  # Convert to lowercase
     
-    # Check if the combination of selections matches a row in the DataFrame
-    matching_row = df[(df['Continent'] == continent) &
-                      (df['Country'] == country) &
-                      (df['State'] == state) &
-                      (df['District'] == district)]
+    # Filter the data based on the selected values
+    filtered_data = data[(data['Department'].str.lower() == department) &
+                         (data['Sub-Department'].str.lower() == sub_department) &
+                         (data['Manager'].str.lower() == manager) &
+                         (data['Keyword'].str.lower() == keyword)]
     
-    if not matching_row.empty:
-        url = matching_row.iloc[0]['URL']
-        webbrowser.open(url)
+    # Check if a matching record was found
+    if not filtered_data.empty:
+        # Get the URL from the first matching record (you can adjust this logic if needed)
+        selected_dashboard_url = filtered_data.iloc[0]['URL']
+        
+        # Open the URL using webbrowser.open
+        webbrowser.open(selected_dashboard_url)
     else:
-        print("No matching URL found.")
+        status_label.config(text="No matching dashboard found.")
 
-# Create a GUI window
+# Create the main application window
 root = tk.Tk()
-root.title("URL Opener")
+root.title("Power BI Dashboard Opener")
 
-# Create dropdowns for continent, country, state, and district
-continent_var = tk.StringVar()
-country_var = tk.StringVar()
-state_var = tk.StringVar()
-district_var = tk.StringVar()
+# Increase the size of the window
+root.geometry("500x300")  # Adjust the dimensions as needed
 
-continent_label = ttk.Label(root, text="Continent:")
-continent_label.pack()
-continent_dropdown = ttk.Combobox(root, textvariable=continent_var, values=df['Continent'].unique())
-continent_dropdown.pack()
+# Add a logo
+logo = tk.PhotoImage(file="your_logo.png")  # Replace with your logo file path
+logo_label = ttk.Label(root, image=logo)
+logo_label.pack(pady=10)
 
-country_label = ttk.Label(root, text="Country:")
-country_label.pack()
-country_dropdown = ttk.Combobox(root, textvariable=country_var, values=df['Country'].unique())
-country_dropdown.pack()
+# Create and configure labels and entry fields
+frame = ttk.Frame(root)
+frame.pack(padx=10, pady=10)
 
-state_label = ttk.Label(root, text="State:")
-state_label.pack()
-state_dropdown = ttk.Combobox(root, textvariable=state_var, values=df['State'].unique())
-state_dropdown.pack()
+ttk.Label(frame, text="Select a department:").grid(row=0, column=0)
+department_var = tk.StringVar()
+department_entry = ttk.Entry(frame, textvariable=department_var)
+department_entry.grid(row=0, column=1)
 
-district_label = ttk.Label(root, text="District:")
-district_label.pack()
-district_dropdown = ttk.Combobox(root, textvariable=district_var, values=df['District'].unique(), state='readonly')
-district_dropdown.pack()
+ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
+sub_department_var = tk.StringVar()
+sub_department_entry = ttk.Entry(frame, textvariable=sub_department_var)
+sub_department_entry.grid(row=1, column=1)
 
-# Create a Submit button to open the URL
-submit_button = ttk.Button(root, text="Submit", command=open_selected_url)
-submit_button.pack()
+ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
+manager_var = tk.StringVar()
+manager_entry = ttk.Entry(frame, textvariable=manager_var)
+manager_entry.grid(row=2, column=1)
 
-# Set the window size
-root.geometry("400x300")
+ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
+keyword_var = tk.StringVar()
+keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
+keyword_entry.grid(row=3, column=1)
+
+# Create a "Submit" button
+submit_button = ttk.Button(frame, text="Submit", command=submit)
+submit_button.grid(row=4, columnspan=2)
+
+status_label = ttk.Label(root, text="", style="TLabel")
+status_label.pack()
 
 # Start the GUI application
 root.mainloop()
