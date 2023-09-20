@@ -6,185 +6,6 @@ import webbrowser
 # Load your Excel file into a DataFrame
 data = pd.read_excel('your_excel_file.xlsx')
 
-# Function to handle the "Submit" button
-def submit():
-    department = department_var.get()
-    sub_department = sub_department_var.get()
-    manager = manager_var.get()
-    keyword = keyword_var.get()
-    
-    # Filter the data based on the selected values
-    filtered_data = data[(data['Department'] == department) &
-                         (data['Sub-Department'] == sub_department) &
-                         (data['Manager'] == manager) &
-                         (data['Keyword'] == keyword)]
-    
-    # Check if a matching record was found
-    if not filtered_data.empty:
-        # Get the URL from the first matching record (you can adjust this logic if needed)
-        selected_dashboard_url = filtered_data.iloc[0]['URL']
-        
-        # Open the URL using webbrowser.open
-        webbrowser.open(selected_dashboard_url)
-    else:
-        status_label.config(text="No matching dashboard found.")
-
-# Create the main application window
-root = tk.Tk()
-root.title("Power BI Dashboard Opener")
-
-# Create and configure labels and entry fields
-frame = ttk.Frame(root)
-frame.pack(padx=10, pady=10)
-
-ttk.Label(frame, text="Select a department:").grid(row=0, column=0)
-department_var = tk.StringVar()
-department_entry = ttk.Entry(frame, textvariable=department_var)
-department_entry.grid(row=0, column=1)
-
-ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
-sub_department_var = tk.StringVar()
-sub_department_entry = ttk.Entry(frame, textvariable=sub_department_var)
-sub_department_entry.grid(row=1, column=1)
-
-ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
-manager_var = tk.StringVar()
-manager_entry = ttk.Entry(frame, textvariable=manager_var)
-manager_entry.grid(row=2, column=1)
-
-ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
-keyword_var = tk.StringVar()
-keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
-keyword_entry.grid(row=3, column=1)
-
-# Create a "Submit" button
-submit_button = ttk.Button(frame, text="Submit", command=submit)
-submit_button.grid(row=4, columnspan=2)
-
-status_label = ttk.Label(root, text="", style="TLabel")
-status_label.pack()
-
-# Start the GUI application
-root.mainloop()
-
-
-
-
-
-
-
-
-
-
-import pandas as pd
-import tkinter as tk
-from tkinter import ttk
-import webbrowser
-
-# Load your Excel file into a DataFrame
-data = pd.read_excel('your_excel_file.xlsx')
-
-# Function to handle the "Submit" button
-def submit():
-    department = department_var.get()
-    sub_department = sub_department_var.get()
-    manager = manager_var.get()
-    keyword = keyword_var.get()
-    
-    # Filter the data based on the selected values
-    filtered_data = data[(data['Department'] == department) &
-                         (data['Sub-Department'] == sub_department) &
-                         (data['Manager'] == manager) &
-                         (data['Keyword'] == keyword)]
-    
-    # Check if a matching record was found
-    if not filtered_data.empty:
-        # Get the URL from the first matching record (you can adjust this logic if needed)
-        selected_dashboard_url = filtered_data.iloc[0]['URL']
-        
-        # Open the URL using webbrowser.open
-        webbrowser.open(selected_dashboard_url)
-    else:
-        status_label.config(text="No matching dashboard found.")
-
-# Function to update autocomplete suggestions for sub-department based on the selected department
-def update_sub_department_suggestions(event):
-    selected_department = department_var.get()
-    filtered_data = data[data['Department'] == selected_department]['Sub-Department'].unique()
-    
-    sub_department_var.set('')  # Clear the current sub-department selection
-    sub_department_entry['values'] = filtered_data
-
-# Function to update autocomplete suggestions for manager based on the selected department and sub-department
-def update_manager_suggestions(event):
-    selected_department = department_var.get()
-    selected_sub_department = sub_department_var.get()
-    filtered_data = data[(data['Department'] == selected_department) &
-                         (data['Sub-Department'] == selected_sub_department)]['Manager'].unique()
-    
-    manager_var.set('')  # Clear the current manager selection
-    manager_entry['values'] = filtered_data
-
-# Function to update autocomplete suggestions for keyword based on the selected department, sub-department, and manager
-def update_keyword_suggestions(event):
-    selected_department = department_var.get()
-    selected_sub_department = sub_department_var.get()
-    selected_manager = manager_var.get()
-    
-    filtered_data = data[(data['Department'] == selected_department) &
-                         (data['Sub-Department'] == selected_sub_department) &
-                         (data['Manager'] == selected_manager)]['Keyword'].unique()
-    
-    keyword_var.set('')  # Clear the current keyword entry
-    keyword_entry['values'] = filtered_data
-
-# Create the main application window
-root = tk.Tk()
-root.title("Power BI Dashboard Opener")
-
-# Create and configure labels and entry fields
-frame = ttk.Frame(root)
-frame.pack(padx=10, pady=10)
-
-ttk.Label(frame, text="Select a department:").grid(row=0, column=0)
-department_var = tk.StringVar()
-department_entry = ttk.Combobox(frame, textvariable=department_var)
-department_entry.grid(row=0, column=1)
-department_entry['values'] = data['Department'].unique()
-department_entry.bind('<<ComboboxSelected>>', update_sub_department_suggestions)
-
-ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
-sub_department_var = tk.StringVar()
-sub_department_entry = ttk.Combobox(frame, textvariable=sub_department_var)
-sub_department_entry.grid(row=1, column=1)
-sub_department_entry.bind('<<ComboboxSelected>>', update_manager_suggestions)
-
-ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
-manager_var = tk.StringVar()
-manager_entry = ttk.Combobox(frame, textvariable=manager_var)
-manager_entry.grid(row=2, column=1)
-manager_entry.bind('<<ComboboxSelected>>', update_keyword_suggestions)
-
-ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
-keyword_var = tk.StringVar()
-
-
-
-
-
-
-
-
-
-
-import pandas as pd
-import tkinter as tk
-from tkinter import ttk
-import webbrowser
-
-# Load your Excel file into a DataFrame
-data = pd.read_excel('your_excel_file.xlsx')
-
 # Create a dictionary to store suggestions for each field
 suggestions = {
     'Department': data['Department'].unique(),
@@ -224,6 +45,12 @@ def update_sub_department_suggestions(event):
     suggestions['Sub-Department'] = sub_department_suggestions
     sub_department_var.set('')  # Clear the current sub-department selection
     sub_department_entry['values'] = sub_department_suggestions
+    
+    # Clear and update manager and keyword selections
+    manager_var.set('')
+    keyword_var.set('')
+    manager_entry['values'] = []
+    keyword_entry['values'] = []
 
 # Function to update suggestions for manager based on the selected department and sub-department
 def update_manager_suggestions(event):
@@ -236,6 +63,10 @@ def update_manager_suggestions(event):
     suggestions['Manager'] = manager_suggestions
     manager_var.set('')  # Clear the current manager selection
     manager_entry['values'] = manager_suggestions
+    
+    # Clear and update keyword selection
+    keyword_var.set('')
+    keyword_entry['values'] = []
 
 # Function to update suggestions for keyword based on the selected department, sub-department, and manager
 def update_keyword_suggestions(event):
@@ -270,7 +101,6 @@ ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
 sub_department_var = tk.StringVar()
 sub_department_entry = ttk.Combobox(frame, textvariable=sub_department_var)
 sub_department_entry.grid(row=1, column=1)
-sub_department_entry.bind('<<ComboboxSelected>>', update_manager_suggestions)
 
 ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
 manager_var = tk.StringVar()
@@ -292,17 +122,3 @@ status_label.pack()
 
 # Start the GUI application
 root.mainloop()
-
-keyword_entry = ttk.Combobox(frame, textvariable=keyword_var)
-keyword_entry.grid(row=3, column=1)
-
-# Create a "Submit" button
-submit_button = ttk.Button(frame, text="Submit", command=submit)
-submit_button.grid(row=4, columnspan=2)
-
-status_label = ttk.Label(root, text="", style="TLabel")
-status_label.pack()
-
-# Start the GUI application
-root.mainloop()
-
