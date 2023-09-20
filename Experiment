@@ -182,6 +182,46 @@ for filename in os.listdir(folder_path):
 
     # Check if the maximum number of iterations has been reached
     if iterations >= max_iterations:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import os
+
+# List of folder paths to process
+folder_paths = ['/path/to/folder1/', '/path/to/folder2/', '/path/to/folder3/']
+
+for folder_path in folder_paths:
+    # Iterate through files in the folder
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        
+        # Check if the file name contains repeated suffixes
+        if filename.count('-SOD') > 1:
+            new_filename = filename.replace('-SOD', '', 1)
+        elif filename.count('-MOD') > 1:
+            new_filename = filename.replace('-MOD', '', 1)
+        elif filename.count('-EOD') > 1:
+            new_filename = filename.replace('-EOD', '', 1)
+        elif filename.count('-FINAL') > 1:
+            new_filename = filename.replace('-FINAL', '', 1)
+        else:
+            new_filename = filename  # No repeated suffixes found, keep the original name
+        
+        # Rename the file
+        os.rename(file_path, os.path.join(folder_path, new_filename))
+
         break  # Exit the loop
 
 print(f"Processed {emails_processed} emails in {iterations} iterations.")
