@@ -1,110 +1,52 @@
-import pandas as pd
-import webbrowser
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk
 
-# Load your extended Excel file into a DataFrame
-data = pd.read_excel('your_extended_excel_file.xlsx')
-
-selected_dashboard_url = None  # Store the selected URL
-selected_department = None     # Store the selected department
-selected_sub_department = None # Store the selected sub-department
-selected_manager = None        # Store the selected manager
-selected_keyword = None        # Store the selected keyword
-
-# Function to update suggestions as the user types
-def update_suggestions(event, data_column, suggestion_var):
-    keyword = event.widget.get()
-    filtered_data = data[data_column].str.contains(keyword, case=False, na=False)
+# Function to handle the "Submit" button
+def submit():
+    department = department_var.get()
+    sub_department = sub_department_var.get()
+    manager = manager_var.get()
+    keyword = keyword_var.get()
     
-    if not filtered_data.empty:
-        suggestions = filtered_data.unique()
-        suggestion_var.set(suggestions)
-    else:
-        suggestion_var.set([])
-
-# Function to open the selected dashboard URL
-def open_dashboard():
-    global selected_dashboard_url
-    if selected_dashboard_url:
-        webbrowser.open(selected_dashboard_url)
-        status_label.config(text=f"Opening selected dashboard.")
-    else:
-        status_label.config(text="No dashboard selected.")
-
-# Function to get the keyword and trigger the search
-def get_keyword():
-    global selected_keyword
-    selected_keyword = keyword_entry.get()
-    
-    # Implement your search functionality here using selected_department, selected_sub_department, selected_manager, and selected_keyword
-    # For example, you can filter your data and open the corresponding dashboard URL
-    
-    # After implementing your search functionality, you can set the selected_dashboard_url accordingly
-    selected_dashboard_url = "URL_of_selected_dashboard"  # Replace with the actual URL
-    
-    open_dashboard()  # Open the selected dashboard
+    # Implement your search functionality here
+    # For demonstration purposes, print the selected values
+    print(f"Department: {department}")
+    print(f"Sub-Department: {sub_department}")
+    print(f"Manager: {manager}")
+    print(f"Keyword: {keyword}")
 
 # Create the main application window
 root = tk.Tk()
 root.title("Power BI Dashboard Opener")
 
-# Load and display a logo
-logo_image = Image.open('your_logo.png')
-logo_photo = ImageTk.PhotoImage(logo_image)
-
-# Create a custom style for the application
-style = ttk.Style()
-style.configure("TFrame", background="#f0f0f0")
-style.configure("TLabel", background="#f0f0f0")
-style.configure("TButton", background="#0078d4", foreground="white")
-style.map("TButton", background=[("active", "#005a9e")])
-
-# Create and configure the search bar with suggestions
-frame = ttk.Frame(root, style="TFrame")
+# Create and configure labels and entry fields
+frame = ttk.Frame(root)
 frame.pack(padx=10, pady=10)
-logo_label = ttk.Label(frame, image=logo_photo)
-logo_label.image = logo_photo  # Keep a reference to the image
-logo_label.pack()
 
-# Ask the user to specify the department
-label_department = ttk.Label(frame, text="Select a department:", style="TLabel")
-label_department.pack()
-entry_department_var = tk.StringVar()
-entry_department = ttk.Entry(frame, textvariable=entry_department_var)
-entry_department.pack()
-entry_department.bind('<KeyRelease>', lambda event, data_column='Department', suggestion_var=entry_department_var: update_suggestions(event, data_column, suggestion_var))
+ttk.Label(frame, text="Select a department:").grid(row=0, column=0)
+department_var = tk.StringVar()
+department_entry = ttk.Entry(frame, textvariable=department_var)
+department_entry.grid(row=0, column=1)
 
-# Ask the user to specify the sub-department
-label_sub_department = ttk.Label(frame, text="Select a sub-department:", style="TLabel")
-label_sub_department.pack()
-entry_sub_department_var = tk.StringVar()
-entry_sub_department = ttk.Entry(frame, textvariable=entry_sub_department_var)
-entry_sub_department.pack()
-entry_sub_department.bind('<KeyRelease>', lambda event, data_column='Sub-Department', suggestion_var=entry_sub_department_var: update_suggestions(event, data_column, suggestion_var))
+ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
+sub_department_var = tk.StringVar()
+sub_department_entry = ttk.Entry(frame, textvariable=sub_department_var)
+sub_department_entry.grid(row=1, column=1)
 
-# Ask the user to specify the manager
-label_manager = ttk.Label(frame, text="Select a manager:", style="TLabel")
-label_manager.pack()
-entry_manager_var = tk.StringVar()
-entry_manager = ttk.Entry(frame, textvariable=entry_manager_var)
-entry_manager.pack()
-entry_manager.bind('<KeyRelease>', lambda event, data_column='Manager', suggestion_var=entry_manager_var: update_suggestions(event, data_column, suggestion_var))
+ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
+manager_var = tk.StringVar()
+manager_entry = ttk.Entry(frame, textvariable=manager_var)
+manager_entry.grid(row=2, column=1)
 
-# Ask the user to specify the keyword
-label_keyword = ttk.Label(frame, text="Enter a keyword:", style="TLabel")
-label_keyword.pack()
+ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
 keyword_var = tk.StringVar()
 keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
-keyword_entry.pack()
+keyword_entry.grid(row=3, column=1)
 
-# Create a submit button with a custom style
-submit_button = ttk.Button(frame, text="Submit", command=get_keyword, style="TButton")
-submit_button.pack()
-
-status_label = ttk.Label(root, text="", style="TLabel")
-status_label.pack()
+# Create a "Submit" button
+submit_button = ttk.Button(frame, text="Submit", command=submit)
+submit_button.grid(row=4, columnspan=2)
 
 # Start the GUI application
 root.mainloop()
+
