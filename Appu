@@ -38,7 +38,7 @@ def submit():
         status_label.config(text="No matching dashboard found.")
 
 # Function to update suggestions for sub-department based on the selected department
-def update_sub_department_suggestions(event):
+def update_sub_department_suggestions(*args):
     selected_department = department_var.get()
     sub_department_suggestions = data[data['Department'] == selected_department]['Sub-Department'].unique()
     
@@ -53,7 +53,7 @@ def update_sub_department_suggestions(event):
     keyword_entry['values'] = []
 
 # Function to update suggestions for manager based on the selected department and sub-department
-def update_manager_suggestions(event):
+def update_manager_suggestions(*args):
     selected_department = department_var.get()
     selected_sub_department = sub_department_var.get()
     
@@ -69,7 +69,7 @@ def update_manager_suggestions(event):
     keyword_entry['values'] = []
 
 # Function to update suggestions for keyword based on the selected department, sub-department, and manager
-def update_keyword_suggestions(event):
+def update_keyword_suggestions(*args):
     selected_department = department_var.get()
     selected_sub_department = sub_department_var.get()
     selected_manager = manager_var.get()
@@ -106,7 +106,6 @@ ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
 manager_var = tk.StringVar()
 manager_entry = ttk.Combobox(frame, textvariable=manager_var)
 manager_entry.grid(row=2, column=1)
-manager_entry.bind('<<ComboboxSelected>>', update_keyword_suggestions)
 
 ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
 keyword_var = tk.StringVar()
@@ -119,6 +118,11 @@ submit_button.grid(row=4, columnspan=2)
 
 status_label = ttk.Label(root, text="", style="TLabel")
 status_label.pack()
+
+# Use trace to track changes in department, sub-department, and manager
+department_var.trace('w', update_sub_department_suggestions)
+sub_department_var.trace('w', update_manager_suggestions)
+manager_var.trace('w', update_keyword_suggestions)
 
 # Start the GUI application
 root.mainloop()
