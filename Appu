@@ -74,3 +74,40 @@ status_label.pack()
 
 # Start the GUI application
 root.mainloop()
+
+
+
+
+
+
+
+
+
+import os
+
+# List of folder paths to process
+folder_paths = ['/path/to/folder1/', '/path/to/folder2/', '/path/to/folder3/']
+
+for folder_path in folder_paths:
+    # Iterate through files in the folder
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+
+        # Check if the file name contains repeated suffixes
+        if filename.count('-SOD') > 1:
+            new_filename = filename.replace('-SOD', '', 1)
+        elif filename.count('-MOD') > 1:
+            new_filename = filename.replace('-MOD', '', 1)
+        elif filename.count('-EOD') > 1:
+            new_filename = filename.replace('-EOD', '', 1)
+        else:
+            # Handle the "-FINAL" suffix separately
+            parts = filename.split('-FINAL')
+            if len(parts) > 2:
+                # If there are multiple "-FINAL" occurrences, keep the first one and remove the rest
+                new_filename = parts[0] + '-FINAL' + '-'.join(parts[1:])
+            else:
+                new_filename = filename  # No repeated suffixes found, keep the original name
+
+        # Rename the file
+        os.rename(file_path, os.path.join(folder_path, new_filename))
