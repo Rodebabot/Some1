@@ -5,11 +5,20 @@ from tkinter import Entry, Button, StringVar
 # Read the Excel file into a DataFrame
 df = pd.read_excel('your_excel_file.xlsx')
 
-# Build a dictionary that maps combinations of 'a' and 'b' to URLs
+# Create a dictionary to store URLs
 url_dict = {}
+
+# Generate all combinations of words from the first and second columns
 for index, row in df.iterrows():
-    combination = row['1st Column'] + row['2nd Column']
-    url_dict[combination] = row['3rd Column']
+    words1 = row['1st Column'].split()  # Split the words by space
+    words2 = row['2nd Column'].split()
+    
+    # Generate all combinations of words from the two columns
+    combinations = [' '.join([w1, w2]) for w1 in words1 for w2 in words2]
+    
+    # Add each combination to the dictionary
+    for combination in combinations:
+        url_dict[combination] = row['3rd Column']
 
 # Create a tkinter GUI
 root = tk.Tk()
