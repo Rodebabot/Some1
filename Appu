@@ -1,6 +1,6 @@
 import pandas as pd
 import tkinter as tk
-from tkinter import Entry, Button
+from tkinter import Entry, Button, StringVar
 
 # Read the Excel file into a DataFrame
 df = pd.read_excel('your_excel_file.xlsx')
@@ -15,18 +15,21 @@ for index, row in df.iterrows():
 root = tk.Tk()
 root.title("URL Opener")
 
-# Create an Entry widget for user input
-entry = Entry(root)
+# Create a StringVar to store the user input
+user_input_var = StringVar()
+
+# Create an Entry widget for user input with autocomplete
+entry = Entry(root, textvariable=user_input_var)
 entry.pack()
 
 # Function to handle button click and open the URL
 def open_url():
-    user_input = entry.get()
+    user_input = user_input_var.get()
     if user_input in url_dict:
         url = url_dict[user_input]
-        # Use a web browser library (e.g., webbrowser) to open the URL
-        # For example: webbrowser.open(url)
-        print(f"Opening URL: {url}")
+        # Use the webbrowser library to open the URL
+        import webbrowser
+        webbrowser.open(url)
     else:
         print("URL not found for the input.")
 
@@ -35,6 +38,16 @@ submit_button = Button(root, text="Submit", command=open_url)
 submit_button.pack()
 
 # Implement real-time suggestions based on user input
-# You can use libraries like 'autocomplete' or implement your own suggestion logic here.
+def suggest():
+    user_input = user_input_var.get()
+    suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
+    if suggestions:
+        # Update the autocomplete list
+        entry['values'] = tuple(suggestions)
+    else:
+        entry['values'] = ()
+
+# Bind the suggest function to the Entry widget for real-time suggestions
+entry.bind('<KeyRelease>', lambda event: suggest())
 
 root.mainloop()
