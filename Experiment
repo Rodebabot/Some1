@@ -68,3 +68,28 @@ with pd.ExcelWriter("results.xlsx", engine="openpyxl") as writer:
     results_df.to_excel(writer, sheet_name="Results", index=False)
 
 print("Results saved to results.xlsx")
+
+
+
+
+
+# Create the main application window
+root = tk.Tk()
+root.title("Power BI Dashboard Opener")
+
+# Increase the size of the window
+root.geometry("500x300")  # Adjust the dimensions as needed
+
+# Create a Canvas widget for the background image
+canvas = tk.Canvas(root, width=500, height=300)
+canvas.pack()
+
+# Load and set the background image
+background_image = tk.PhotoImage(file="background_image.png")  # Replace with your background image file path
+background_label = tk.Label(root, image=background_image)
+background_label.place(relwidth=1, relheight=1)  # Stretch the image to cover the whole canvas
+
+# Rest of your code (starting from the creation of labels and entry fields) goes here...
+
+# Start the GUI application
+root.mainloop()
