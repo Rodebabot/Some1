@@ -1,79 +1,40 @@
 import pandas as pd
-import webbrowser
 import tkinter as tk
-from tkinter import ttk
-from PIL import Image, ImageTk  # Import Pillow
+from tkinter import Entry, Button
 
-# Load your Excel file into a DataFrame
-data = pd.read_excel('your_excel_file.xlsx')
+# Read the Excel file into a DataFrame
+df = pd.read_excel('your_excel_file.xlsx')
 
-selected_dashboard_url = None  # Store the selected URL
+# Build a dictionary that maps combinations of 'a' and 'b' to URLs
+url_dict = {}
+for index, row in df.iterrows():
+    combination = row['1st Column'] + row['2nd Column']
+    url_dict[combination] = row['3rd Column']
 
-# Function to update suggestions as the user types
-def update_suggestions(event):
-    keyword = entry.get()
-    filtered_data = data[data['Keyword'].str.contains(keyword, case=False)]
-    
-    if not filtered_data.empty:
-        suggestions = filtered_data['Keyword'].tolist()
-        suggestion_box['values'] = suggestions
-    else:
-        suggestion_box['values'] = []
-
-# Function to store the selected URL when a suggestion is chosen
-def select_suggestion(event):
-    keyword = suggestion_box.get()
-    filtered_data = data[data['Keyword'] == keyword]
-    
-    global selected_dashboard_url
-    if not filtered_data.empty:
-        selected_dashboard_url = filtered_data.iloc[0]['URL']
-
-# Function to open the selected dashboard URL
-def open_dashboard():
-    global selected_dashboard_url
-    if selected_dashboard_url:
-        webbrowser.open(selected_dashboard_url)
-        status_label.config(text=f"Opening selected dashboard.")
-    else:
-        status_label.config(text="No dashboard selected.")
-
-# Create the main application window
+# Create a tkinter GUI
 root = tk.Tk()
-root.title("Power BI Dashboard Opener")
+root.title("URL Opener")
 
-# Set the background image
-background_image = Image.open('your_background_image.jpg')
-background_photo = ImageTk.PhotoImage(background_image)
+# Create an Entry widget for user input
+entry = Entry(root)
+entry.pack()
 
-background_label = tk.Label(root, image=background_photo)
-background_label.place(relwidth=1, relheight=1)
+# Function to handle button click and open the URL
+def open_url():
+    user_input = entry.get()
+    if user_input in url_dict:
+        url = url_dict[user_input]
+        # Use a web browser library (e.g., webbrowser) to open the URL
+        # For example: webbrowser.open(url)
+        print(f"Opening URL: {url}")
+    else:
+        print("URL not found for the input.")
 
-# Create a custom style for the application
-style = ttk.Style()
-style.configure("TFrame", background="#f0f0f0")
-style.configure("TLabel", background="#f0f0f0")
-style.configure("TButton", background="#0078d4", foreground="white")
-style.map("TButton", background=[("active", "#005a9e")])
-
-# Create and configure the search bar with suggestions
-frame = ttk.Frame(root, style="TFrame")
-frame.place(relx=0.5, rely=0.3, relwidth=0.6, relheight=0.4, anchor='center')
-label = ttk.Label(frame, text="Enter a keyword or dashboard name:", style="TLabel")
-label.pack()
-entry = ttk.Entry(frame)
-entry.pack(pady=10)  # Increase the entry box height
-entry.bind('<KeyRelease>', update_suggestions)  # Bind the event handler
-suggestion_box = ttk.Combobox(frame, values=[], state="readonly")
-suggestion_box.pack(pady=10)  # Increase the suggestion box height
-suggestion_box.bind('<<ComboboxSelected>>', select_suggestion)  # Bind the event handler
-
-# Create a submit button with a custom style
-submit_button = ttk.Button(frame, text="Submit", command=open_dashboard, style="TButton")
+# Create a button to submit the input
+submit_button = Button(root, text="Submit", command=open_url)
 submit_button.pack()
 
-status_label = ttk.Label(root, text="", style="TLabel")
-status_label.pack()
+# Implement real-time suggestions based on user input
+# You can use libraries like 'autocomplete' or implement your own suggestion logic here.
 
-# Start the GUI application
 root.mainloop()
