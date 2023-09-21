@@ -49,10 +49,6 @@ background_photo = ImageTk.PhotoImage(background_image)
 background_label = tk.Label(root, image=background_photo)
 background_label.place(relwidth=1, relheight=1)
 
-# Load and display a logo
-logo_image = Image.open('your_logo.png')
-logo_photo = ImageTk.PhotoImage(logo_image)
-
 # Create a custom style for the application
 style = ttk.Style()
 style.configure("TFrame", background="#f0f0f0")
@@ -63,8 +59,6 @@ style.map("TButton", background=[("active", "#005a9e")])
 # Create and configure the search bar with suggestions
 frame = ttk.Frame(root, style="TFrame")
 frame.place(relx=0.5, rely=0.3, relwidth=0.6, relheight=0.4, anchor='center')
-logo_label = ttk.Label(frame, image=logo_photo)
-logo_label.pack()
 label = ttk.Label(frame, text="Enter a keyword or dashboard name:", style="TLabel")
 label.pack()
 entry = ttk.Entry(frame)
