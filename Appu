@@ -1,113 +1,85 @@
 import pandas as pd
+import webbrowser
 import tkinter as tk
 from tkinter import ttk
-import webbrowser
+from PIL import Image, ImageTk  # Import Pillow
 
 # Load your Excel file into a DataFrame
 data = pd.read_excel('your_excel_file.xlsx')
 
-# Function to handle the "Submit" button
-def submit():
-    department = department_var.get().lower()  # Convert to lowercase
-    sub_department = sub_department_var.get().lower()  # Convert to lowercase
-    manager = manager_var.get().lower()  # Convert to lowercase
-    keyword = keyword_var.get().lower()  # Convert to lowercase
+selected_dashboard_url = None  # Store the selected URL
+
+# Function to update suggestions as the user types
+def update_suggestions(event):
+    keyword = entry.get()
+    filtered_data = data[data['Keyword'].str.contains(keyword, case=False)]
     
-    # Filter the data based on the selected values
-    filtered_data = data[(data['Department'].str.lower() == department) &
-                         (data['Sub-Department'].str.lower() == sub_department) &
-                         (data['Manager'].str.lower() == manager) &
-                         (data['Keyword'].str.lower() == keyword)]
-    
-    # Check if a matching record was found
     if not filtered_data.empty:
-        # Get the URL from the first matching record (you can adjust this logic if needed)
-        selected_dashboard_url = filtered_data.iloc[0]['URL']
-        
-        # Open the URL using webbrowser.open
-        webbrowser.open(selected_dashboard_url)
+        suggestions = filtered_data['Keyword'].tolist()
+        suggestion_box['values'] = suggestions
     else:
-        status_label.config(text="No matching dashboard found.")
+        suggestion_box['values'] = []
+
+# Function to store the selected URL when a suggestion is chosen
+def select_suggestion(event):
+    keyword = suggestion_box.get()
+    filtered_data = data[data['Keyword'] == keyword]
+    
+    global selected_dashboard_url
+    if not filtered_data.empty:
+        selected_dashboard_url = filtered_data.iloc[0]['URL']
+
+# Function to open the selected dashboard URL
+def open_dashboard():
+    global selected_dashboard_url
+    if selected_dashboard_url:
+        webbrowser.open(selected_dashboard_url)
+        status_label.config(text=f"Opening selected dashboard.")
+    else:
+        status_label.config(text="No dashboard selected.")
 
 # Create the main application window
 root = tk.Tk()
 root.title("Power BI Dashboard Opener")
 
-# Increase the size of the window
-root.geometry("500x300")  # Adjust the dimensions as needed
+# Set the background image
+background_image = Image.open('your_background_image.jpg')
+background_photo = ImageTk.PhotoImage(background_image)
 
-# Add a logo
-logo = tk.PhotoImage(file="your_logo.png")  # Replace with your logo file path
-logo_label = ttk.Label(root, image=logo)
-logo_label.pack(pady=10)
+background_label = tk.Label(root, image=background_photo)
+background_label.place(relwidth=1, relheight=1)
 
-# Create and configure labels and entry fields
-frame = ttk.Frame(root)
-frame.pack(padx=10, pady=10)
+# Load and display a logo
+logo_image = Image.open('your_logo.png')
+logo_photo = ImageTk.PhotoImage(logo_image)
 
-ttk.Label(frame, text="Select a department:").grid(row=0, column=0)
-department_var = tk.StringVar()
-department_entry = ttk.Entry(frame, textvariable=department_var)
-department_entry.grid(row=0, column=1)
+# Create a custom style for the application
+style = ttk.Style()
+style.configure("TFrame", background="#f0f0f0")
+style.configure("TLabel", background="#f0f0f0")
+style.configure("TButton", background="#0078d4", foreground="white")
+style.map("TButton", background=[("active", "#005a9e")])
 
-ttk.Label(frame, text="Select a sub-department:").grid(row=1, column=0)
-sub_department_var = tk.StringVar()
-sub_department_entry = ttk.Entry(frame, textvariable=sub_department_var)
-sub_department_entry.grid(row=1, column=1)
+# Create and configure the search bar with suggestions
+frame = ttk.Frame(root, style="TFrame")
+frame.place(relx=0.5, rely=0.3, relwidth=0.6, relheight=0.4, anchor='center')
+logo_label = ttk.Label(frame, image=logo_photo)
+logo_label.pack()
+label = ttk.Label(frame, text="Enter a keyword or dashboard name:", style="TLabel")
+label.pack()
+entry = ttk.Entry(frame)
+entry.pack(pady=10)  # Increase the entry box height
+entry.bind('<KeyRelease>', update_suggestions)  # Bind the event handler
+suggestion_box = ttk.Combobox(frame, values=[], state="readonly")
+suggestion_box.pack(pady=10)  # Increase the suggestion box height
+suggestion_box.bind('<<ComboboxSelected>>', select_suggestion)  # Bind the event handler
 
-ttk.Label(frame, text="Select a manager:").grid(row=2, column=0)
-manager_var = tk.StringVar()
-manager_entry = ttk.Entry(frame, textvariable=manager_var)
-manager_entry.grid(row=2, column=1)
-
-ttk.Label(frame, text="Enter a keyword:").grid(row=3, column=0)
-keyword_var = tk.StringVar()
-keyword_entry = ttk.Entry(frame, textvariable=keyword_var)
-keyword_entry.grid(row=3, column=1)
-
-# Create a "Submit" button
-submit_button = ttk.Button(frame, text="Submit", command=submit)
-submit_button.grid(row=4, columnspan=2)
+# Create a submit button with a custom style
+submit_button = ttk.Button(frame, text="Submit", command=open_dashboard, style="TButton")
+submit_button.pack()
 
 status_label = ttk.Label(root, text="", style="TLabel")
 status_label.pack()
 
 # Start the GUI application
 root.mainloop()
-
-
-
-
-
-
-
-
-
-import os
-
-# List of folder paths to process
-folder_paths = ['/path/to/folder1/', '/path/to/folder2/', '/path/to/folder3/']
-
-for folder_path in folder_paths:
-    # Iterate through files in the folder
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
-
-        # Check if the file name contains repeated suffixes
-        if filename.count('-SOD') > 1:
-            new_filename = filename.replace('-SOD', '', 1)
-        elif filename.count('-MOD') > 1:
-            new_filename = filename.replace('-MOD', '', 1)
-        elif filename.count('-EOD') > 1:
-            new_filename = filename.replace('-EOD', '', 1)
-        else:
-            # Handle the "-FINAL" suffix separately
-            parts = filename.split('-FINAL')
-            if len(parts) > 2:
-                # If there are multiple "-FINAL" occurrences, keep the first one and remove the rest
-                new_filename = parts[0] + '-FINAL' + '-'.join(parts[1:])
-            else:
-                new_filename = filename  # No repeated suffixes found, keep the original name
-
-        # Rename the file
-        os.rename(file_path, os.path.join(folder_path, new_filename))
