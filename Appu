@@ -8,14 +8,28 @@ df = pd.read_excel('your_excel_file.xlsx')
 # Create a dictionary to store URLs
 url_dict = {}
 
+# Recursive function to generate all combinations of words
+def generate_combinations(words1, words2, prefix, combinations):
+    if not words1 and not words2:
+        combinations.append(prefix.strip())
+        return
+
+    if words1:
+        generate_combinations(words1[1:], words2, prefix + words1[0] + ' ', combinations)
+        generate_combinations(words1[1:], words2, prefix + words1[0], combinations)
+
+    if words2:
+        generate_combinations(words1, words2[1:], prefix + ' ' + words2[0], combinations)
+        generate_combinations(words1, words2[1:], prefix + words2[0], combinations)
+
 # Generate all combinations of words from the first and second columns
 for index, row in df.iterrows():
     words1 = row['1st Column'].split()  # Split the words by space
     words2 = row['2nd Column'].split()
-    
-    # Generate all combinations of words from the two columns
-    combinations = [' '.join([w1, w2]) for w1 in words1 for w2 in words2]
-    
+
+    combinations = []
+    generate_combinations(words1, words2, '', combinations)
+
     # Add each combination to the dictionary
     for combination in combinations:
         url_dict[combination] = row['3rd Column']
