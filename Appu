@@ -1,6 +1,7 @@
 import pandas as pd
 import tkinter as tk
 from tkinter import Entry, Button, StringVar
+from tkinter.ttk import Combobox
 import itertools
 
 # Read the Excel file into a DataFrame
@@ -33,6 +34,10 @@ user_input_var = StringVar()
 entry = Entry(root, textvariable=user_input_var)
 entry.pack()
 
+# Create a Combobox widget for suggestions
+suggestion_combobox = Combobox(root)
+suggestion_combobox.pack()
+
 # Function to handle button click and open the URL
 def open_url():
     user_input = user_input_var.get()
@@ -63,9 +68,10 @@ def suggest():
     suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
     if suggestions:
         # Update the autocomplete list
-        entry['values'] = tuple(suggestions)
+        suggestion_combobox['values'] = tuple(suggestions)
+        suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
     else:
-        entry['values'] = ()
+        suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
 
 # Bind the suggest function to the Entry widget for real-time suggestions
 entry.bind('<KeyRelease>', lambda event: suggest())
