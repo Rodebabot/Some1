@@ -1,7 +1,6 @@
 import pandas as pd
 import tkinter as tk
-from tkinter import Entry, Button, StringVar
-from tkinter.ttk import Combobox
+from tkinter import Entry, Button, StringVar, Listbox
 import itertools
 
 # Read the Excel file into a DataFrame
@@ -30,13 +29,13 @@ root.title("URL Opener")
 # Create a StringVar to store the user input
 user_input_var = StringVar()
 
-# Create an Entry widget for user input with autocomplete
+# Create an Entry widget for user input
 entry = Entry(root, textvariable=user_input_var)
 entry.pack()
 
-# Create a Combobox widget for suggestions
-suggestion_combobox = Combobox(root)
-suggestion_combobox.pack()
+# Create a Listbox widget for suggestions
+suggestion_listbox = Listbox(root, height=5)
+suggestion_listbox.pack()
 
 # Function to handle button click and open the URL
 def open_url():
@@ -56,29 +55,26 @@ def open_url():
 submit_button = Button(root, text="Submit", command=open_url)
 submit_button.pack()
 
-# Implement real-time suggestions based on user input
+# Function to update the Listbox with suggestions
 def suggest():
     user_input = user_input_var.get()
     suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
-    if suggestions:
-        # Show only the remaining part of a possible combination
-        remaining_suggestions = [s[len(user_input):] for s in suggestions]
-        suggestion_combobox['values'] = tuple(remaining_suggestions)
-    else:
-        suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
+    suggestion_listbox.delete(0, tk.END)  # Clear the existing suggestions
+    for suggestion in suggestions:
+        suggestion_listbox.insert(tk.END, suggestion)
 
 # Bind the suggest function to the Entry widget for real-time suggestions
 entry.bind('<KeyRelease>', lambda event: suggest())
 
-# Function to complete the combination and trigger the URL upon selection
+# Function to handle suggestion selection
 def select_suggestion(event):
-    selected_suggestion = suggestion_combobox.get()
+    selected_suggestion = suggestion_listbox.get(suggestion_listbox.curselection())
     user_input = user_input_var.get()
     user_input += selected_suggestion  # Complete the combination
     user_input_var.set(user_input)  # Update the user input
     open_url()  # Trigger the URL
 
-# Bind the select_suggestion function to the Combobox's <<ComboboxSelected>> event
-suggestion_combobox.bind('<<ComboboxSelected>>', select_suggestion)
+# Bind the select_suggestion function to the Listbox's <<ListboxSelect>> event
+suggestion_listbox.bind('<<ListboxSelect>>', select_suggestion)
 
 root.mainloop()
