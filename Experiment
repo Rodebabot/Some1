@@ -1,13 +1,17 @@
 import pandas as pd
 
-# Sample data
-data = {'Name': ['John', 'Alice', 'John', 'Bob', 'Alice'],
-        'String': ['String1', 'String2', 'String3', 'String4', 'String5']}
-
-# Create a DataFrame
-df = pd.DataFrame(data)
+# Read data from the Excel file
+file_path = 'saili.xlsx'
+sheet_name = 'Sheet8'
+df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 # Group by the 'Name' column and join the 'String' column values with a comma
 result = df.groupby('Name')['String'].apply(lambda x: ', '.join(x)).reset_index()
 
-print(result)
+# Specify the output Excel file name
+output_file_path = 'output.xlsx'
+
+# Export the result to a new Excel sheet
+result.to_excel(output_file_path, index=False)
+
+print(f"Result has been exported to {output_file_path}")
