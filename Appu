@@ -2,7 +2,6 @@ import pandas as pd
 import tkinter as tk
 from tkinter import Entry, Button, StringVar
 import itertools
-import re
 
 # Read the Excel file into a DataFrame
 df = pd.read_excel('your_excel_file.xlsx')
@@ -15,12 +14,11 @@ for index, row in df.iterrows():
     words1 = row['1st Column'].split()  # Split the words by space
     words2 = row['2nd Column'].split()
 
-    # Generate all permutations of words from the two columns
-    permutations = list(itertools.permutations(words1 + words2))
+    # Generate all combinations of words from the two columns
+    combinations = [' '.join([w1, w2]) for w1 in words1 for w2 in words2]
 
-    # Add each permutation to the dictionary
-    for perm in permutations:
-        combination = ' '.join(perm)
+    # Add each combination to the dictionary
+    for combination in combinations:
         url_dict[combination] = row['3rd Column']
 
 # Create a tkinter GUI
@@ -39,12 +37,9 @@ def open_url():
     user_input = user_input_var.get()
     user_input = user_input.lower()  # Convert input to lowercase for case-insensitive matching
 
-    # Extract relevant words from the input sentence
-    relevant_words = ' '.join(re.findall(r'\b(?:\w+\s*){1,2}\w+\b', user_input))
-
-    # Check if the relevant words combination matches with the URLs
-    if relevant_words in url_dict:
-        url = url_dict[relevant_words]
+    # Check if the user input matches any combination in the dictionary
+    if user_input in url_dict:
+        url = url_dict[user_input]
         # Use the webbrowser library to open the URL
         import webbrowser
         webbrowser.open(url)
