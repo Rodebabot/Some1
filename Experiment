@@ -1,95 +1,13 @@
 import pandas as pd
-import numpy as np
 
-# List of your Excel files
-file_paths = ["file1.xlsx", "file2.xlsx", "file3.xlsx"]
+# Sample data
+data = {'Name': ['John', 'Alice', 'John', 'Bob', 'Alice'],
+        'String': ['String1', 'String2', 'String3', 'String4', 'String5']}
 
-# Create an empty DataFrame to store the results
-results_df = pd.DataFrame(columns=["File", "Sheet", "Column", "Statistic", "Deviation"])
+# Create a DataFrame
+df = pd.DataFrame(data)
 
-# Loop through each Excel file
-for file_path in file_paths:
-    # Read the Excel file
-    xls = pd.ExcelFile(file_path)
-    
-    # Loop through each sheet in the Excel file
-    for sheet_name in xls.sheet_names:
-        sheet = xls.parse(sheet_name)
-        
-        # Iterate through each column in the sheet
-        for column in sheet.columns:
-            old_values = sheet['old'][column]
-            new_values = sheet['new'][column]
-            
-            # Calculate descriptive statistics
-            old_mean = old_values.mean()
-            new_mean = new_values.mean()
-            old_std = old_values.std()
-            new_std = new_values.std()
-            
-            # Calculate IQR and Median
-            old_iqr = np.percentile(old_values, 75) - np.percentile(old_values, 25)
-            new_iqr = np.percentile(new_values, 75) - np.percentile(new_values, 25)
-            old_median = old_values.median()
-            new_median = new_values.median()
-            
-            # Calculate deviations
-            deviation_mean = ((new_mean - old_mean) / old_mean) * 100
-            deviation_std = ((new_std - old_std) / old_std) * 100
-            deviation_volatility = ((new_iqr / new_median) - (old_iqr / old_median)) / (old_iqr / old_median) * 100
-            
-            # Add results to the results DataFrame
-            results_df = results_df.append({
-                "File": file_path,
-                "Sheet": sheet_name,
-                "Column": column,
-                "Statistic": "Mean",
-                "Deviation": deviation_mean
-            }, ignore_index=True)
-            
-            results_df = results_df.append({
-                "File": file_path,
-                "Sheet": sheet_name,
-                "Column": column,
-                "Statistic": "Standard Deviation",
-                "Deviation": deviation_std
-            }, ignore_index=True)
+# Group by the 'Name' column and join the 'String' column values with a comma
+result = df.groupby('Name')['String'].apply(lambda x: ', '.join(x)).reset_index()
 
-            results_df = results_df.append({
-                "File": file_path,
-                "Sheet": sheet_name,
-                "Column": column,
-                "Statistic": "Volatility (IQR/Median)",
-                "Deviation": deviation_volatility
-            }, ignore_index=True)
-
-# Create a new Excel file to store the results
-with pd.ExcelWriter("results.xlsx", engine="openpyxl") as writer:
-    results_df.to_excel(writer, sheet_name="Results", index=False)
-
-print("Results saved to results.xlsx")
-
-
-
-
-
-# Create the main application window
-root = tk.Tk()
-root.title("Power BI Dashboard Opener")
-
-# Increase the size of the window
-root.geometry("500x300")  # Adjust the dimensions as needed
-
-# Create a Canvas widget for the background image
-canvas = tk.Canvas(root, width=500, height=300)
-canvas.pack()
-
-# Load and set the background image
-background_image = tk.PhotoImage(file="background_image.png")  # Replace with your background image file path
-background_label = tk.Label(root, image=background_image)
-background_label.place(relwidth=1, relheight=1)  # Stretch the image to cover the whole canvas
-
-# Rest of your code (starting from the creation of labels and entry fields) goes here...
-
-# Start the GUI application
-root.mainloop()
+print(result)
