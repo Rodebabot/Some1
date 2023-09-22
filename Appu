@@ -65,36 +65,23 @@ submit_button.pack()
 # Implement real-time suggestions based on user input
 def suggest():
     user_input = user_input_var.get()
-    
-    # Find all combinations from the Excel file that are present in the user input
-    matching_combinations = [combination for combination in url_dict.keys() if combination in user_input]
-    
-    # If there are matching combinations, suggest the next word(s)
-    if matching_combinations:
-        last_matching_combination = matching_combinations[-1]
-        remaining_input = user_input[len(last_matching_combination):].strip()
-        
-        # Extract words from the remaining input
-        remaining_words = remaining_input.split()
-        
-        # Generate suggestions based on the words in the Excel file and the remaining input
-        suggestions = []
-        for combination in url_dict.keys():
-            if combination.startswith(last_matching_combination) and combination != last_matching_combination:
-                next_word = combination[len(last_matching_combination):].strip()
-                if next_word:
-                    suggestions.append(next_word)
-        
-        if suggestions:
-            # Update the suggestion_combobox with the next possible words
-            suggestion_combobox['values'] = tuple(suggestions)
-            suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
-        else:
-            suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
+    suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
+    if suggestions:
+        # Update the autocomplete list
+        suggestion_combobox['values'] = tuple(suggestions)
+        suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
     else:
-        suggestion_combobox.set("")  # Clear the suggestion_combobox if no matching combinations
+        suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
 
 # Bind the suggest function to the Entry widget for real-time suggestions
 entry.bind('<KeyRelease>', lambda event: suggest())
+
+# Bind a function to handle the Combobox selection event
+def select_suggestion(event):
+    selected_suggestion = suggestion_combobox.get()
+    user_input_var.set(selected_suggestion)
+
+# Bind the select_suggestion function to the Combobox's <<ComboboxSelected>> event
+suggestion_combobox.bind('<<ComboboxSelected>>', select_suggestion)
 
 root.mainloop()
