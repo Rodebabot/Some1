@@ -2,6 +2,7 @@ import pandas as pd
 import tkinter as tk
 from tkinter import Entry, Button, StringVar
 import itertools
+import re
 
 # Read the Excel file into a DataFrame
 df = pd.read_excel('your_excel_file.xlsx')
@@ -36,13 +37,21 @@ entry.pack()
 # Function to handle button click and open the URL
 def open_url():
     user_input = user_input_var.get()
-    if user_input in url_dict:
-        url = url_dict[user_input]
-        # Use the webbrowser library to open the URL
-        import webbrowser
-        webbrowser.open(url)
-    else:
-        print("URL not found for the input.")
+    user_input = user_input.lower()  # Convert input to lowercase for case-insensitive matching
+
+    # Extract all word combinations from the input sentence
+    word_combinations = [' '.join(perm) for perm in itertools.permutations(re.findall(r'\w+', user_input))]
+
+    # Check if any of the combinations match with the URLs
+    for combination in word_combinations:
+        if combination in url_dict:
+            url = url_dict[combination]
+            # Use the webbrowser library to open the URL
+            import webbrowser
+            webbrowser.open(url)
+            return  # Exit the function after opening the URL
+
+    print("URL not found for the input.")
 
 # Create a button to submit the input
 submit_button = Button(root, text="Submit", command=open_url)
