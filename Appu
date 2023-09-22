@@ -74,7 +74,7 @@ def select_suggestion(event):
     user_input_var.set(user_input)  # Update the user input
     open_url()  # Trigger the URL
 
-# Bind the select_suggestion function to the Listbox's <<ListboxSelect>> event
-suggestion_listbox.bind('<<ListboxSelect>>', select_suggestion)
+# Bind the select_suggestion function to the Listbox's click event
+suggestion_listbox.bind('<ButtonRelease-1>', select_suggestion)
 
 root.mainloop()
