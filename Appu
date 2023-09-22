@@ -43,15 +43,9 @@ def open_url():
     user_input = user_input_var.get()
     user_input = user_input.lower()  # Convert input to lowercase for case-insensitive matching
 
-    # Find all combinations from the Excel file that are present in the user input
-    matching_combinations = [combination for combination in url_dict.keys() if combination in user_input]
-
-    # Sort the matching combinations by length in descending order
-    matching_combinations.sort(key=len, reverse=True)
-
-    if matching_combinations:
-        longest_combination = matching_combinations[0]
-        url = url_dict[longest_combination]
+    # Check if the user input exactly matches a combination in the Excel file
+    if user_input in url_dict:
+        url = url_dict[user_input]
         # Use the webbrowser library to open the URL
         import webbrowser
         webbrowser.open(url)
@@ -67,19 +61,22 @@ def suggest():
     user_input = user_input_var.get()
     suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
     if suggestions:
-        # Update the autocomplete list
-        suggestion_combobox['values'] = tuple(suggestions)
-        suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
+        # Show only the remaining part of a possible combination
+        remaining_suggestions = [s[len(user_input):] for s in suggestions]
+        suggestion_combobox['values'] = tuple(remaining_suggestions)
     else:
         suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
 
 # Bind the suggest function to the Entry widget for real-time suggestions
 entry.bind('<KeyRelease>', lambda event: suggest())
 
-# Bind a function to handle the Combobox selection event
+# Function to complete the combination and trigger the URL upon selection
 def select_suggestion(event):
     selected_suggestion = suggestion_combobox.get()
-    user_input_var.set(selected_suggestion)
+    user_input = user_input_var.get()
+    user_input += selected_suggestion  # Complete the combination
+    user_input_var.set(user_input)  # Update the user input
+    open_url()  # Trigger the URL
 
 # Bind the select_suggestion function to the Combobox's <<ComboboxSelected>> event
 suggestion_combobox.bind('<<ComboboxSelected>>', select_suggestion)
