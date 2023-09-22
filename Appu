@@ -65,13 +65,20 @@ submit_button.pack()
 # Implement real-time suggestions based on user input
 def suggest():
     user_input = user_input_var.get()
-    suggestions = [key for key in url_dict.keys() if key.startswith(user_input)]
-    if suggestions:
-        # Update the autocomplete list
-        suggestion_combobox['values'] = tuple(suggestions)
-        suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
+    
+    # Extract relevant words from the input that match combinations in the Excel file
+    relevant_words = [word for word in user_input.split() if any(combination in word for combination in url_dict.keys())]
+    
+    if relevant_words:
+        suggestions = [key for key in url_dict.keys() if any(word in key.split() for word in relevant_words)]
+        if suggestions:
+            # Update the autocomplete list
+            suggestion_combobox['values'] = tuple(suggestions)
+            suggestion_combobox.set(suggestions[0])  # Set the first suggestion as default
+        else:
+            suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
     else:
-        suggestion_combobox.set("")  # Clear the suggestion_combobox if no suggestions
+        suggestion_combobox.set("")  # Clear the suggestion_combobox if no relevant words found
 
 # Bind the suggest function to the Entry widget for real-time suggestions
 entry.bind('<KeyRelease>', lambda event: suggest())
