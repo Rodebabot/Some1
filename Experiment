@@ -10,15 +10,15 @@ data = [
 ]
 
 def open_url():
-    selected_item = display_word_var.get()
+    selected_keyword = search_var.get()
     for row in data:
-        if row[1] == selected_item:
+        if row[0] == selected_keyword:
             webbrowser.open(row[2])
             break
 
-def update_suggestions(event):
-    keyword = search_var.get().lower()
-    suggestions = [row[1] for row in data if keyword in row[0].lower()]
+def update_display_words(event):
+    keyword = search_var.get()
+    suggestions = [row[1] for row in data if keyword == row[0]]
     display_word_combobox['values'] = suggestions
 
 app = tk.Tk()
@@ -38,7 +38,7 @@ display_word_var = tk.StringVar()
 display_word_combobox = ttk.Combobox(app, textvariable=display_word_var)
 display_word_combobox.pack()
 
-search_var.trace_add("write", update_suggestions)
+search_var.trace_add("write", update_display_words)
 
 open_button = ttk.Button(app, text="Open URL", command=open_url)
 open_button.pack(pady=10)
