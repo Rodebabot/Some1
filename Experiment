@@ -23,7 +23,7 @@ def update_display_words(*args):
 
     for row in data:
         keywords = set(row[0].lower().split())
-        if search_keywords.issubset(keywords):
+        if search_keywords.issubset(keywords) or any(keyword in keywords for keyword in search_keywords):
             suggestions.append(row[1])
 
     display_word_combobox['values'] = suggestions
