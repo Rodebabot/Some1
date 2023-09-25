@@ -45,3 +45,14 @@ open_button = ttk.Button(app, text="Open URL", command=open_url)
 open_button.pack(pady=10)
 
 app.mainloop()
+
+
+
+def update_suggestions(event):
+    keyword = search_var.get().lower()
+    print("Keyword:", keyword)  # Debugging statement
+    suggestions = [row[1] for row in data if keyword in row[0].lower()]
+    print("Suggestions:", suggestions)  # Debugging statement
+    display_word_var.set('')
+    display_word_combobox['values'] = suggestions
+
