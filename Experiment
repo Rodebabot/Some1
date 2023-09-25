@@ -1,41 +1,37 @@
 import tkinter as tk
 from tkinter import ttk
 import webbrowser
+import pandas as pd
 
-# Sample data (replace with your Excel data)
-data = [
-    ["Keyword1 Keyword3", "DisplayWord1", "http://example.com/page1"],
-    ["Keyword2", "DisplayWord2", "http://example.com/page2"],
-    ["Keyword3", "DisplayWord3", "http://example.com/page3"],
-    # Add more rows as needed
-]
+# Load data from an Excel file
+try:
+    data = pd.read_excel('your_excel_file.xlsx', engine='openpyxl')
+except FileNotFoundError:
+    # Handle the case where the Excel file is not found
+    data = pd.DataFrame(columns=["Keyword", "DisplayWord", "URL"])
 
 def open_url():
     selected_display_word = display_word_var.get()
-    for row in data:
-        if row[1] == selected_display_word:
-            webbrowser.open(row[2])
-            break
+    url = data[data["DisplayWord"] == selected_display_word]["URL"].values[0]
+    webbrowser.open(url)
 
 def calculate_match_score(search_keywords, keywords):
-    # Calculate a match score based on the number of matching keywords
     return len(search_keywords.intersection(keywords))
 
 def update_display_words(*args):
-    search_keywords = set(search_var.get().lower().split())  # Split search into words
+    search_keywords = set(search_var.get().lower().split())
     suggestions = []
     best_match_score = 0
 
-    for row in data:
-        keywords = set(row[0].lower().split())
+    for _, row in data.iterrows():
+        keywords = set(str(row["Keyword"]).lower().split())
         match_score = calculate_match_score(search_keywords, keywords)
 
-        # Prioritize the best match score
         if match_score > best_match_score:
             best_match_score = match_score
-            suggestions = [row[1]]
+            suggestions = [row["DisplayWord"]]
         elif match_score == best_match_score:
-            suggestions.append(row[1])
+            suggestions.append(row["DisplayWord"])
 
     display_word_combobox['values'] = suggestions
 
