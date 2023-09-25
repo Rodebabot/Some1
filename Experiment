@@ -17,9 +17,8 @@ def open_url():
             break
 
 def update_suggestions(event):
-    keyword = search_var.get()
-    suggestions = [row[1] for row in data if keyword.lower() in row[0].lower()]
-    display_word_var.set('')
+    keyword = search_var.get().lower()
+    suggestions = [row[1] for row in data if keyword in row[0].lower()]
     display_word_combobox['values'] = suggestions
 
 app = tk.Tk()
@@ -32,8 +31,6 @@ search_var = tk.StringVar()
 search_entry = ttk.Entry(app, textvariable=search_var)
 search_entry.pack()
 
-search_var.trace_add("write", update_suggestions)
-
 display_word_label = ttk.Label(app, text="Select a display word:")
 display_word_label.pack(pady=10)
 
@@ -41,18 +38,9 @@ display_word_var = tk.StringVar()
 display_word_combobox = ttk.Combobox(app, textvariable=display_word_var)
 display_word_combobox.pack()
 
+search_var.trace_add("write", update_suggestions)
+
 open_button = ttk.Button(app, text="Open URL", command=open_url)
 open_button.pack(pady=10)
 
 app.mainloop()
-
-
-
-def update_suggestions(event):
-    keyword = search_var.get().lower()
-    print("Keyword:", keyword)  # Debugging statement
-    suggestions = [row[1] for row in data if keyword in row[0].lower()]
-    print("Suggestions:", suggestions)  # Debugging statement
-    display_word_var.set('')
-    display_word_combobox['values'] = suggestions
-
