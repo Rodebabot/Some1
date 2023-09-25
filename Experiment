@@ -4,8 +4,9 @@ import webbrowser
 
 # Sample data (replace with your Excel data)
 data = [
-    ["Keyword1", "DisplayWord1", "http://example.com/page1"],
+    ["Keyword1 Keyword3", "DisplayWord1", "http://example.com/page1"],
     ["Keyword2", "DisplayWord2", "http://example.com/page2"],
+    ["Keyword3", "DisplayWord3", "http://example.com/page3"],
     # Add more rows as needed
 ]
 
@@ -17,14 +18,20 @@ def open_url():
             break
 
 def update_display_words(*args):
-    keyword = search_var.get()
-    suggestions = [row[1] for row in data if keyword.lower() in row[0].lower()]
+    search_keywords = set(search_var.get().lower().split())  # Split search into words
+    suggestions = []
+
+    for row in data:
+        keywords = set(row[0].lower().split())
+        if search_keywords.issubset(keywords):
+            suggestions.append(row[1])
+
     display_word_combobox['values'] = suggestions
 
 app = tk.Tk()
 app.title("Keyword Search App")
 
-search_label = ttk.Label(app, text="Enter a keyword:")
+search_label = ttk.Label(app, text="Enter keywords:")
 search_label.pack(pady=10)
 
 search_var = tk.StringVar()
