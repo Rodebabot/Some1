@@ -1,17 +1,47 @@
-import pandas as pd
+import tkinter as tk
+from tkinter import ttk
+import webbrowser
 
-# Read data from the Excel file
-file_path = 'saili.xlsx'
-sheet_name = 'Sheet8'
-df = pd.read_excel(file_path, sheet_name=sheet_name)
+# Sample data (replace with your Excel data)
+data = [
+    ["Keyword1", "DisplayWord1", "http://example.com/page1"],
+    ["Keyword2", "DisplayWord2", "http://example.com/page2"],
+    # Add more rows as needed
+]
 
-# Group by the 'Name' column and join the 'String' column values with a comma
-result = df.groupby('Name')['String'].apply(lambda x: ', '.join(x)).reset_index()
+def open_url():
+    selected_item = display_word_var.get()
+    for row in data:
+        if row[1] == selected_item:
+            webbrowser.open(row[2])
+            break
 
-# Specify the output Excel file name
-output_file_path = 'output.xlsx'
+def update_suggestions(event):
+    keyword = search_var.get()
+    suggestions = [row[1] for row in data if keyword.lower() in row[0].lower()]
+    display_word_var.set('')
+    display_word_combobox['values'] = suggestions
 
-# Export the result to a new Excel sheet
-result.to_excel(output_file_path, index=False)
+app = tk.Tk()
+app.title("Keyword Search App")
 
-print(f"Result has been exported to {output_file_path}")
+search_label = ttk.Label(app, text="Enter a keyword:")
+search_label.pack(pady=10)
+
+search_var = tk.StringVar()
+search_entry = ttk.Entry(app, textvariable=search_var)
+search_entry.pack()
+
+search_var.trace_add("write", update_suggestions)
+
+display_word_label = ttk.Label(app, text="Select a display word:")
+display_word_label.pack(pady=10)
+
+display_word_var = tk.StringVar()
+display_word_combobox = ttk.Combobox(app, textvariable=display_word_var)
+display_word_combobox.pack()
+
+open_button = ttk.Button(app, text="Open URL", command=open_url)
+open_button.pack(pady=10)
+
+app.mainloop()
