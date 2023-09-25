@@ -10,15 +10,15 @@ data = [
 ]
 
 def open_url():
-    selected_keyword = search_var.get()
+    selected_display_word = display_word_var.get()
     for row in data:
-        if row[0] == selected_keyword:
+        if row[1] == selected_display_word:
             webbrowser.open(row[2])
             break
 
-def update_display_words(event):
+def update_display_words(*args):
     keyword = search_var.get()
-    suggestions = [row[1] for row in data if keyword == row[0]]
+    suggestions = [row[1] for row in data if keyword.lower() in row[0].lower()]
     display_word_combobox['values'] = suggestions
 
 app = tk.Tk()
