@@ -17,13 +17,24 @@ def open_url():
             webbrowser.open(row[2])
             break
 
+def calculate_match_score(search_keywords, keywords):
+    # Calculate a match score based on the number of matching keywords
+    return len(search_keywords.intersection(keywords))
+
 def update_display_words(*args):
     search_keywords = set(search_var.get().lower().split())  # Split search into words
     suggestions = []
+    best_match_score = 0
 
     for row in data:
         keywords = set(row[0].lower().split())
-        if search_keywords.issubset(keywords) or any(keyword in keywords for keyword in search_keywords):
+        match_score = calculate_match_score(search_keywords, keywords)
+
+        # Prioritize the best match score
+        if match_score > best_match_score:
+            best_match_score = match_score
+            suggestions = [row[1]]
+        elif match_score == best_match_score:
             suggestions.append(row[1])
 
     display_word_combobox['values'] = suggestions
