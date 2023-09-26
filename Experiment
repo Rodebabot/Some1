@@ -20,6 +20,7 @@ def calculate_match_score(search_keywords, keywords):
 
 def update_display_words(*args):
     search_keywords = set(search_var.get().lower().split())
+    exact_match = None  # Initialize as None
     suggestions = []
     best_match_score = 0
 
@@ -27,13 +28,18 @@ def update_display_words(*args):
         keywords = set(str(row["Keyword"]).lower().split())
         match_score = calculate_match_score(search_keywords, keywords)
 
-        if match_score > best_match_score:
+        if search_var.get().lower() == row["Keyword"].lower():  # Exact match found
+            exact_match = row["DisplayWord"]
+        elif match_score > best_match_score:
             best_match_score = match_score
             suggestions = [row["DisplayWord"]]
         elif match_score == best_match_score:
             suggestions.append(row["DisplayWord"])
 
-    display_word_combobox['values'] = suggestions
+    if exact_match:
+        display_word_combobox['values'] = [exact_match]
+    else:
+        display_word_combobox['values'] = suggestions
 
 app = tk.Tk()
 app.title("Keyword Search App")
