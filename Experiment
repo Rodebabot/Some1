@@ -10,6 +10,9 @@ except FileNotFoundError:
     # Handle the case where the Excel file is not found
     data = pd.DataFrame(columns=["Keyword", "DisplayWord", "URL"])
 
+# A set to store unique display words
+unique_display_words = set()
+
 def open_url():
     selected_display_word = display_word_var.get()
     url = data[data["DisplayWord"] == selected_display_word]["URL"].values[0]
@@ -20,7 +23,6 @@ def calculate_match_score(search_keywords, keywords):
 
 def update_display_words(*args):
     search_keywords = set(search_var.get().lower().split())
-    exact_match = None  # Initialize as None
     suggestions = []
     best_match_score = 0
 
@@ -28,18 +30,23 @@ def update_display_words(*args):
         keywords = set(str(row["Keyword"]).lower().split())
         match_score = calculate_match_score(search_keywords, keywords)
 
-        if search_var.get().lower() == row["Keyword"].lower():  # Exact match found
-            exact_match = row["DisplayWord"]
-        elif match_score > best_match_score:
+        if match_score > best_match_score:
             best_match_score = match_score
             suggestions = [row["DisplayWord"]]
         elif match_score == best_match_score:
             suggestions.append(row["DisplayWord"])
 
-    if exact_match:
-        display_word_combobox['values'] = [exact_match]
-    else:
-        display_word_combobox['values'] = suggestions
+    # Clear the set of unique display words
+    unique_display_words.clear()
+
+    # Filter out duplicate display words and store them in the set
+    unique_suggestions = []
+    for suggestion in suggestions:
+        if suggestion not in unique_display_words:
+            unique_display_words.add(suggestion)
+            unique_suggestions.append(suggestion)
+
+    display_word_combobox['values'] = unique_suggestions
 
 app = tk.Tk()
 app.title("Keyword Search App")
