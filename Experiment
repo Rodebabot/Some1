@@ -7,12 +7,8 @@ import smtplib
 from email.mime.text import MIMEText
 import win32com.client as win32
 
-# Load data from an Excel file
-try:
-    data = pd.read_excel('your_excel_file.xlsx', engine='openpyxl')
-except FileNotFoundError:
-    # Handle the case where the Excel file is not found
-    data = pd.DataFrame(columns=["Keyword", "DisplayWord", "URL"])
+# Initialize data as an empty DataFrame
+data = pd.DataFrame(columns=["Keyword", "DisplayWord", "URL"])
 
 # A set to store unique display words
 unique_display_words = set()
@@ -29,6 +25,7 @@ def calculate_match_score(search_keywords, keywords):
     return len(search_keywords.intersection(keywords))
 
 def update_display_words(*args):
+    global data  # Declare data as a global variable
     search_keywords = set(search_var.get().lower().split())
     suggestions = []
     best_match_score = 0
@@ -62,6 +59,9 @@ def show_no_match_dialog():
     message_label = ttk.Label(no_match_window, text="No matching display word found.")
     message_label.pack(pady=10)
 
+    urgent_button = ttk.Button(no_match_window, text="Urgent: Ask Cbit for the data", command=send_email)
+    urgent_button.pack(pady=5)
+
     general_button = ttk.Button(no_match_window, text="General: Add the Keyword", command=add_keyword_to_excel)
     general_button.pack(pady=5)
 
@@ -77,11 +77,15 @@ def send_email():
     print("Email sent via Outlook")
 
 def add_keyword_to_excel():
+    global data  # Declare data as a global variable
     new_keyword = search_var.get()
     current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    new_row = {"Keyword": new_keyword, "DisplayWord": current_datetime, "URL": ""}
+    new_row = {"Keyword": new_keyword, "DisplayWord": "", "URL": ""}
     data = data.append(new_row, ignore_index=True)
+
+    # Add the current datetime to the 2nd column
+    data.at[data[data["Keyword"] == new_keyword].index[0], "DisplayWord"] = current_datetime
 
     # Save the updated data to the Excel file
     data.to_excel('your_excel_file.xlsx', index=False, engine='openpyxl')
