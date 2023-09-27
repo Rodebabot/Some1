@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 import smtplib
 from email.mime.text import MIMEText
+import win32com.client as win32
 
 # Load data from an Excel file
 try:
@@ -68,28 +69,15 @@ def show_no_match_dialog():
     general_button.pack(pady=5)
 
 def send_email():
-    # Add your email sending logic here
-    subject = "Urgent: Data Request"
-    message = f"Requested Keyword: {search_var.get()}"
+    outlook = win32.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)
+    mail.Subject = "Urgent: Data Request"
+    mail.Body = f"Requested Keyword: {search_var.get()}"
 
-    try:
-        # Use the smtplib library to send an email
-        server = smtplib.SMTP('smtp.your-email-provider.com', 587)
-        server.starttls()
-        server.login('your_email@gmail.com', 'your_password')
+    mail.To = "recipient_email@example.com"  # Replace with the recipient's email address
+    mail.Send()
 
-        msg = MIMEText(message)
-        msg['Subject'] = subject
-        msg['From'] = 'your_email@gmail.com'
-        msg['To'] = 'recipient_email@example.com'
-
-        server.sendmail('your_email@gmail.com', 'recipient_email@example.com', msg.as_string())
-        server.quit()
-
-        print("Email sent successfully")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    print("Email sent via Outlook")
 
 def add_keyword_to_excel():
     new_keyword = search_var.get()
