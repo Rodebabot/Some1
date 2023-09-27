@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 import webbrowser
 import pandas as pd
+import datetime
+import smtplib
+from email.mime.text import MIMEText
 
 # Load data from an Excel file
 try:
@@ -15,8 +18,11 @@ unique_display_words = set()
 
 def open_url():
     selected_display_word = display_word_var.get()
-    url = data[data["DisplayWord"] == selected_display_word]["URL"].values[0]
-    webbrowser.open(url)
+    if selected_display_word:
+        url = data[data["DisplayWord"] == selected_display_word]["URL"].values[0]
+        webbrowser.open(url)
+    else:
+        show_no_match_dialog()
 
 def calculate_match_score(search_keywords, keywords):
     return len(search_keywords.intersection(keywords))
@@ -47,6 +53,56 @@ def update_display_words(*args):
             unique_suggestions.append(suggestion)
 
     display_word_combobox['values'] = unique_suggestions
+
+def show_no_match_dialog():
+    no_match_window = tk.Toplevel()
+    no_match_window.title("No Match Found")
+
+    message_label = ttk.Label(no_match_window, text="No matching display word found.")
+    message_label.pack(pady=10)
+
+    urgent_button = ttk.Button(no_match_window, text="Urgent: Ask Cbit for the data", command=send_email)
+    urgent_button.pack(pady=5)
+
+    general_button = ttk.Button(no_match_window, text="General: Add the Keyword", command=add_keyword_to_excel)
+    general_button.pack(pady=5)
+
+def send_email():
+    # Add your email sending logic here
+    subject = "Urgent: Data Request"
+    message = f"Requested Keyword: {search_var.get()}"
+
+    try:
+        # Use the smtplib library to send an email
+        server = smtplib.SMTP('smtp.your-email-provider.com', 587)
+        server.starttls()
+        server.login('your_email@gmail.com', 'your_password')
+
+        msg = MIMEText(message)
+        msg['Subject'] = subject
+        msg['From'] = 'your_email@gmail.com'
+        msg['To'] = 'recipient_email@example.com'
+
+        server.sendmail('your_email@gmail.com', 'recipient_email@example.com', msg.as_string())
+        server.quit()
+
+        print("Email sent successfully")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+def add_keyword_to_excel():
+    new_keyword = search_var.get()
+    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    new_row = {"Keyword": new_keyword, "DisplayWord": "", "URL": ""}
+    data = data.append(new_row, ignore_index=True)
+
+    # Add the current datetime to the 2nd column
+    data.at[data[data["Keyword"] == new_keyword].index[0], "DisplayWord"] = current_datetime
+
+    # Save the updated data to the Excel file
+    data.to_excel('your_excel_file.xlsx', index=False, engine='openpyxl')
 
 app = tk.Tk()
 app.title("Keyword Search App")
