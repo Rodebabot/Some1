@@ -50,7 +50,10 @@ def update_display_words(*args):
             unique_display_words.add(suggestion)
             unique_suggestions.append(suggestion)
 
-    display_word_combobox['values'] = unique_suggestions
+    if unique_suggestions:
+        display_word_combobox['values'] = unique_suggestions
+    else:
+        display_word_combobox.set('')  # Clear the combobox when no suggestions
 
 def show_no_match_dialog():
     no_match_window = tk.Toplevel()
