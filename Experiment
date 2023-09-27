@@ -56,7 +56,16 @@ def show_no_match_dialog():
     no_match_window = tk.Toplevel()
     no_match_window.title("No Match Found")
 
-    message_label = ttk.Label(no_match_window, text="No matching display word found.")
+    # Add a background image
+    background_image = tk.PhotoImage(file="background.png")  # Replace with your image file
+    background_label = tk.Label(no_match_window, image=background_image)
+    background_label.place(relwidth=1, relheight=1)
+
+    # Style for labels with white text on a transparent background
+    label_style = ttk.Style()
+    label_style.configure("White.TLabel", foreground="white")
+
+    message_label = ttk.Label(no_match_window, text="No matching display word found", style="White.TLabel")
     message_label.pack(pady=10)
 
     urgent_button = ttk.Button(no_match_window, text="Urgent: Ask Cbit for the data", command=send_email)
@@ -82,13 +91,18 @@ def add_keyword_to_excel():
     current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     new_row = {"Keyword": new_keyword, "DisplayWord": current_datetime, "URL": ""}
-    data = data.append(new_row, ignore_index=True)
+    data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
 
     # Save the updated data to the Excel file
     data.to_excel('your_excel_file.xlsx', index=False, engine='openpyxl')
 
 app = tk.Tk()
 app.title("Keyword Search App")
+
+# Add a logo image
+logo_image = tk.PhotoImage(file="logo.png")  # Replace with your logo file
+logo_label = tk.Label(app, image=logo_image)
+logo_label.pack()
 
 search_label = ttk.Label(app, text="Enter keywords:")
 search_label.pack(pady=10)
