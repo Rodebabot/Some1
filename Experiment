@@ -7,31 +7,31 @@ import webbrowser
 df = pd.read_excel("your_excel_file.xlsx")
 
 def search_keywords():
-    keyword = entry.get().lower()
-    keyword_parts = keyword.split()
+    user_input = entry.get().lower()
+    keywords = user_input.split()
+    
+    first_match_displayword = None
+    close_matches = []
+    
+    for index, row in df.iterrows():
+        keyword = row['Keyword'].lower()
+        display_word = row['DisplayWord']
+        url = row['URL']
+        
+        if keyword in keywords and not first_match_displayword:
+            first_match_displayword = display_word
+        elif keyword in keywords:
+            formatted_item = f"{keyword} - {display_word}"
+            close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
     
-    exact_matches = []
-    close_matches = []
+    if first_match_displayword:
+        displaywords_box.insert(tk.END, first_match_displayword)
     
-    for index, row in df.iterrows():
-        keywords = row['Keyword'].lower().split()
-        display_word = row['DisplayWord']
-        url = row['URL']
-        
-        if keyword == row['Keyword'].lower():
-            exact_matches.append(display_word)
-        elif all(kw in ' '.join(keywords) for kw in keyword_parts) or any(kw in keywords for kw in keyword_parts):
-            close_matches.append((row['Keyword'], display_word, url))
-    
-    for display_word in exact_matches:
-        displaywords_box.insert(tk.END, display_word)
-    
-    for keyword, display_word, url in close_matches:
-        formatted_item = f"{keyword} - {display_word}"
-        close_matches_box.insert(tk.END, formatted_item)
+    for item in close_matches:
+        close_matches_box.insert(tk.END, item)
 
 def open_url(event):
     selected_item = displaywords_box.get(displaywords_box.curselection())
@@ -73,7 +73,7 @@ search_button = ttk.Button(root, text="Search", command=search_keywords)
 search_button.grid(row=0, column=1, padx=10, pady=10)
 
 # Create and configure the displaywords listbox
-displaywords_box = tk.Listbox(root, width=50, height=10)
+displaywords_box = tk.Listbox(root, width=50, height=1)  # Only 1 item in the first box
 displaywords_box.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 displaywords_box.bind('<Double-Button-1>', open_url)
 
