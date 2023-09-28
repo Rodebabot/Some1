@@ -22,13 +22,16 @@ def search_keywords():
         url = row['URL']
         
         if keyword == row['Keyword'].lower():
-            exact_matches.append(display_word)
+            exact_matches.append((display_word, url))
         elif all(kw in ' '.join(keywords) for kw in keyword_parts) or any(kw in keywords for kw in keyword_parts):
-            close_matches.append(display_word)
+            close_matches.append((row['Keyword'], display_word, url))
     
-    displaywords_listbox.insert(tk.END, *exact_matches)
-    close_matches_listbox.insert(tk.END, *close_matches)
+    for display_word, url in exact_matches:
+        displaywords_listbox.insert(tk.END, display_word)
     
+    for keyword, display_word, url in close_matches:
+        close_matches_listbox.insert(tk.END, f"{keyword} - {display_word}")
+
 def open_url(event):
     selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
     for index, row in df.iterrows():
@@ -36,8 +39,11 @@ def open_url(event):
             webbrowser.open(row['URL'])
     
     selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
+    keyword_displayword = selected_item.split(" - ")
+    keyword = keyword_displayword[0]
+    display_word = keyword_displayword[1]
     for index, row in df.iterrows():
-        if row['DisplayWord'] == selected_item:
+        if row['Keyword'] == keyword and row['DisplayWord'] == display_word:
             webbrowser.open(row['URL'])
 
 # Create the main Tkinter window
