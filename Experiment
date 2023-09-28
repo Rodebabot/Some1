@@ -8,15 +8,15 @@ import re
 df = pd.read_excel("your_excel_file.xlsx")
 
 def rank_keywords(input_sentence):
-    # Split the input sentence into words and remove spaces and hyphens
-    keywords = re.sub(r'[ -]', '', input_sentence.lower()).split()
+    # Split the input sentence into words
+    keywords = input_sentence.lower().split()
     
     # Create a dictionary to store keyword ranks
     keyword_ranks = {}
     
     # Rank keywords based on their appearance in the input sentence
     for i, keyword in enumerate(keywords):
-        if keyword in df['Keyword'].str.replace('[ -]', '', regex=True).str.lower().values:
+        if keyword in df['Keyword'].str.lower().values:
             keyword_ranks[keyword] = i
     
     # Sort keywords by rank (lower rank means higher priority)
@@ -38,7 +38,7 @@ def search_keywords():
             keyword_in_row_cleaned = re.sub(r'[ -]', '', keyword_in_row)
             display_word = row['DisplayWord']
             
-            if keyword_in_row_cleaned == keyword:
+            if keyword_in_row == keyword:
                 if keyword_in_row == first_keyword:
                     keyword_displaywords.append(display_word)
                 else:
@@ -104,4 +104,7 @@ close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 close_matches_box.bind('<Double-Button-1>', open_url)
 
 # Create a button to copy the keyword from the second box
-copy_button = ttk.Button(root, text="Copy Keyword", command=
+copy_button = ttk.Button(root, text="Copy Keyword", command=copy_keyword)
+copy_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+
+root.mainloop()
