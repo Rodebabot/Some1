@@ -2,17 +2,18 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 import webbrowser
-import re
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
-def clean_text(text):
-    # Remove spaces and punctuation from text
-    cleaned_text = re.sub(r'[\s\W_]+', '', text.lower())
-    return cleaned_text
+def preprocess_input(input_sentence):
+    # Remove hyphens and spaces from the input sentence
+    return input_sentence.replace('-', '').replace(' ', '')
 
 def rank_keywords(input_sentence):
+    # Preprocess the input sentence
+    input_sentence = preprocess_input(input_sentence)
+    
     # Split the input sentence into words
     keywords = input_sentence.lower().split()
     
@@ -29,86 +30,4 @@ def rank_keywords(input_sentence):
     
     return ranked_keywords
 
-def search_keywords():
-    user_input = clean_text(entry.get())
-    ranked_keywords = rank_keywords(user_input)
-    
-    first_keyword = ranked_keywords[0] if ranked_keywords else None
-    keyword_displaywords = []  # List to store displaywords for the first keyword
-    close_matches = []  # List to store keyword - displayword pairs for other keywords
-    
-    for keyword in ranked_keywords:
-        for index, row in df.iterrows():
-            keyword_in_row = clean_text(row['Keyword'])
-            display_word = row['DisplayWord']
-            
-            if keyword_in_row == keyword:
-                if keyword_in_row == first_keyword:
-                    keyword_displaywords.append(display_word)
-                else:
-                    formatted_item = f"{row['Keyword']} - {display_word}"
-                    close_matches.append(formatted_item)
-    
-    displaywords_box.delete(0, tk.END)
-    close_matches_box.delete(0, tk.END)
-    
-    for display_word in keyword_displaywords:
-        displaywords_box.insert(tk.END, display_word)
-    
-    for item in close_matches:
-        close_matches_box.insert(tk.END, item)
-
-def open_url(event):
-    selected_item = displaywords_box.get(displaywords_box.curselection())
-    if selected_item:
-        for index, row in df.iterrows():
-            if row['DisplayWord'] == selected_item:
-                webbrowser.open(row['URL'])
-    
-    selected_item = close_matches_box.get(close_matches_box.curselection())
-    if selected_item:
-        keyword_displayword = selected_item.split(" - ")
-        keyword = keyword_displayword[0]
-        display_word = keyword_displayword[1]
-        for index, row in df.iterrows():
-            if clean_text(row['Keyword']) == clean_text(keyword) and row['DisplayWord'] == display_word:
-                webbrowser.open(row['URL'])
-
-def copy_keyword():
-    selected_item = close_matches_box.get(close_matches_box.curselection())
-    if selected_item:
-        keyword = selected_item.split(" - ")[0]  # Extract the keyword
-        entry.delete(0, tk.END)
-        entry.insert(0, keyword)
-        # Copy the keyword to the clipboard
-        root.clipboard_clear()
-        root.clipboard_append(keyword)
-        root.update()
-
-# Create the main Tkinter window
-root = tk.Tk()
-root.title("Keyword Search App")
-
-# Create and configure the search entry field
-entry = ttk.Entry(root, width=30)
-entry.grid(row=0, column=0, padx=10, pady=10)
-
-# Create and configure the search button
-search_button = ttk.Button(root, text="Search", command=search_keywords)
-search_button.grid(row=0, column=1, padx=10, pady=10)
-
-# Create and configure the displaywords listbox
-displaywords_box = tk.Listbox(root, width=50, height=5)
-displaywords_box.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-displaywords_box.bind('<Double-Button-1>', open_url)
-
-# Create and configure the close matches listbox
-close_matches_box = tk.Listbox(root, width=50, height=5)
-close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-close_matches_box.bind('<Double-Button-1>', open_url)
-
-# Create a button to copy the keyword from the second box
-copy_button = ttk.Button(root, text="Copy Keyword", command=copy_keyword)
-copy_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
-
-root.mainloop()
+# Rest of the code remains the same...
