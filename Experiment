@@ -10,8 +10,7 @@ def search_keywords():
     user_input = entry.get().lower()
     keywords = user_input.split()
     
-    first_keyword = None
-    keyword_displaywords = {}  # Dictionary to store keyword - displayword pairs for the first keyword
+    keyword_displaywords = []  # List to store displaywords for all matching keywords
     close_matches = []  # List to store keyword - displayword pairs for other keywords
     
     for keyword in keywords:
@@ -20,18 +19,15 @@ def search_keywords():
             display_word = row['DisplayWord']
             
             if keyword_in_row == keyword:
-                if not first_keyword:
-                    first_keyword = keyword
-                if keyword_in_row == first_keyword:
-                    keyword_displaywords[keyword_in_row] = display_word
-                else:
-                    formatted_item = f"{keyword_in_row} - {display_word}"
-                    close_matches.append(formatted_item)
+                keyword_displaywords.append(display_word)
+            elif keyword_in_row.find(keyword) != -1 or keyword.find(keyword_in_row) != -1:
+                formatted_item = f"{keyword_in_row} - {display_word}"
+                close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
     
-    for display_word in keyword_displaywords.values():
+    for display_word in keyword_displaywords:
         displaywords_box.insert(tk.END, display_word)
     
     for item in close_matches:
