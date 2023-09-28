@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 import webbrowser
-import difflib
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
@@ -12,15 +11,21 @@ def search_keywords():
     displaywords_listbox.delete(0, tk.END)
     close_matches_listbox.delete(0, tk.END)
     
+    exact_matches = []
+    close_matches = []
+    
     for index, row in df.iterrows():
         keywords = row['Keyword'].lower().split()
         display_word = row['DisplayWord']
         url = row['URL']
         
-        if all(keyword_part in keywords for keyword_part in keyword.split()):
-            displaywords_listbox.insert(tk.END, display_word)
-        elif keyword in ' '.join(keywords):
-            close_matches_listbox.insert(tk.END, display_word)
+        if keyword in keywords:
+            exact_matches.append(display_word)
+        elif any(kw in keyword for kw in keywords):
+            close_matches.append(display_word)
+    
+    displaywords_listbox.insert(tk.END, *exact_matches)
+    close_matches_listbox.insert(tk.END, *close_matches)
     
 def open_url(event):
     selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
@@ -33,17 +38,6 @@ def open_url(event):
         if row['DisplayWord'] == selected_item:
             webbrowser.open(row['URL'])
 
-def get_close_matches(keyword):
-    close_matches = difflib.get_close_matches(keyword, df['Keyword'], n=5, cutoff=0.6)
-    return close_matches
-
-def search_and_show_close_matches(event):
-    keyword = entry.get().lower()
-    close_matches_listbox.delete(0, tk.END)
-    close_matches = get_close_matches(keyword)
-    for match in close_matches:
-        close_matches_listbox.insert(tk.END, match)
-
 # Create the main Tkinter window
 root = tk.Tk()
 root.title("Keyword Search App")
@@ -51,7 +45,6 @@ root.title("Keyword Search App")
 # Create and configure the search entry field
 entry = ttk.Entry(root, width=30)
 entry.grid(row=0, column=0, padx=10, pady=10)
-entry.bind('<KeyRelease>', search_and_show_close_matches)
 
 # Create and configure the search button
 search_button = ttk.Button(root, text="Search", command=search_keywords)
