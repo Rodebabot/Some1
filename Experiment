@@ -30,7 +30,8 @@ def search_keywords():
         displaywords_listbox.insert(tk.END, display_word)
     
     for keyword, display_word, url in close_matches:
-        close_matches_listbox.insert(tk.END, f"{keyword} - {display_word}")
+        formatted_item = f"{keyword} - {display_word}"
+        close_matches_listbox.insert(tk.END, formatted_item)
 
 def open_url(event):
     selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
@@ -42,9 +43,9 @@ def open_url(event):
     keyword_displayword = selected_item.split(" - ")
     keyword = keyword_displayword[0]
     display_word = keyword_displayword[1]
-    for index, row in df.iterrows():
-        if row['Keyword'] == keyword and row['DisplayWord'] == display_word:
-            webbrowser.open(row['URL'])
+    url = keyword_displayword[2]
+    
+    webbrowser.open(url)
 
 # Create the main Tkinter window
 root = tk.Tk()
