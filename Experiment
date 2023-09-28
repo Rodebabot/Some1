@@ -8,32 +8,24 @@ import re
 df = pd.read_excel("your_excel_file.xlsx")
 
 def preprocess_input(input_sentence):
-    # Split the input sentence into individual words
-    words = input_sentence.lower().split()
-    
-    # Create a list to store the processed words
-    processed_words = []
-    
-    for word in words:
-        # Remove leading and trailing hyphens and spaces
-        word = re.sub(r'^[ -]*(.*?)[ -]*$', r'\1', word)
-        processed_words.append(word)
-    
-    return ' '.join(processed_words)
+    # Remove spaces and hyphens to match keywords
+    preprocessed_sentence = re.sub(r'[ -]', '', input_sentence.lower())
+    return preprocessed_sentence
 
 def rank_keywords(input_sentence):
     preprocessed_sentence = preprocess_input(input_sentence)
-    
-    # Split the preprocessed input sentence into individual words
-    words = preprocessed_sentence.split()
     
     # Create a dictionary to store keyword ranks
     keyword_ranks = {}
     
     # Rank keywords based on their appearance in the input sentence
-    for i, word in enumerate(words):
-        if word in df['Keyword'].str.replace('[ -]', '', regex=True).str.lower().values:
-            keyword_ranks[word] = i
+    for index, row in df.iterrows():
+        keyword_in_row = row['Keyword'].lower()
+        keyword_in_row_cleaned = re.sub(r'[ -]', '', keyword_in_row)
+        display_word = row['DisplayWord']
+        
+        if keyword_in_row_cleaned in preprocessed_sentence:
+            keyword_ranks[keyword_in_row] = preprocessed_sentence.index(keyword_in_row_cleaned)
     
     # Sort keywords by rank (lower rank means higher priority)
     ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
@@ -50,13 +42,12 @@ def search_keywords():
     for keyword in ranked_keywords:
         for index, row in df.iterrows():
             keyword_in_row = row['Keyword'].lower()
-            keyword_in_row_cleaned = re.sub(r'[ -]', '', keyword_in_row)
             display_word = row['DisplayWord']
             
-            if keyword_in_row_cleaned == keyword:
+            if keyword_in_row == keyword.lower():
                 formatted_item = f"{keyword_in_row} - {display_word}"
                 keyword_displaywords.append(formatted_item)
-            elif keyword_in_row_cleaned in keyword:
+            elif keyword_in_row in keyword.lower():
                 formatted_item = f"{keyword_in_row} - {display_word}"
                 close_matches.append(formatted_item)
     
