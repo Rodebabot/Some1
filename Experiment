@@ -6,26 +6,38 @@ import webbrowser
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
-def search_keywords():
-    user_input = entry.get().lower()
-    keywords = user_input.split()
+def rank_keywords(input_sentence):
+    # Split the input sentence into words
+    keywords = input_sentence.lower().split()
     
-    keyword_displaywords = {}  # Dictionary to store keyword - displayword pairs for the first keyword
+    # Create a dictionary to store keyword ranks
+    keyword_ranks = {}
+    
+    # Rank keywords based on their appearance in the input sentence
+    for i, keyword in enumerate(keywords):
+        keyword_ranks[keyword] = i
+    
+    # Sort keywords by rank (lower rank means higher priority)
+    ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
+    
+    return ranked_keywords
+
+def search_keywords():
+    user_input = entry.get()
+    ranked_keywords = rank_keywords(user_input)
+    
+    first_keyword = ranked_keywords[0] if ranked_keywords else None
+    keyword_displaywords = []  # List to store displaywords for the first keyword
     close_matches = []  # List to store keyword - displayword pairs for other keywords
     
-    # Keep track of the first keyword found in the input sentence
-    first_keyword = None
-    
-    for keyword in keywords:
+    for keyword in ranked_keywords:
         for index, row in df.iterrows():
             keyword_in_row = row['Keyword'].lower()
             display_word = row['DisplayWord']
             
             if keyword_in_row == keyword:
-                if not first_keyword:
-                    first_keyword = keyword
                 if keyword_in_row == first_keyword:
-                    keyword_displaywords[keyword_in_row] = display_word
+                    keyword_displaywords.append(display_word)
                 else:
                     formatted_item = f"{keyword_in_row} - {display_word}"
                     close_matches.append(formatted_item)
@@ -33,7 +45,7 @@ def search_keywords():
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
     
-    for display_word in keyword_displaywords.values():
+    for display_word in keyword_displaywords:
         displaywords_box.insert(tk.END, display_word)
     
     for item in close_matches:
