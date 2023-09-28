@@ -15,7 +15,8 @@ def rank_keywords(input_sentence):
     
     # Rank keywords based on their appearance in the input sentence
     for i, keyword in enumerate(keywords):
-        keyword_ranks[keyword] = i
+        if keyword in df['Keyword'].str.lower().values:
+            keyword_ranks[keyword] = i
     
     # Sort keywords by rank (lower rank means higher priority)
     ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
