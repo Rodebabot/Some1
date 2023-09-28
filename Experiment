@@ -7,8 +7,7 @@ df = pd.read_excel(excel_file)
 
 def search():
     input_text = input_entry.get()
-    found_keywords = []
-    display_words = []
+    display_words_with_links = []
 
     for index, row in df.iterrows():
         keyword = row["keyword"]
@@ -16,23 +15,19 @@ def search():
         url = row["url"]
 
         if keyword.lower() in input_text.lower():
-            found_keywords.append(keyword)
-            display_words.append(display_word)
+            display_word_link = f'<a href="{url}">{display_word}</a>'
+            display_words_with_links.append(display_word_link)
 
-    if found_keywords:
-        keyword_box.config(text=", ".join(found_keywords))
-        display_box.config(text=", ".join(display_words))
+    if display_words_with_links:
+        display_box.config(state=tk.NORMAL)
+        display_box.delete(1.0, tk.END)
+        display_box.insert(tk.END, "\n".join(display_words_with_links))
+        display_box.config(state=tk.DISABLED)
     else:
-        keyword_box.config(text="No keywords found")
-        display_box.config(text="")
-
-def open_url():
-    selected_display_word = display_box.cget("text")
-    selected_row = df[df["displayword"] == selected_display_word]
-    if not selected_row.empty:
-        url = selected_row.iloc[0]["url"]
-        import webbrowser
-        webbrowser.open(url)
+        display_box.config(state=tk.NORMAL)
+        display_box.delete(1.0, tk.END)
+        display_box.insert(tk.END, "No keywords found")
+        display_box.config(state=tk.DISABLED)
 
 # Create the main window
 root = tk.Tk()
@@ -47,18 +42,11 @@ search_button = tk.Button(root, text="Search", command=search)
 search_button.pack()
 
 # Create and configure result elements
-keyword_label = tk.Label(root, text="Keywords:")
-keyword_label.pack()
-keyword_box = tk.Label(root, text="")
-keyword_box.pack()
-
-display_label = tk.Label(root, text="Display Words:")
+display_label = tk.Label(root, text="Display Words with Links:")
 display_label.pack()
-display_box = tk.Label(root, text="")
+display_box = tk.Text(root, height=10, width=50)
 display_box.pack()
-
-open_url_button = tk.Button(root, text="Open URL", command=open_url)
-open_url_button.pack()
+display_box.config(state=tk.DISABLED)
 
 # Start the Tkinter main loop
 root.mainloop()
