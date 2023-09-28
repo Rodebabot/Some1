@@ -8,9 +8,18 @@ import re
 df = pd.read_excel("your_excel_file.xlsx")
 
 def preprocess_input(input_sentence):
-    # Remove spaces and hyphens to match keywords
-    preprocessed_sentence = re.sub(r'[ -]', '', input_sentence.lower())
-    return preprocessed_sentence
+    # Split the input sentence into individual words
+    words = input_sentence.lower().split()
+    
+    # Create a list to store the processed words
+    processed_words = []
+    
+    for word in words:
+        # Remove leading and trailing hyphens and spaces
+        word = re.sub(r'^[ -]*(.*?)[ -]*$', r'\1', word)
+        processed_words.append(word)
+    
+    return ' '.join(processed_words)
 
 def rank_keywords(input_sentence):
     preprocessed_sentence = preprocess_input(input_sentence)
