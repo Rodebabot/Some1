@@ -2,32 +2,89 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 import webbrowser
+from difflib import get_close_matches
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
-def preprocess_input(input_sentence):
-    # Remove hyphens and spaces from the input sentence
-    return input_sentence.replace('-', '').replace(' ', '')
+def search_keywords():
+    user_input = entry.get()
+    keywords = user_input.lower().split()
+    
+    keyword_displaywords = []  # List to store all displaywords for matching keywords
+    close_matches = []  # List to store keyword - displayword pairs for close matches
+    
+    for keyword in keywords:
+        exact_match = False  # Flag to check if an exact match is found
+        
+        for index, row in df.iterrows():
+            keyword_in_row = row['Keyword'].lower()
+            display_word = row['DisplayWord']
+            
+            if keyword_in_row == keyword:
+                exact_match = True
+                keyword_displaywords.append(display_word)
+            elif keyword_in_row.find(keyword) != -1 or keyword.find(keyword_in_row) != -1:
+                formatted_item = f"{keyword_in_row} - {display_word}"
+                close_matches.append(formatted_item)
+        
+        # If no exact match is found, suggest close matches
+        if not exact_match:
+            close_keyword_matches = get_close_matches(keyword, df['Keyword'], n=3, cutoff=0.8)
+            for close_keyword in close_keyword_matches:
+                close_matches.append(f"Did you mean: {close_keyword}")
+    
+    displaywords_box.delete(0, tk.END)
+    close_matches_box.delete(0, tk.END)
+    
+    for display_word in keyword_displaywords:
+        displaywords_box.insert(tk.END, display_word)
+    
+    for item in close_matches:
+        close_matches_box.insert(tk.END, item)
 
-def rank_keywords(input_sentence):
-    # Preprocess the input sentence
-    input_sentence = preprocess_input(input_sentence)
+def open_url(event):
+    selected_item = displaywords_box.get(displaywords_box.curselection())
+    if selected_item:
+        for index, row in df.iterrows():
+            if row['DisplayWord'] == selected_item:
+                webbrowser.open(row['URL'])
     
-    # Split the input sentence into words
-    keywords = input_sentence.lower().split()
-    
-    # Create a dictionary to store keyword ranks
-    keyword_ranks = {}
-    
-    # Rank keywords based on their appearance in the input sentence
-    for i, keyword in enumerate(keywords):
-        if keyword in df['Keyword'].str.lower().values:
-            keyword_ranks[keyword] = i
-    
-    # Sort keywords by rank (lower rank means higher priority)
-    ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
-    
-    return ranked_keywords
+    selected_item = close_matches_box.get(close_matches_box.curselection())
+    if selected_item:
+        # Check if it's a close match suggestion
+        if selected_item.startswith("Did you mean: "):
+            suggested_keyword = selected_item[len("Did you mean: "):]
+            entry.delete(0, tk.END)
+            entry.insert(0, suggested_keyword)
+        else:
+            keyword_displayword = selected_item.split(" - ")
+            keyword = keyword_displayword[0]
+            display_word = keyword_displayword[1]
+            for index, row in df.iterrows():
+                if row['Keyword'].lower() == keyword.lower() and row['DisplayWord'] == display_word:
+                    webbrowser.open(row['URL'])
 
-# Rest of the code remains the same...
+# Create the main Tkinter window
+root = tk.Tk()
+root.title("Keyword Search App")
+
+# Create and configure the search entry field
+entry = ttk.Entry(root, width=30)
+entry.grid(row=0, column=0, padx=10, pady=10)
+
+# Create and configure the search button
+search_button = ttk.Button(root, text="Search", command=search_keywords)
+search_button.grid(row=0, column=1, padx=10, pady=10)
+
+# Create and configure the displaywords listbox
+displaywords_box = tk.Listbox(root, width=50, height=5)
+displaywords_box.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+displaywords_box.bind('<Double-Button-1>', open_url)
+
+# Create and configure the close matches listbox
+close_matches_box = tk.Listbox(root, width=50, height=5)
+close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+close_matches_box.bind('<Double-Button-1>', open_url)
+
+root.mainloop()
