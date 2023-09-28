@@ -13,7 +13,7 @@ def search_keywords():
     displaywords_listbox.delete(0, tk.END)
     close_matches_listbox.delete(0, tk.END)
     
-    exact_match = None
+    exact_matches = []
     close_matches = []
     
     for index, row in df.iterrows():
@@ -22,12 +22,11 @@ def search_keywords():
         url = row['URL']
         
         if keyword == row['Keyword'].lower():
-            exact_match = display_word
-        elif all(kw in ' '.join(keywords) for kw in keyword_parts):
+            exact_matches.append(display_word)
+        elif all(kw in ' '.join(keywords) for kw in keyword_parts) or any(kw in keywords for kw in keyword_parts):
             close_matches.append(display_word)
     
-    if exact_match:
-        displaywords_listbox.insert(tk.END, exact_match)
+    displaywords_listbox.insert(tk.END, *exact_matches)
     close_matches_listbox.insert(tk.END, *close_matches)
     
 def open_url(event):
