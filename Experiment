@@ -1,10 +1,15 @@
 def open_url(event):
     selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
-    for index, row in df.iterrows():
-        if row['DisplayWord'] == selected_item:
-            webbrowser.open(row['URL'])
+    if selected_item:
+        for index, row in df.iterrows():
+            if row['DisplayWord'] == selected_item:
+                webbrowser.open(row['URL'])
     
     selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
-    for keyword, display_word, url in close_matches:
-        if f"{keyword} - {display_word}" == selected_item:
-            webbrowser.open(url)
+    if selected_item:
+        keyword_displayword = selected_item.split(" - ")
+        keyword = keyword_displayword[0]
+        display_word = keyword_displayword[1]
+        for index, row in df.iterrows():
+            if row['Keyword'] == keyword and row['DisplayWord'] == display_word:
+                webbrowser.open(row['URL'])
