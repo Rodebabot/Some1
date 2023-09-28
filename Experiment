@@ -15,16 +15,16 @@ def preprocess_input(input_sentence):
 def rank_keywords(input_sentence):
     preprocessed_sentence = preprocess_input(input_sentence)
     
-    # Split the input sentence into words
-    keywords = preprocessed_sentence.split()
+    # Split the preprocessed input sentence into individual words
+    words = preprocessed_sentence.split()
     
     # Create a dictionary to store keyword ranks
     keyword_ranks = {}
     
     # Rank keywords based on their appearance in the input sentence
-    for i, keyword in enumerate(keywords):
-        if keyword in df['Keyword'].str.replace('[ -]', '', regex=True).str.lower().values:
-            keyword_ranks[keyword] = i
+    for i, word in enumerate(words):
+        if word in df['Keyword'].str.replace('[ -]', '', regex=True).str.lower().values:
+            keyword_ranks[word] = i
     
     # Sort keywords by rank (lower rank means higher priority)
     ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
@@ -35,8 +35,7 @@ def search_keywords():
     user_input = entry.get()
     ranked_keywords = rank_keywords(user_input)
     
-    first_keyword = ranked_keywords[0] if ranked_keywords else None
-    keyword_displaywords = []  # List to store displaywords for the first keyword
+    keyword_displaywords = []  # List to store displaywords for the keywords
     close_matches = []  # List to store keyword - displayword pairs for other keywords
     
     for keyword in ranked_keywords:
@@ -46,11 +45,11 @@ def search_keywords():
             display_word = row['DisplayWord']
             
             if keyword_in_row_cleaned == keyword:
-                if keyword_in_row == first_keyword:
-                    keyword_displaywords.append(display_word)
-                else:
-                    formatted_item = f"{keyword_in_row} - {display_word}"
-                    close_matches.append(formatted_item)
+                formatted_item = f"{keyword_in_row} - {display_word}"
+                keyword_displaywords.append(formatted_item)
+            elif keyword_in_row_cleaned in keyword:
+                formatted_item = f"{keyword_in_row} - {display_word}"
+                close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
@@ -64,8 +63,11 @@ def search_keywords():
 def open_url(event):
     selected_item = displaywords_box.get(displaywords_box.curselection())
     if selected_item:
+        keyword_displayword = selected_item.split(" - ")
+        keyword = keyword_displayword[0]
+        display_word = keyword_displayword[1]
         for index, row in df.iterrows():
-            if row['DisplayWord'] == selected_item:
+            if row['Keyword'].lower() == keyword.lower() and row['DisplayWord'] == display_word:
                 webbrowser.open(row['URL'])
     
     selected_item = close_matches_box.get(close_matches_box.curselection())
