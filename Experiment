@@ -8,6 +8,8 @@ df = pd.read_excel("your_excel_file.xlsx")
 
 def search_keywords():
     keyword = entry.get().lower()
+    keyword_parts = keyword.split()
+    
     displaywords_listbox.delete(0, tk.END)
     close_matches_listbox.delete(0, tk.END)
     
@@ -21,7 +23,7 @@ def search_keywords():
         
         if keyword in keywords:
             exact_matches.append(display_word)
-        elif any(kw in keyword for kw in keywords):
+        elif all(kw in ' '.join(keywords) for kw in keyword_parts):
             close_matches.append(display_word)
     
     displaywords_listbox.insert(tk.END, *exact_matches)
