@@ -10,8 +10,8 @@ def search_keywords():
     keyword = entry.get().lower()
     keyword_parts = keyword.split()
     
-    displaywords_listbox.delete(0, tk.END)
-    close_matches_listbox.delete(0, tk.END)
+    displaywords_box.delete(0, tk.END)
+    close_matches_box.delete(0, tk.END)
     
     exact_matches = []
     close_matches = []
@@ -27,20 +27,20 @@ def search_keywords():
             close_matches.append((row['Keyword'], display_word, url))
     
     for display_word in exact_matches:
-        displaywords_listbox.insert(tk.END, display_word)
+        displaywords_box.insert(tk.END, display_word)
     
     for keyword, display_word, url in close_matches:
         formatted_item = f"{keyword} - {display_word}"
-        close_matches_listbox.insert(tk.END, formatted_item)
+        close_matches_box.insert(tk.END, formatted_item)
 
 def open_url(event):
-    selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
+    selected_item = displaywords_box.get(displaywords_box.curselection())
     if selected_item:
         for index, row in df.iterrows():
             if row['DisplayWord'] == selected_item:
                 webbrowser.open(row['URL'])
     
-    selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
+    selected_item = close_matches_box.get(close_matches_box.curselection())
     if selected_item:
         keyword_displayword = selected_item.split(" - ")
         keyword = keyword_displayword[0]
@@ -50,7 +50,7 @@ def open_url(event):
                 webbrowser.open(row['URL'])
 
 def copy_keyword():
-    selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
+    selected_item = close_matches_box.get(close_matches_box.curselection())
     if selected_item:
         keyword = selected_item.split(" - ")[0]  # Extract the keyword
         entry.delete(0, tk.END)
@@ -73,14 +73,14 @@ search_button = ttk.Button(root, text="Search", command=search_keywords)
 search_button.grid(row=0, column=1, padx=10, pady=10)
 
 # Create and configure the displaywords listbox
-displaywords_listbox = tk.Listbox(root, width=50, height=10)
-displaywords_listbox.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-displaywords_listbox.bind('<Double-Button-1>', open_url)
+displaywords_box = tk.Listbox(root, width=50, height=10)
+displaywords_box.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+displaywords_box.bind('<Double-Button-1>', open_url)
 
 # Create and configure the close matches listbox
-close_matches_listbox = tk.Listbox(root, width=50, height=5)
-close_matches_listbox.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-close_matches_listbox.bind('<Double-Button-1>', open_url)
+close_matches_box = tk.Listbox(root, width=50, height=5)
+close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+close_matches_box.bind('<Double-Button-1>', open_url)
 
 # Create a button to copy the keyword from the second box
 copy_button = ttk.Button(root, text="Copy Keyword", command=copy_keyword)
