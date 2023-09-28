@@ -7,9 +7,16 @@ import re
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
+def preprocess_input(input_sentence):
+    # Remove spaces and hyphens to match keywords
+    preprocessed_sentence = re.sub(r'[ -]', '', input_sentence.lower())
+    return preprocessed_sentence
+
 def rank_keywords(input_sentence):
-    # Split the input sentence into words and remove spaces and hyphens
-    keywords = [re.sub(r'^[ -]*(.*?)[ -]*$', r'\1', word.lower()) for word in input_sentence.split()]
+    preprocessed_sentence = preprocess_input(input_sentence)
+    
+    # Split the input sentence into words
+    keywords = preprocessed_sentence.split()
     
     # Create a dictionary to store keyword ranks
     keyword_ranks = {}
