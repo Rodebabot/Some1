@@ -42,10 +42,10 @@ def open_url(event):
     
     selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
     if selected_item:
-        keyword_displayword = selected_item.split(" - ")
-        keyword = keyword_displayword[0]
-        display_word = keyword_displayword[1]
         for index, row in df.iterrows():
+            keyword_displayword = selected_item.split(" - ")
+            keyword = keyword_displayword[0]
+            display_word = keyword_displayword[1]
             if row['Keyword'] == keyword and row['DisplayWord'] == display_word:
                 webbrowser.open(row['URL'])
 
