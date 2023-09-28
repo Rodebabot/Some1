@@ -2,9 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 import pandas as pd
 import webbrowser
+import re
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
+
+def clean_text(text):
+    # Remove spaces and punctuation from text
+    cleaned_text = re.sub(r'[\s\W_]+', '', text.lower())
+    return cleaned_text
 
 def rank_keywords(input_sentence):
     # Split the input sentence into words
@@ -24,7 +30,7 @@ def rank_keywords(input_sentence):
     return ranked_keywords
 
 def search_keywords():
-    user_input = entry.get()
+    user_input = clean_text(entry.get())
     ranked_keywords = rank_keywords(user_input)
     
     first_keyword = ranked_keywords[0] if ranked_keywords else None
@@ -33,14 +39,14 @@ def search_keywords():
     
     for keyword in ranked_keywords:
         for index, row in df.iterrows():
-            keyword_in_row = row['Keyword'].lower()
+            keyword_in_row = clean_text(row['Keyword'])
             display_word = row['DisplayWord']
             
             if keyword_in_row == keyword:
                 if keyword_in_row == first_keyword:
                     keyword_displaywords.append(display_word)
                 else:
-                    formatted_item = f"{keyword_in_row} - {display_word}"
+                    formatted_item = f"{row['Keyword']} - {display_word}"
                     close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
@@ -65,7 +71,7 @@ def open_url(event):
         keyword = keyword_displayword[0]
         display_word = keyword_displayword[1]
         for index, row in df.iterrows():
-            if row['Keyword'].lower() == keyword.lower() and row['DisplayWord'] == display_word:
+            if clean_text(row['Keyword']) == clean_text(keyword) and row['DisplayWord'] == display_word:
                 webbrowser.open(row['URL'])
 
 def copy_keyword():
