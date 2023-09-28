@@ -11,8 +11,8 @@ def search_keywords():
     keywords = user_input.split()
     
     first_keyword = None
-    keyword_displaywords = {}  # Dictionary to store keyword - displayword pairs
-    close_matches = []
+    keyword_displaywords = {}  # Dictionary to store keyword - displayword pairs for the first keyword
+    close_matches = []  # List to store keyword - displayword pairs for other keywords
     
     for keyword in keywords:
         for index, row in df.iterrows():
@@ -22,10 +22,11 @@ def search_keywords():
             if keyword_in_row == keyword:
                 if not first_keyword:
                     first_keyword = keyword
-                if keyword_in_row not in keyword_displaywords:
+                if keyword_in_row == first_keyword:
                     keyword_displaywords[keyword_in_row] = display_word
-            elif keyword_in_row in keyword_displaywords:
-                close_matches.append((keyword_in_row, keyword_displaywords[keyword_in_row]))
+                else:
+                    formatted_item = f"{keyword_in_row} - {display_word}"
+                    close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
@@ -34,9 +35,8 @@ def search_keywords():
         for keyword, display_word in keyword_displaywords.items():
             displaywords_box.insert(tk.END, display_word)
     
-    for keyword, display_word in close_matches:
-        formatted_item = f"{keyword} - {display_word}"
-        close_matches_box.insert(tk.END, formatted_item)
+    for item in close_matches:
+        close_matches_box.insert(tk.END, item)
 
 def open_url(event):
     selected_item = displaywords_box.get(displaywords_box.curselection())
