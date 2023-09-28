@@ -1,132 +1,70 @@
 import tkinter as tk
 from tkinter import ttk
-import webbrowser
 import pandas as pd
-import datetime
-import smtplib
-from email.mime.text import MIMEText
-import win32com.client as win32
-from difflib import SequenceMatcher
+import webbrowser
+import difflib
 
-# Initialize data as an empty DataFrame
-data = pd.DataFrame(columns=["Keyword", "DisplayWord", "URL"])
+# Load the Excel file into a DataFrame
+df = pd.read_excel("your_excel_file.xlsx")
 
-# A set to store unique display words
-unique_display_words = set()
+def search_keywords():
+    keyword = entry.get().lower()
+    displaywords_listbox.delete(0, tk.END)
+    close_matches_listbox.delete(0, tk.END)
+    
+    for index, row in df.iterrows():
+        keywords = row['Keyword'].lower().split()
+        display_word = row['DisplayWord']
+        url = row['URL']
+        
+        if all(keyword_part in keywords for keyword_part in keyword.split()):
+            displaywords_listbox.insert(tk.END, display_word)
+        elif keyword in ' '.join(keywords):
+            close_matches_listbox.insert(tk.END, display_word)
+    
+def open_url(event):
+    selected_item = displaywords_listbox.get(displaywords_listbox.curselection())
+    for index, row in df.iterrows():
+        if row['DisplayWord'] == selected_item:
+            webbrowser.open(row['URL'])
+    
+    selected_item = close_matches_listbox.get(close_matches_listbox.curselection())
+    for index, row in df.iterrows():
+        if row['DisplayWord'] == selected_item:
+            webbrowser.open(row['URL'])
 
-def open_url():
-    selected_display_word = display_word_var.get()
-    if selected_display_word:
-        url = data[data["DisplayWord"] == selected_display_word]["URL"].values[0]
-        webbrowser.open(url)
-    else:
-        show_no_match_dialog()
+def get_close_matches(keyword):
+    close_matches = difflib.get_close_matches(keyword, df['Keyword'], n=5, cutoff=0.6)
+    return close_matches
 
-def similar(a, b):
-    return SequenceMatcher(None, a, b).ratio()
+def search_and_show_close_matches(event):
+    keyword = entry.get().lower()
+    close_matches_listbox.delete(0, tk.END)
+    close_matches = get_close_matches(keyword)
+    for match in close_matches:
+        close_matches_listbox.insert(tk.END, match)
 
-def update_display_words(*args):
-    global data  # Declare data as a global variable
-    search_keywords = set(search_var.get().lower().split())
-    suggestions = []
-    best_match_score = 0
+# Create the main Tkinter window
+root = tk.Tk()
+root.title("Keyword Search App")
 
-    for _, row in data.iterrows():
-        keywords = set(str(row["Keyword"]).lower().split())
+# Create and configure the search entry field
+entry = ttk.Entry(root, width=30)
+entry.grid(row=0, column=0, padx=10, pady=10)
+entry.bind('<KeyRelease>', search_and_show_close_matches)
 
-        # Calculate similarity score
-        match_score = max(similar(keyword, search_keyword) for keyword in keywords for search_keyword in search_keywords)
+# Create and configure the search button
+search_button = ttk.Button(root, text="Search", command=search_keywords)
+search_button.grid(row=0, column=1, padx=10, pady=10)
 
-        if match_score > best_match_score:
-            best_match_score = match_score
-            suggestions = [row["DisplayWord"]]
-        elif match_score == best_match_score:
-            suggestions.append(row["DisplayWord"])
+# Create and configure the displaywords listbox
+displaywords_listbox = tk.Listbox(root, width=50, height=10)
+displaywords_listbox.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+displaywords_listbox.bind('<Double-Button-1>', open_url)
 
-    # Clear the set of unique display words
-    unique_display_words.clear()
+# Create and configure the close matches listbox
+close_matches_listbox = tk.Listbox(root, width=50, height=5)
+close_matches_listbox.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+close_matches_listbox.bind('<Double-Button-1>', open_url)
 
-    # Filter out duplicate display words and store them in the set
-    unique_suggestions = []
-    for suggestion in suggestions:
-        if suggestion not in unique_display_words:
-            unique_display_words.add(suggestion)
-            unique_suggestions.append(suggestion)
-
-    if unique_suggestions:
-        display_word_combobox['values'] = unique_suggestions
-    else:
-        display_word_combobox.set('')  # Clear the combobox when no close match found
-
-def show_no_match_dialog():
-    no_match_window = tk.Toplevel()
-    no_match_window.title("No Match Found")
-
-    # Add a background image
-    background_image = tk.PhotoImage(file="background.png")  # Replace with your image file
-    background_label = tk.Label(no_match_window, image=background_image)
-    background_label.place(relwidth=1, relheight=1)
-
-    # Style for labels with white text on a transparent background
-    label_style = ttk.Style()
-    label_style.configure("White.TLabel", foreground="white")
-
-    message_label = ttk.Label(no_match_window, text="No matching display word found", style="White.TLabel")
-    message_label.pack(pady=10)
-
-    urgent_button = ttk.Button(no_match_window, text="Urgent: Ask Cbit for the data", command=send_email)
-    urgent_button.pack(pady=5)
-
-    general_button = ttk.Button(no_match_window, text="General: Add the Keyword", command=add_keyword_to_excel)
-    general_button.pack(pady=5)
-
-def send_email():
-    outlook = win32.Dispatch("Outlook.Application")
-    mail = outlook.CreateItem(0)
-    mail.Subject = "Urgent: Data Request"
-    mail.Body = f"Requested Keyword: {search_var.get()}"
-
-    mail.To = "recipient_email@example.com"  # Replace with the recipient's email address
-    mail.Send()
-
-    print("Email sent via Outlook")
-
-def add_keyword_to_excel():
-    global data  # Declare data as a global variable
-    new_keyword = search_var.get()
-    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    new_row = {"Keyword": new_keyword, "DisplayWord": current_datetime, "URL": ""}
-    data = pd.concat([data, pd.DataFrame([new_row])], ignore_index=True)
-
-    # Save the updated data to the Excel file
-    data.to_excel('your_excel_file.xlsx', index=False, engine='openpyxl')
-
-app = tk.Tk()
-app.title("Keyword Search App")
-
-# Add a logo image
-logo_image = tk.PhotoImage(file="logo.png")  # Replace with your logo file
-logo_label = tk.Label(app, image=logo_image)
-logo_label.pack()
-
-search_label = ttk.Label(app, text="Enter keywords:")
-search_label.pack(pady=10)
-
-search_var = tk.StringVar()
-search_entry = ttk.Entry(app, textvariable=search_var)
-search_entry.pack()
-
-display_word_label = ttk.Label(app, text="Select a display word:")
-display_word_label.pack(pady=10)
-
-display_word_var = tk.StringVar()
-display_word_combobox = ttk.Combobox(app, textvariable=display_word_var)
-display_word_combobox.pack()
-
-search_var.trace_add("write", update_display_words)
-
-open_button = ttk.Button(app, text="Open URL", command=open_url)
-open_button.pack(pady=10)
-
-app.mainloop()
+root.mainloop()
