@@ -10,8 +10,11 @@ def search_keywords():
     user_input = entry.get().lower()
     keywords = user_input.split()
     
-    keyword_displaywords = []  # List to store displaywords for all matching keywords
+    keyword_displaywords = {}  # Dictionary to store keyword - displayword pairs for the first keyword
     close_matches = []  # List to store keyword - displayword pairs for other keywords
+    
+    # Keep track of the first keyword found in the input sentence
+    first_keyword = None
     
     for keyword in keywords:
         for index, row in df.iterrows():
@@ -19,15 +22,18 @@ def search_keywords():
             display_word = row['DisplayWord']
             
             if keyword_in_row == keyword:
-                keyword_displaywords.append(display_word)
-            elif keyword_in_row.find(keyword) != -1 or keyword.find(keyword_in_row) != -1:
-                formatted_item = f"{keyword_in_row} - {display_word}"
-                close_matches.append(formatted_item)
+                if not first_keyword:
+                    first_keyword = keyword
+                if keyword_in_row == first_keyword:
+                    keyword_displaywords[keyword_in_row] = display_word
+                else:
+                    formatted_item = f"{keyword_in_row} - {display_word}"
+                    close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
     
-    for display_word in keyword_displaywords:
+    for display_word in keyword_displaywords.values():
         displaywords_box.insert(tk.END, display_word)
     
     for item in close_matches:
