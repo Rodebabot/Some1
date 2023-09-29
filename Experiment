@@ -22,33 +22,30 @@ def preprocess_input(input_sentence):
     # Join the processed words back into a sentence
     return ' '.join(processed_words)
 
-def rank_keywords(input_sentence):
+def find_keywords(input_sentence):
     preprocessed_sentence = preprocess_input(input_sentence)
     
-    # Create a dictionary to store keyword ranks
-    keyword_ranks = {}
+    # Create a list to store found keywords
+    found_keywords = []
     
-    # Rank keywords based on their appearance in the input sentence
+    # Find keywords based on their appearance in the input sentence
     for index, row in df.iterrows():
         keyword_in_row = row['Keyword'].lower()
         display_word = row['DisplayWord']
         
         if keyword_in_row in preprocessed_sentence:
-            keyword_ranks[keyword_in_row] = preprocessed_sentence.index(keyword_in_row)
+            found_keywords.append(keyword_in_row)
     
-    # Sort keywords by rank (lower rank means higher priority)
-    ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
-    
-    return ranked_keywords
+    return found_keywords
 
 def search_keywords():
     user_input = entry.get()
-    ranked_keywords = rank_keywords(user_input)
+    found_keywords = find_keywords(user_input)
     
     keyword_displaywords = []  # List to store displaywords for the keywords
     close_matches = []  # List to store keyword - displayword pairs for other keywords
     
-    for keyword in ranked_keywords:
+    for keyword in found_keywords:
         for index, row in df.iterrows():
             keyword_in_row = row['Keyword'].lower()
             display_word = row['DisplayWord']
