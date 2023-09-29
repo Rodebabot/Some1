@@ -203,6 +203,7 @@ displaywords_box.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 displaywords_box.bind('<Double-Button-1>', open_url)
 
 # Create and configure the close matches listbox
+
 close_matches_box = tk.Listbox(root, width=50, height=5)
 close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 close_matches_box.bind('<Double-Button-1>', open_url)
@@ -216,3 +217,21 @@ register_query_button = ttk.Button(root, text="Register Query", command=register
 register_query_button.grid(row=3, column=1, padx=10, pady=10)
 
 root.mainloop()
+
+
+
+
+
+# Add the data to the Excel sheet
+current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+new_data = {'Search Sentence': [search_sentence], 'User Name': [user_name], 'Business Segment': [business_segment], 'Datetime': [current_datetime]}
+df = pd.read_excel("your_excel_file.xlsx")
+
+# Create a new DataFrame with the new data
+new_df = pd.DataFrame(new_data)
+
+# Concatenate the new DataFrame with the existing DataFrame
+df = pd.concat([df, new_df], ignore_index=True)
+
+# Save the updated DataFrame to the Excel file
+df.to_excel("your_excel_file.xlsx", index=False)
