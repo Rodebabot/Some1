@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox
 import pandas as pd
 import webbrowser
 import win32com.client as win32  # Import the pywin32 library
+from datetime import datetime
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
@@ -49,8 +50,10 @@ def search_keywords():
     
     if not keyword_displaywords:
         escalate_button.config(state=tk.NORMAL)  # Enable the Escalate button
+        register_query_button.config(state=tk.NORMAL)  # Enable the Register Query button
     else:
         escalate_button.config(state=tk.DISABLED)  # Disable the Escalate button
+        register_query_button.config(state=tk.DISABLED)  # Disable the Register Query button
     
     for display_word in keyword_displaywords:
         displaywords_box.insert(tk.END, display_word)
@@ -128,9 +131,59 @@ def send_email(subject, body):
     mail = outlook.CreateItem(0)
     mail.Subject = subject
     mail.Body = body
+    mail.Recipients.Add('recipient_email')  # Replace 'recipient_email' with the recipient's email address
     mail.Send()
 
     messagebox.showinfo("Email Sent", "Your email has been sent successfully.")
+
+def register_query():
+    # Open a new window for registering a query
+    register_query_window = tk.Toplevel(root)
+    register_query_window.title("Register Query")
+    
+    # Create a label with the search sentence
+    search_sentence_label = tk.Label(register_query_window, text="Search Sentence:")
+    search_sentence_label.grid(row=0, column=0, padx=10, pady=10)
+    
+    # Create an entry field with the search sentence
+    search_sentence_entry = ttk.Entry(register_query_window, width=30)
+    search_sentence_entry.grid(row=0, column=1, padx=10, pady=10)
+    search_sentence_entry.insert(0, entry.get())
+    
+    # Create a label for user's name
+    user_name_label = tk.Label(register_query_window, text="Your Name:")
+    user_name_label.grid(row=1, column=0, padx=10, pady=10)
+    
+    # Create an entry field for user's name
+    user_name_entry = ttk.Entry(register_query_window, width=30)
+    user_name_entry.grid(row=1, column=1, padx=10, pady=10)
+    
+    # Create a label for business segment
+    business_segment_label = tk.Label(register_query_window, text="Business Segment:")
+    business_segment_label.grid(row=2, column=0, padx=10, pady=10)
+    
+    # Create an entry field for business segment
+    business_segment_entry = ttk.Entry(register_query_window, width=30)
+    business_segment_entry.grid(row=2, column=1, padx=10, pady=10)
+    
+    def submit_query():
+        search_sentence = search_sentence_entry.get()
+        user_name = user_name_entry.get()
+        business_segment = business_segment_entry.get()
+        
+        # Add the data to the Excel sheet
+        current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        new_data = {'Search Sentence': search_sentence, 'User Name': user_name, 'Business Segment': business_segment, 'Datetime': current_datetime}
+        df = pd.read_excel("your_excel_file.xlsx")
+        df = df.append(new_data, ignore_index=True)
+        df.to_excel("your_excel_file.xlsx", index=False)
+        
+        # Close the register query window
+        register_query_window.destroy()
+    
+    # Create a button to submit the query
+    submit_query_button = ttk.Button(register_query_window, text="Submit Query", command=submit_query)
+    submit_query_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -156,6 +209,10 @@ close_matches_box.bind('<Double-Button-1>', open_url)
 
 # Create an Escalate button
 escalate_button = ttk.Button(root, text="Escalate", command=escalate, state=tk.DISABLED)
-escalate_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+escalate_button.grid(row=3, column=0, padx=10, pady=10)
+
+# Create a Register Query button
+register_query_button = ttk.Button(root, text="Register Query", command=register_query, state=tk.DISABLED)
+register_query_button.grid(row=3, column=1, padx=10, pady=10)
 
 root.mainloop()
