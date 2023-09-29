@@ -4,3 +4,19 @@ displaywords_label.grid(row=4, column=0, columnspan=2, padx=10, pady=5)
 # Create a label for instructions above Close Matches box
 close_matches_label = tk.Label(root, text="Close Matches (Select to open URLs):")
 close_matches_label.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+def show_message_box():
+    message = "This is the message you want to display."
+    messagebox.showinfo("Message Box Title", message)
+
+# Create the main Tkinter window
+root = tk.Tk()
+root.title("Empty Button Example")
+
+# Create an empty button
+empty_button = ttk.Button(root, text="Click Me", command=show_message_box)
+empty_button.pack(padx=20, pady=20)
+
+root.mainloop()
