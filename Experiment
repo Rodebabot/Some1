@@ -20,3 +20,23 @@ empty_button = ttk.Button(root, text="Click Me", command=show_message_box)
 empty_button.pack(padx=20, pady=20)
 
 root.mainloop()
+
+
+
+import tkinter as tk
+from tkinter import ttk
+
+# Create the main Tkinter window
+root = tk.Tk()
+root.title("App with Logo")
+
+# Load the logo image (replace 'logo.gif' with your image file)
+logo_image = tk.PhotoImage(file="logo.gif")
+
+# Create a Label widget to display the logo
+logo_label = ttk.Label(root, image=logo_image)
+logo_label.pack(padx=10, pady=10)
+
+# Create other widgets and configure your app here
+
+root.mainloop()
