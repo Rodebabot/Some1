@@ -1,3 +1,6 @@
 # Create a label for instructions above DisplayWords box
 displaywords_label = tk.Label(root, text="Select a DisplayWord to open the URL:")
 displaywords_label.grid(row=4, column=0, columnspan=2, padx=10, pady=5)
+# Create a label for instructions above Close Matches box
+close_matches_label = tk.Label(root, text="Close Matches (Select to open URLs):")
+close_matches_label.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
