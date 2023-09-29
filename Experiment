@@ -1,64 +1,56 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import pandas as pd
 import webbrowser
-import re
+import win32com.client as win32  # Import the pywin32 library
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
-def preprocess_input(input_sentence):
-    # Split the input sentence into individual words
-    words = input_sentence.lower().split()
+def rank_keywords(input_sentence):
+    # Split the input sentence into words
+    keywords = input_sentence.lower().split()
     
-    # Create a list to store the processed words
-    processed_words = []
+    # Create a dictionary to store keyword ranks
+    keyword_ranks = {}
     
-    for word in words:
-        # Remove leading and trailing hyphens and spaces
-        word = re.sub(r'^[ -]*(.*?)[ -]*$', r'\1', word)
-        processed_words.append(word)
+    # Rank keywords based on their appearance in the input sentence
+    for i, keyword in enumerate(keywords):
+        if keyword in df['Keyword'].str.lower().values:
+            keyword_ranks[keyword] = i
     
-    # Join the processed words back into a sentence
-    return ' '.join(processed_words)
-
-def find_keywords(input_sentence):
-    preprocessed_sentence = preprocess_input(input_sentence)
+    # Sort keywords by rank (lower rank means higher priority)
+    ranked_keywords = sorted(keyword_ranks.keys(), key=lambda x: keyword_ranks[x])
     
-    # Create a list to store found keywords
-    found_keywords = []
-    
-    # Find keywords based on their appearance in the input sentence
-    for index, row in df.iterrows():
-        keyword_in_row = row['Keyword'].lower()
-        display_word = row['DisplayWord']
-        
-        if keyword_in_row in preprocessed_sentence:
-            found_keywords.append(keyword_in_row)
-    
-    return found_keywords
+    return ranked_keywords
 
 def search_keywords():
     user_input = entry.get()
-    found_keywords = find_keywords(user_input)
+    ranked_keywords = rank_keywords(user_input)
     
-    keyword_displaywords = []  # List to store displaywords for the keywords
+    first_keyword = ranked_keywords[0] if ranked_keywords else None
+    keyword_displaywords = []  # List to store displaywords for the first keyword
     close_matches = []  # List to store keyword - displayword pairs for other keywords
     
-    for keyword in found_keywords:
+    for keyword in ranked_keywords:
         for index, row in df.iterrows():
             keyword_in_row = row['Keyword'].lower()
             display_word = row['DisplayWord']
             
-            if keyword_in_row == keyword.lower():
-                formatted_item = f"{keyword_in_row} - {display_word}"
-                keyword_displaywords.append(formatted_item)
-            elif keyword_in_row in keyword.lower():
-                formatted_item = f"{keyword_in_row} - {display_word}"
-                close_matches.append(formatted_item)
+            if keyword_in_row == keyword:
+                if keyword_in_row == first_keyword:
+                    keyword_displaywords.append(display_word)
+                else:
+                    formatted_item = f"{keyword_in_row} - {display_word}"
+                    close_matches.append(formatted_item)
     
     displaywords_box.delete(0, tk.END)
     close_matches_box.delete(0, tk.END)
+    
+    if not keyword_displaywords:
+        escalate_button.config(state=tk.NORMAL)  # Enable the Escalate button
+    else:
+        escalate_button.config(state=tk.DISABLED)  # Disable the Escalate button
     
     for display_word in keyword_displaywords:
         displaywords_box.insert(tk.END, display_word)
@@ -69,11 +61,8 @@ def search_keywords():
 def open_url(event):
     selected_item = displaywords_box.get(displaywords_box.curselection())
     if selected_item:
-        keyword_displayword = selected_item.split(" - ")
-        keyword = keyword_displayword[0]
-        display_word = keyword_displayword[1]
         for index, row in df.iterrows():
-            if row['Keyword'].lower() == keyword.lower() and row['DisplayWord'] == display_word:
+            if row['DisplayWord'] == selected_item:
                 webbrowser.open(row['URL'])
     
     selected_item = close_matches_box.get(close_matches_box.curselection())
@@ -95,6 +84,53 @@ def copy_keyword():
         root.clipboard_clear()
         root.clipboard_append(keyword)
         root.update()
+
+def escalate():
+    # Open a new window for escalating
+    escalate_window = tk.Toplevel(root)
+    escalate_window.title("Escalate Issue")
+    
+    # Create a label with the search sentence
+    search_sentence_label = tk.Label(escalate_window, text="Search Sentence:")
+    search_sentence_label.grid(row=0, column=0, padx=10, pady=10)
+    
+    # Create an entry field with the search sentence
+    search_sentence_entry = ttk.Entry(escalate_window, width=30)
+    search_sentence_entry.grid(row=0, column=1, padx=10, pady=10)
+    search_sentence_entry.insert(0, entry.get())
+    
+    # Create a label for user's query
+    user_query_label = tk.Label(escalate_window, text="User Query:")
+    user_query_label.grid(row=1, column=0, padx=10, pady=10)
+    
+    # Create a text box for user's query
+    user_query_text = tk.Text(escalate_window, width=30, height=5)
+    user_query_text.grid(row=1, column=1, padx=10, pady=10)
+    
+    def send_mail():
+        search_sentence = search_sentence_entry.get()
+        user_query = user_query_text.get("1.0", tk.END)
+        
+        # Compose the email
+        subject = search_sentence
+        body = user_query
+        send_email(subject, body)
+        
+        # Close the escalate window
+        escalate_window.destroy()
+    
+    # Create a button to send the email
+    send_mail_button = ttk.Button(escalate_window, text="Send Mail", command=send_mail)
+    send_mail_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+
+def send_email(subject, body):
+    outlook = win32.Dispatch('outlook.application')
+    mail = outlook.CreateItem(0)
+    mail.Subject = subject
+    mail.Body = body
+    mail.Send()
+
+    messagebox.showinfo("Email Sent", "Your email has been sent successfully.")
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -118,8 +154,8 @@ close_matches_box = tk.Listbox(root, width=50, height=5)
 close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 close_matches_box.bind('<Double-Button-1>', open_url)
 
-# Create a button to copy the keyword from the second box
-copy_button = ttk.Button(root, text="Copy Keyword", command=copy_keyword)
-copy_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+# Create an Escalate button
+escalate_button = ttk.Button(root, text="Escalate", command=escalate, state=tk.DISABLED)
+escalate_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
 root.mainloop()
