@@ -1,42 +1,31 @@
-# Create a label for instructions above DisplayWords box
-displaywords_label = tk.Label(root, text="Select a DisplayWord to open the URL:")
-displaywords_label.grid(row=4, column=0, columnspan=2, padx=10, pady=5)
-# Create a label for instructions above Close Matches box
-close_matches_label = tk.Label(root, text="Close Matches (Select to open URLs):")
-close_matches_label.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
 import tkinter as tk
 from tkinter import ttk, messagebox
+import pandas as pd
+import webbrowser
+import win32com.client as win32
+from datetime import datetime
+from PIL import Image, ImageTk  # Import the PIL library for image handling
 
-def show_message_box():
-    message = "This is the message you want to display."
-    messagebox.showinfo("Message Box Title", message)
+# Load the Excel file into a DataFrame
+df = pd.read_excel("your_excel_file.xlsx")
 
-# Create the main Tkinter window
-root = tk.Tk()
-root.title("Empty Button Example")
-
-# Create an empty button
-empty_button = ttk.Button(root, text="Click Me", command=show_message_box)
-empty_button.pack(padx=20, pady=20)
-
-root.mainloop()
-
-
-
-import tkinter as tk
-from tkinter import ttk
+def rank_keywords(input_sentence):
+    # ... (rest of your code remains the same)
 
 # Create the main Tkinter window
 root = tk.Tk()
-root.title("App with Logo")
+root.title("Keyword Search App")
 
-# Load the logo image (replace 'logo.gif' with your image file)
-logo_image = tk.PhotoImage(file="logo.gif")
+# Load and display the logo image
+logo_image = Image.open("logo.png")  # Replace with your logo image file
+logo_photo = ImageTk.PhotoImage(logo_image)
+logo_label = tk.Label(root, image=logo_photo)
+logo_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-# Create a Label widget to display the logo
-logo_label = ttk.Label(root, image=logo_image)
-logo_label.pack(padx=10, pady=10)
+# Create and configure the search entry field
+entry = ttk.Entry(root, width=30)
+entry.grid(row=1, column=0, padx=10, pady=10)
 
-# Create other widgets and configure your app here
+# ... (rest of your code remains the same)
 
 root.mainloop()
