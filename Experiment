@@ -4,7 +4,7 @@ import pandas as pd
 import webbrowser
 import win32com.client as win32
 from datetime import datetime
-from PIL import Image, ImageTk  # Import the PIL library for image handling
+from PIL import Image, ImageTk
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
@@ -12,12 +12,15 @@ df = pd.read_excel("your_excel_file.xlsx")
 def rank_keywords(input_sentence):
     # ... (rest of your code remains the same)
 
+def show_hover_message(event):
+    messagebox.showinfo("Close Matches", "Hover over close matches for more options.")
+
 # Create the main Tkinter window
 root = tk.Tk()
 root.title("Keyword Search App")
 
 # Load and display the logo image
-logo_image = Image.open("logo.png")  # Replace with your logo image file
+logo_image = Image.open("logo.png")
 logo_photo = ImageTk.PhotoImage(logo_image)
 logo_label = tk.Label(root, image=logo_photo)
 logo_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
@@ -28,24 +31,10 @@ entry.grid(row=1, column=0, padx=10, pady=10)
 
 # ... (rest of your code remains the same)
 
+# Create and configure the close matches listbox
+close_matches_box = tk.Listbox(root, width=50, height=5)
+close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+close_matches_box.bind('<Double-Button-1>', open_url)
+close_matches_box.bind('<Enter>', show_hover_message)  # Bind the hover event
+
 root.mainloop()
-
-
-
-# Load and display the logo image
-logo_image = Image.open("logo.png")  # Replace with your logo image file
-logo_photo = ImageTk.PhotoImage(logo_image)
-logo_label = tk.Label(root, image=logo_photo)
-logo_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
-
-# Create an empty label to center the entry field
-center_label = ttk.Label(root)
-center_label.grid(row=1, column=0, padx=5, pady=10)  # Adjust padx as needed
-
-# Create and configure the search entry field
-entry = ttk.Entry(root, width=30)
-entry.grid(row=1, column=1, padx=5, pady=10)  # Adjust padx as needed
-
-# Create and configure the search button
-search_button = ttk.Button(root, text="Search", command=search_keywords)
-search_button.grid(row=1, column=2, padx=(5, 10), pady=10)  # Adjust padx as needed
