@@ -13,7 +13,10 @@ def rank_keywords(input_sentence):
     # ... (rest of your code remains the same)
 
 def show_hover_message(event):
-    messagebox.showinfo("Close Matches", "Hover over close matches for more options.")
+    hover_label.config(text="Hover over close matches for more options.")
+
+def hide_hover_message(event):
+    hover_label.config(text="")  # Clear the instruction text
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -36,5 +39,10 @@ close_matches_box = tk.Listbox(root, width=50, height=5)
 close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 close_matches_box.bind('<Double-Button-1>', open_url)
 close_matches_box.bind('<Enter>', show_hover_message)  # Bind the hover event
+close_matches_box.bind('<Leave>', hide_hover_message)  # Bind the leave event
+
+# Create a label for the hover instruction
+hover_label = tk.Label(root, text="", foreground="gray")
+hover_label.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
 
 root.mainloop()
