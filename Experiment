@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, StringVar
 import pandas as pd
 import webbrowser
 import win32com.client as win32
@@ -18,47 +18,22 @@ def show_hover_message(event):
 def hide_hover_message(event):
     hover_label.config(text="")  # Clear the instruction text
 
-def open_url(url):
-    webbrowser.open(url)
+def open_keyword_selector_window():
+    keyword_selector_window = tk.Toplevel(root)
+    keyword_selector_window.title("Select Keyword")
 
-def open_keyword_window():
-    keyword_window = tk.Toplevel(root)
-    keyword_window.title("Keyword Selection")
-    
-    # Create a label for the keyword selection window
-    keyword_label = tk.Label(keyword_window, text="Select a Keyword:")
-    keyword_label.grid(row=0, column=0, padx=10, pady=10)
-    
-    # Get unique keywords from the DataFrame
-    unique_keywords = df['Keyword'].unique()
-    
-    # Create a Combobox (Dropdown) to select a keyword
-    selected_keyword = tk.StringVar()
-    keyword_combobox = ttk.Combobox(keyword_window, textvariable=selected_keyword, values=unique_keywords, state="readonly")
-    keyword_combobox.grid(row=0, column=1, padx=10, pady=10)
-    
-    def show_display_words(event):
-        selected_kw = selected_keyword.get()
-        display_words = []
-        urls = []
-        for index, row in df.iterrows():
-            if row['Keyword'] == selected_kw:
-                display_words.append(row['DisplayWord'])
-                urls.append(row['URL'])
-        
-        # Create a listbox to display the selected keyword's display words
-        display_words_listbox = tk.Listbox(keyword_window, width=50, height=5)
-        display_words_listbox.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-        
-        # Insert display words into the listbox
-        for display_word in display_words:
-            display_words_listbox.insert(tk.END, display_word)
-        
-        display_words_listbox.bind('<Double-Button-1>', lambda event: open_url(urls[display_words_listbox.curselection()[0]]))
-    
-    # Create a button to show the display words
-    submit_button = ttk.Button(keyword_window, text="Submit", command=show_display_words)
-    submit_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+    selected_keyword = StringVar()
+    keyword_dropdown = ttk.Combobox(keyword_selector_window, textvariable=selected_keyword, values=df['Keyword'].tolist())
+    keyword_dropdown.pack(padx=10, pady=10)
+
+    def select_keyword_and_search():
+        keyword = selected_keyword.get()
+        entry.delete(0, tk.END)
+        entry.insert(0, keyword)
+        search_keywords()
+
+    select_button = ttk.Button(keyword_selector_window, text="Select", command=select_keyword_and_search)
+    select_button.pack(padx=10, pady=10)
 
 # Create the main Tkinter window
 root = tk.Tk()
@@ -79,13 +54,16 @@ entry.grid(row=1, column=0, padx=10, pady=10)
 # Create and configure the close matches listbox
 close_matches_box = tk.Listbox(root, width=50, height=5)
 close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+close_matches_box.bind('<Double-Button-1>', open_url)
+close_matches_box.bind('<Enter>', show_hover_message)  # Bind the hover event
+close_matches_box.bind('<Leave>', hide_hover_message)  # Bind the leave event
 
 # Create a label for the hover instruction
 hover_label = tk.Label(root, text="", foreground="gray")
 hover_label.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
 
-# Create a button to open the keyword selection window
-keyword_button = ttk.Button(root, text="Select Keyword", command=open_keyword_window)
-keyword_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+# Create a button to open the keyword selector window
+keyword_selector_button = ttk.Button(root, text="Select Keyword", command=open_keyword_selector_window)
+keyword_selector_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
 
 root.mainloop()
