@@ -18,6 +18,10 @@ def show_hover_message(event):
 def hide_hover_message(event):
     hover_label.config(text="")  # Clear the instruction text
 
+# Define the open_url function at the top level
+def open_url(url):
+    webbrowser.open(url)
+
 def open_keyword_window():
     keyword_window = tk.Toplevel(root)
     keyword_window.title("Keyword Selection")
@@ -46,20 +50,12 @@ def open_keyword_window():
         # Create a listbox to display the selected keyword's display words
         display_words_listbox = tk.Listbox(keyword_window, width=50, height=5)
         display_words_listbox.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-        display_words_listbox.bind('<Double-Button-1>', open_url)
         
         # Insert display words into the listbox
         for display_word in display_words:
             display_words_listbox.insert(tk.END, display_word)
         
-        # Function to open URL when double-clicked
-        def open_url(event):
-            selected_index = display_words_listbox.curselection()
-            if selected_index:
-                index = selected_index[0]
-                webbrowser.open(urls[index])
-        
-        display_words_listbox.bind('<Double-Button-1>', open_url)
+        display_words_listbox.bind('<Double-Button-1>', lambda event: open_url(urls[display_words_listbox.curselection()[0]]))
     
     # Create a button to show the display words
     submit_button = ttk.Button(keyword_window, text="Submit", command=show_display_words)
@@ -84,9 +80,6 @@ entry.grid(row=1, column=0, padx=10, pady=10)
 # Create and configure the close matches listbox
 close_matches_box = tk.Listbox(root, width=50, height=5)
 close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-close_matches_box.bind('<Double-Button-1>', open_url)
-close_matches_box.bind('<Enter>', show_hover_message)
-close_matches_box.bind('<Leave>', hide_hover_message)
 
 # Create a label for the hover instruction
 hover_label = tk.Label(root, text="", foreground="gray")
