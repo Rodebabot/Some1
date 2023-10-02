@@ -22,7 +22,7 @@ def open_keyword_window():
     keyword_window = tk.Toplevel(root)
     keyword_window.title("Keyword Selection")
     
-    # Create a label for the dropdown list
+    # Create a label for the keyword selection window
     keyword_label = tk.Label(keyword_window, text="Select a Keyword:")
     keyword_label.grid(row=0, column=0, padx=10, pady=10)
     
@@ -37,9 +37,11 @@ def open_keyword_window():
     def show_display_words():
         selected_kw = selected_keyword.get()
         display_words = []
+        urls = []
         for index, row in df.iterrows():
             if row['Keyword'] == selected_kw:
                 display_words.append(row['DisplayWord'])
+                urls.append(row['URL'])
         
         # Create a listbox to display the selected keyword's display words
         display_words_listbox = tk.Listbox(keyword_window, width=50, height=5)
@@ -49,6 +51,15 @@ def open_keyword_window():
         # Insert display words into the listbox
         for display_word in display_words:
             display_words_listbox.insert(tk.END, display_word)
+        
+        # Function to open URL when double-clicked
+        def open_url(event):
+            selected_index = display_words_listbox.curselection()
+            if selected_index:
+                index = selected_index[0]
+                webbrowser.open(urls[index])
+        
+        display_words_listbox.bind('<Double-Button-1>', open_url)
     
     # Create a button to show the display words
     submit_button = ttk.Button(keyword_window, text="Submit", command=show_display_words)
