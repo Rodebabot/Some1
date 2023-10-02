@@ -18,7 +18,6 @@ def show_hover_message(event):
 def hide_hover_message(event):
     hover_label.config(text="")  # Clear the instruction text
 
-# Define the open_url function at the top level
 def open_url(url):
     webbrowser.open(url)
 
@@ -38,7 +37,7 @@ def open_keyword_window():
     keyword_combobox = ttk.Combobox(keyword_window, textvariable=selected_keyword, values=unique_keywords, state="readonly")
     keyword_combobox.grid(row=0, column=1, padx=10, pady=10)
     
-    def show_display_words():
+    def show_display_words(event):
         selected_kw = selected_keyword.get()
         display_words = []
         urls = []
