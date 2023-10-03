@@ -22,8 +22,11 @@ def open_keyword_selector_window():
     keyword_selector_window = tk.Toplevel(root)
     keyword_selector_window.title("Select Keyword")
 
+    # Create a set to store unique keywords
+    unique_keywords = set(df['Keyword'].tolist())
+
     selected_keyword = StringVar()
-    keyword_dropdown = ttk.Combobox(keyword_selector_window, textvariable=selected_keyword, values=df['Keyword'].tolist())
+    keyword_dropdown = ttk.Combobox(keyword_selector_window, textvariable=selected_keyword, values=list(unique_keywords))
     keyword_dropdown.pack(padx=10, pady=10)
 
     def select_keyword_and_search():
