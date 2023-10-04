@@ -6,76 +6,71 @@ import win32com.client as win32
 from datetime import datetime
 from PIL import Image, ImageTk
 
+# Initialize a dictionary to keep track of keyword frequencies
+keyword_frequencies = {}
+
 # Load the Excel file into a DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
 def rank_keywords(input_sentence):
-    # ... (rest of your code remains the same)
+    global keyword_frequencies
+    
+    # Tokenize the input sentence into words
+    words = input_sentence.split()
 
-def show_hover_message(event):
-    hover_label.config(text="Hover over close matches for more options.")
+    # Check each word for a match in the keyword column
+    for word in words:
+        keyword_matches = df[df['Keyword'].str.contains(word, case=False, na=False)]
 
-def hide_hover_message(event):
-    hover_label.config(text="")  # Clear the instruction text
+        if not keyword_matches.empty:
+            # Update the keyword frequencies
+            for keyword in keyword_matches['Keyword']:
+                if keyword in keyword_frequencies:
+                    keyword_frequencies[keyword] += 1
+                else:
+                    keyword_frequencies[keyword] = 1
 
-def open_keyword_selector_window():
-    keyword_selector_window = tk.Toplevel(root)
-    keyword_selector_window.title("Select Keyword")
+def search_keywords():
+    global keyword_frequencies
 
-    # Create a set to store unique keywords
-    unique_keywords = set(df['Keyword'].tolist())
+    input_sentence = entry.get()
 
-    selected_keyword = StringVar()
-    keyword_dropdown = ttk.Combobox(keyword_selector_window, textvariable=selected_keyword, values=list(unique_keywords))
-    keyword_dropdown.pack(padx=10, pady=10)
+    # Perform keyword search and update frequencies
+    rank_keywords(input_sentence)
 
-    def select_keyword_and_search():
-        keyword = selected_keyword.get()
-        entry.delete(0, tk.END)
-        entry.insert(0, keyword)
-        search_keywords()
+    # Update the Excel sheet with keyword frequencies
+    update_excel_with_keyword_frequencies()
 
-    select_button = ttk.Button(keyword_selector_window, text="Select", command=select_keyword_and_search)
-    select_button.pack(padx=10, pady=10)
+    # Continue with other functionality (displaying results, opening links, etc.)
+
+def update_excel_with_keyword_frequencies():
+    global keyword_frequencies
+
+    # Load the Excel file again
+    df = pd.read_excel("your_excel_file.xlsx")
+
+    # Update the DataFrame with the latest keyword frequencies
+    for keyword, frequency in keyword_frequencies.items():
+        # Check if the keyword already exists in the DataFrame
+        if keyword in df['Keyword'].values:
+            # Increment the existing frequency
+            df.loc[df['Keyword'] == keyword, 'Frequency'] += frequency
+        else:
+            # Add a new row with the keyword and frequency
+            new_row = {'Keyword': keyword, 'Frequency': frequency}
+            df = df.append(new_row, ignore_index=True)
+
+    # Save the updated DataFrame back to the Excel file
+    df.to_excel("your_excel_file.xlsx", index=False)
 
 # Create the main Tkinter window
 root = tk.Tk()
 root.title("Keyword Search App")
 
-# Load and display the logo image
-logo_image = Image.open("logo.png")
-logo_photo = ImageTk.PhotoImage(logo_image)
-logo_label = tk.Label(root, image=logo_photo)
-logo_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
-
-# Create and configure the search entry field
-entry = ttk.Entry(root, width=30)
-entry.grid(row=1, column=0, padx=10, pady=10)
-
-# Create a vertical scrollbar for the exact match box
-exact_match_scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL)
-exact_match_scrollbar.grid(row=1, column=1, sticky='ns')  # Place scrollbar to the right of the entry field
-
-# Create and configure the exact match box with the scrollbar
-displaywords_box = tk.Listbox(root, width=50, height=5, yscrollcommand=exact_match_scrollbar.set)
-displaywords_box.grid(row=1, column=0, padx=10, pady=10)
-exact_match_scrollbar.config(command=displaywords_box.yview)  # Link scrollbar to the listbox
-
 # ... (rest of your code remains the same)
 
-# Create and configure the close matches listbox
-close_matches_box = tk.Listbox(root, width=50, height=5)
-close_matches_box.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-close_matches_box.bind('<Double-Button-1>', open_url)
-close_matches_box.bind('<Enter>', show_hover_message)  # Bind the hover event
-close_matches_box.bind('<Leave>', hide_hover_message)  # Bind the leave event
-
-# Create a label for the hover instruction
-hover_label = tk.Label(root, text="", foreground="gray")
-hover_label.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
-
-# Create a button to open the keyword selector window
-keyword_selector_button = ttk.Button(root, text="Select Keyword", command=open_keyword_selector_window)
-keyword_selector_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+# Create a button to trigger the keyword search
+search_button = ttk.Button(root, text="Search", command=search_keywords)
+search_button.grid(row=1, column=1, padx=10, pady=10)
 
 root.mainloop()
