@@ -26,3 +26,5 @@ You can schedule your Python script to run at specific times using the Windows T
 12. Repeat steps 6-11 for each of the four times you want the script to run.
 
 Now, your Python script will be scheduled to run at the specified times. Make sure your computer is powered on and not in sleep or hibernate mode during these times for the scheduled tasks to execute.
+!jupyter nbconvert --to script your_notebook.ipynb
+
