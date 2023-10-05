@@ -1,76 +1,28 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import pandas as pd
-import webbrowser
-import win32com.client as win32
-from datetime import datetime
-from PIL import Image, ImageTk
+You can schedule your Python script to run at specific times using the Windows Task Scheduler. Here are the steps to do that:
 
-# Initialize a dictionary to keep track of keyword frequencies
-keyword_frequencies = {}
+1. Open the Windows Task Scheduler:
+   - You can open it by searching for "Task Scheduler" in the Windows search bar and clicking on it.
 
-# Load the Excel file into a DataFrame
-df = pd.read_excel("your_excel_file.xlsx")
+2. In the Task Scheduler, select "Create Basic Task" from the right-hand pane.
 
-def rank_keywords(input_sentence):
-    global keyword_frequencies
-    
-    # Tokenize the input sentence into words
-    words = input_sentence.split()
+3. Follow the wizard to give your task a name and description.
 
-    # Check each word for a match in the keyword column
-    for word in words:
-        keyword_matches = df[df['Keyword'].str.contains(word, case=False, na=False)]
+4. Choose the "Daily" trigger to run the task every day.
 
-        if not keyword_matches.empty:
-            # Update the keyword frequencies
-            for keyword in keyword_matches['Keyword']:
-                if keyword in keyword_frequencies:
-                    keyword_frequencies[keyword] += 1
-                else:
-                    keyword_frequencies[keyword] = 1
+5. Set the start date and time for your task, and choose "Recur every X days" where X is 1.
 
-def search_keywords():
-    global keyword_frequencies
+6. Specify the exact times you want the task to run. In your case, you want it to run four times a day, so you can create four separate triggers for each specific time.
 
-    input_sentence = entry.get()
+7. For each trigger, choose the "Start a program" action.
 
-    # Perform keyword search and update frequencies
-    rank_keywords(input_sentence)
+8. In the "Program/script" field, browse and select the Python executable (e.g., `python.exe`) or provide the full path to your Python script.
 
-    # Update the Excel sheet with keyword frequencies
-    update_excel_with_keyword_frequencies()
+9. In the "Add arguments (optional)" field, provide the full path to your Python script file. For example, if your script is located at `C:\path\to\your\script.py`, you would enter `C:\path\to\your\script.py` as the argument.
 
-    # Continue with other functionality (displaying results, opening links, etc.)
+10. Click "Next" and review your task's settings.
 
-def update_excel_with_keyword_frequencies():
-    global keyword_frequencies
+11. Click "Finish" to create the task.
 
-    # Load the Excel file again
-    df = pd.read_excel("your_excel_file.xlsx")
+12. Repeat steps 6-11 for each of the four times you want the script to run.
 
-    # Update the DataFrame with the latest keyword frequencies
-    for keyword, frequency in keyword_frequencies.items():
-        # Check if the keyword already exists in the DataFrame
-        if keyword in df['Keyword'].values:
-            # Increment the existing frequency
-            df.loc[df['Keyword'] == keyword, 'Frequency'] += frequency
-        else:
-            # Add a new row with the keyword and frequency
-            new_row = {'Keyword': keyword, 'Frequency': frequency}
-            df = df.append(new_row, ignore_index=True)
-
-    # Save the updated DataFrame back to the Excel file
-    df.to_excel("your_excel_file.xlsx", index=False)
-
-# Create the main Tkinter window
-root = tk.Tk()
-root.title("Keyword Search App")
-
-# ... (rest of your code remains the same)
-
-# Create a button to trigger the keyword search
-search_button = ttk.Button(root, text="Search", command=search_keywords)
-search_button.grid(row=1, column=1, padx=10, pady=10)
-
-root.mainloop()
+Now, your Python script will be scheduled to run at the specified times. Make sure your computer is powered on and not in sleep or hibernate mode during these times for the scheduled tasks to execute.
