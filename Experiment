@@ -8,26 +8,23 @@ df2 = pd.read_excel('file2.xlsx', header=None)
 df1 = df1.T
 df2 = df2.T
 
-# Set the first row as column headers
-df1.columns = df1.iloc[0]
-df2.columns = df2.iloc[0]
-
-# Drop the first row (variable names) from both DataFrames
-df1 = df1[1:]
-df2 = df2[1:]
+# Set the second row as the values
+df1 = df1.iloc[1]
+df2 = df2.iloc[1]
 
 # Convert columns to numeric
-df1 = df1.apply(pd.to_numeric)
-df2 = df2.apply(pd.to_numeric)
+df1 = df1.apply(pd.to_numeric, errors='coerce')
+df2 = df2.apply(pd.to_numeric, errors='coerce')
 
-# Calculate the deviation for each variable
+# Calculate the deviation for variables present in both files
 deviations = []
-for variable in df1.columns:
-    old_value = df1[variable]
-    new_value = df2[variable]
-    deviation = ((abs(new_value - old_value) / old_value) * 100)
-    if deviation > 5:
-        deviations.append([variable, deviation])
+for variable in df1.index:
+    if variable in df2.index:
+        old_value = df1[variable]
+        new_value = df2[variable]
+        deviation = ((abs(new_value - old_value) / old_value) * 100)
+        if deviation > 5:
+            deviations.append([variable, deviation])
 
 # Create a DataFrame with variables having deviation > 5%
 result_df = pd.DataFrame(deviations, columns=['Variable', 'Deviation'])
