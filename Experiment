@@ -1,33 +1,34 @@
 import pandas as pd
 
 # Load the two Excel files into DataFrames
-df1 = pd.read_excel('file1.xlsx', header=None)
-df2 = pd.read_excel('file2.xlsx', header=None)
+df1 = pd.read_excel('file1.xlsx')
+df2 = pd.read_excel('file2.xlsx')
 
-# Transpose DataFrames to have variables as columns
+# Transpose both DataFrames
 df1 = df1.T
 df2 = df2.T
 
-# Set the second row as the values
-df1 = df1.iloc[1]
-df2 = df2.iloc[1]
+# Add headers for the first row
+df1.columns = df1.iloc[0]
+df2.columns = df2.iloc[0]
 
-# Convert columns to numeric
-df1 = df1.apply(pd.to_numeric, errors='coerce')
-df2 = df2.apply(pd.to_numeric, errors='coerce')
+# Drop the first row (variable names) for both DataFrames
+df1 = df1[1:]
+df2 = df2[1:]
 
-# Calculate the deviation for variables present in both files
-deviations = []
-for variable in df1.index:
-    if variable in df2.index:
-        old_value = df1[variable]
-        new_value = df2[variable]
-        deviation = ((abs(new_value - old_value) / old_value) * 100)
-        if deviation > 5:
-            deviations.append([variable, deviation])
+# Create DataFrames with 'Variable' and 'Values' columns
+df3 = pd.DataFrame({'Variable': df1.index, 'Values': df1.values.flatten()})
+df4 = pd.DataFrame({'Variable': df2.index, 'Values': df2.values.flatten()})
 
-# Create a DataFrame with variables having deviation > 5%
-result_df = pd.DataFrame(deviations, columns=['Variable', 'Deviation'])
+# Convert 'Values' column to numeric
+df3['Values'] = pd.to_numeric(df3['Values'], errors='coerce')
+df4['Values'] = pd.to_numeric(df4['Values'], errors='coerce')
 
-# Print the resulting DataFrame
+# Calculate deviations in a new DataFrame
+deviations = pd.DataFrame({'Variable': df3['Variable'], 'Deviation': ((abs(df4['Values'] - df3['Values']) / df3['Values']) * 100)})
+
+# Filter variables with deviation > 5%
+result_df = deviations[deviations['Deviation'] > 5]
+
+# Print the resulting DataFrame with variable names and deviations
 print(result_df)
