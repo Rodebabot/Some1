@@ -1,30 +1,36 @@
-You can schedule your Python script to run at specific times using the Windows Task Scheduler. Here are the steps to do that:
+import pandas as pd
 
-1. Open the Windows Task Scheduler:
-   - You can open it by searching for "Task Scheduler" in the Windows search bar and clicking on it.
+# Load the two Excel files into DataFrames
+df1 = pd.read_excel('file1.xlsx', header=None)
+df2 = pd.read_excel('file2.xlsx', header=None)
 
-2. In the Task Scheduler, select "Create Basic Task" from the right-hand pane.
+# Transpose DataFrames to have variables as columns
+df1 = df1.T
+df2 = df2.T
 
-3. Follow the wizard to give your task a name and description.
+# Set the first row as column headers
+df1.columns = df1.iloc[0]
+df2.columns = df2.iloc[0]
 
-4. Choose the "Daily" trigger to run the task every day.
+# Drop the first row (variable names) from both DataFrames
+df1 = df1[1:]
+df2 = df2[1:]
 
-5. Set the start date and time for your task, and choose "Recur every X days" where X is 1.
+# Convert columns to numeric
+df1 = df1.apply(pd.to_numeric)
+df2 = df2.apply(pd.to_numeric)
 
-6. Specify the exact times you want the task to run. In your case, you want it to run four times a day, so you can create four separate triggers for each specific time.
+# Calculate the deviation for each variable
+deviations = []
+for variable in df1.columns:
+    old_value = df1[variable]
+    new_value = df2[variable]
+    deviation = ((abs(new_value - old_value) / old_value) * 100)
+    if deviation > 5:
+        deviations.append([variable, deviation])
 
-7. For each trigger, choose the "Start a program" action.
+# Create a DataFrame with variables having deviation > 5%
+result_df = pd.DataFrame(deviations, columns=['Variable', 'Deviation'])
 
-8. In the "Program/script" field, browse and select the Python executable (e.g., `python.exe`) or provide the full path to your Python script.
-
-9. In the "Add arguments (optional)" field, provide the full path to your Python script file. For example, if your script is located at `C:\path\to\your\script.py`, you would enter `C:\path\to\your\script.py` as the argument.
-
-10. Click "Next" and review your task's settings.
-
-11. Click "Finish" to create the task.
-
-12. Repeat steps 6-11 for each of the four times you want the script to run.
-
-Now, your Python script will be scheduled to run at the specified times. Make sure your computer is powered on and not in sleep or hibernate mode during these times for the scheduled tasks to execute.
-!jupyter nbconvert --to script your_notebook.ipynb
-
+# Print the resulting DataFrame
+print(result_df)
