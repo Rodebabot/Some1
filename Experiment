@@ -1,83 +1,32 @@
-import pandas as pd
+import os
 
-# Load the two Excel files into DataFrames
-df1 = pd.read_excel('file1.xlsx')
-df2 = pd.read_excel('file2.xlsx')
+folder_path = '/path/to/your/folder'
 
-# Transpose both DataFrames
-df1 = df1.T
-df2 = df2.T
+def rename_files_in_folder(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+            # Split the filename and extension
+            base_name, extension = os.path.splitext(filename)
+            
+            # Split the base name by hyphen to check for occurrences
+            parts = base_name.split('-')
+            
+            # Create a new base name with only one occurrence of each keyword
+            new_base_name = []
+            keywords = ['-SOD', '-MOD', '-EOD', '-FINAL']
+            for part in parts:
+                if part in keywords:
+                    keywords.remove(part)
+                new_base_name.append(part)
+            
+            # Combine the new base name and extension
+            new_filename = '-'.join(new_base_name) + extension
+            
+            # Rename the file if needed
+            if new_filename != filename:
+                new_file_path = os.path.join(folder_path, new_filename)
+                os.rename(file_path, new_file_path)
+                print(f'Renamed: {filename} -> {new_filename}')
 
-# Add headers for the first row
-df1.columns = df1.iloc[0]
-df2.columns = df2.iloc[0]
-
-# Drop the first row (variable names) for both DataFrames
-df1 = df1[1:]
-df2 = df2[1:]
-
-# Create DataFrames with 'Variable' and 'Values' columns
-df3 = pd.DataFrame({'Variable': df1.index, 'Values': df1.values.flatten()})
-df4 = pd.DataFrame({'Variable': df2.index, 'Values': df2.values.flatten()})
-
-# Convert 'Values' column to numeric
-df3['Values'] = pd.to_numeric(df3['Values'], errors='coerce')
-df4['Values'] = pd.to_numeric(df4['Values'], errors='coerce')
-
-# Calculate deviations in a new DataFrame
-deviations = pd.DataFrame({'Variable': df3['Variable'], 'Deviation': ((abs(df4['Values'] - df3['Values']) / df3['Values']) * 100)})
-
-# Filter variables with deviation > 5%
-result_df = deviations[deviations['Deviation'] > 5]
-
-# Print the resulting DataFrame with variable names and deviations
-print(result_df)
-
-
-
-
-
-
-import pyaudio
-import wave
-
-# Configuration
-FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
-CHANNELS = 1  # Mono audio
-RATE = 44100  # Sample rate (samples per second)
-CHUNK = 1024  # Number of frames per buffer
-RECORD_SECONDS = 5  # Duration of recording in seconds
-OUTPUT_FILENAME = "output.wav"  # Name of the output audio file
-
-# Initialize PyAudio
-audio = pyaudio.PyAudio()
-
-# Open a streaming stream
-stream = audio.open(format=FORMAT, channels=CHANNELS,
-                    rate=RATE, input=True,
-                    frames_per_buffer=CHUNK)
-
-print("Recording...")
-
-frames = []
-
-# Record audio in chunks and store it in the frames list
-for _ in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-    data = stream.read(CHUNK)
-    frames.append(data)
-
-print("Finished recording.")
-
-# Close and terminate the audio stream and PyAudio
-stream.stop_stream()
-stream.close()
-audio.terminate()
-
-# Save the recorded audio to a WAV file
-with wave.open(OUTPUT_FILENAME, 'wb') as wf:
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(audio.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-
-print(f"Audio saved as {OUTPUT_FILENAME}")
+rename_files_in_folder(folder_path)
