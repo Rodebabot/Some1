@@ -75,3 +75,36 @@ try:
 
 except Exception as e:
     print("An error occurred:", str(e))
+
+
+
+
+import win32com.client
+
+def send_email(subject, body, to_email):
+    outlook = win32com.client.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)
+    mail.Subject = subject
+    mail.Body = body
+    mail.To = to_email
+    mail.Send()
+
+if __name__ == "__main__":
+    outlook_emails = get_outlook_email()
+    if outlook_emails:
+        # Store the Outlook email addresses in a variable
+        email_variable = ",".join(outlook_emails)
+
+        # Specify the recipient's email address
+        recipient_email = "recipient@example.com"
+
+        # Compose the email subject and body
+        email_subject = "Outlook Email Addresses"
+        email_body = f"Outlook Email Addresses: {email_variable}"
+
+        # Send the email
+        send_email(email_subject, email_body, recipient_email)
+
+        print(f"Email sent to {recipient_email} with Outlook email addresses.")
+    else:
+        print("Failed to retrieve Outlook email addresses.")
