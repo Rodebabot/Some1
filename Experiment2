@@ -1,1 +1,23 @@
 
+import pandas as pd
+import string
+
+# Sample DataFrame
+data = {'TextColumn': ["Hello, World!", "This is a test.", "Another String!"]}
+df = pd.DataFrame(data)
+
+# Define a function to clean the text
+def clean_text(text):
+    # Convert to lowercase
+    text = text.lower()
+    # Remove punctuation and special characters
+    text = ''.join(char for char in text if char not in string.punctuation)
+    # Remove spaces
+    text = text.replace(" ", "")
+    return text
+
+# Apply the cleaning function to the specific column
+df['TextColumn'] = df['TextColumn'].apply(clean_text)
+
+# Print the cleaned DataFrame
+print(df)
