@@ -1,23 +1,41 @@
+import itertools
 
-import pandas as pd
-import string
+# Define teams, weeks, and days
+teams = ['A', 'B', 'C', 'D', 'E']
+weeks = list(range(1, 6))  # Assuming 5 weeks
+days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
-# Sample DataFrame
-data = {'TextColumn': ["Hello, World!", "This is a test.", "Another String!"]}
-df = pd.DataFrame(data)
+# Initialize a list to store the final schedule
+schedule = []
 
-# Define a function to clean the text
-def clean_text(text):
-    # Convert to lowercase
-    text = text.lower()
-    # Remove punctuation and special characters
-    text = ''.join(char for char in text if char not in string.punctuation)
-    # Remove spaces
-    text = text.replace(" ", "")
-    return text
+# Generate all possible combinations of teams, weeks, and days
+combinations = list(itertools.product(teams, weeks, days))
 
-# Apply the cleaning function to the specific column
-df['TextColumn'] = df['TextColumn'].apply(clean_text)
+# Initialize a dictionary to track how many times each team has been scheduled
+team_counts = {team: 0 for team in teams}
 
-# Print the cleaned DataFrame
-print(df)
+# Initialize a dictionary to track which team was scheduled on the previous day
+previous_day_team = {day: None for day in days}
+
+# Initialize a dictionary to track how many teams are scheduled for each day
+teams_scheduled_per_day = {day: [] for day in days}
+
+# Shuffle the combinations to randomize the schedule
+import random
+random.shuffle(combinations)
+
+# Create the schedule
+for team, week, day in combinations:
+    if (team_counts[team] < 8 and 
+        day != 'Saturday' and 
+        day != 'Sunday' and 
+        len(teams_scheduled_per_day[day]) < 3 and 
+        previous_day_team[day] != team):
+        schedule.append([team, week, day])
+        team_counts[team] += 1
+        teams_scheduled_per_day[day].append(team)
+        previous_day_team[day] = team
+
+# Print the schedule
+for entry in schedule:
+    print(f'Team {entry[0]}, Week {entry[1]}, {entry[2]}')
