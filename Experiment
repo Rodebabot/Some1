@@ -76,7 +76,9 @@ option_dropdown.pack()
 entry_label = ttk.Label(app, text="Enter Value:")
 entry_label.pack()
 entry = ttk.Entry(app)
+
 entry.pack()
+
 
 # Create a 'Submit' button
 submit_button = ttk.Button(app, text="Submit", command=submit)
@@ -88,3 +90,30 @@ result_label.pack()
 
 # Start the application
 app.mainloop()
+
+
+
+
+
+# Function to handle the 'Submit' button
+def submit():
+    team = team_var.get()
+    task = task_var.get()
+    
+    if team in data and task in data[team]:
+        option = data[team][task]["option"]
+        
+        if option == "Fixed":
+            result.set(data[team][task]["value"])
+        else:
+            try:
+                value = float(entry.get())
+                result.set(value * data[team][task]["value"])
+            except ValueError:
+                messagebox.showerror("Error", "Please enter a valid number.")
+    else:
+        messagebox.showerror("Error", "Team and task not found in data.")
+
+# ...
+
+
