@@ -1,22 +1,20 @@
-def submit():
-    team = team_var.get()
-    task = task_var.get()
+def update_task_dropdown(event):
+    selected_team = team_var.get()
+    selected_task = task_var.get()
 
-    if team in data and task in data[team]:
-        option = data[team][task]["option"]
+    if selected_team in data and selected_task in data[selected_team]:
+        selected_option = data[selected_team][selected_task]["option"]
+        task_dropdown["values"] = list(data[selected_team].keys())
+        task_dropdown.set(selected_task)
 
-        if option == "Fixed":
-            result.set(data[team][task]["value"])
+        if selected_option == "Variable":
+            entry.configure(state="normal")  # Enable the input field
         else:
-            try:
-                value = float(entry.get())
-                result.set(value * data[team][task]["value"])
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number.")
-                return  # Don't enable the entry field
-
-        entry.configure(state="disabled")  # Disable the input field after processing
+            entry.configure(state="disabled")  # Disable the input field
     else:
-        messagebox.showerror("Error", "Team and task not found in data.")
+        task_dropdown.set("")
+        task_dropdown["values"] = []
+        entry.configure(state="disabled")  # Disable the input field
 
-# ...
+# Initialize the initial state based on the first selected option
+update_task_dropdown(None)  # Call it once to set the initial state
