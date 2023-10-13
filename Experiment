@@ -1,20 +1,11 @@
+# Function to update task dropdown based on the selected team
 def update_task_dropdown(event):
     selected_team = team_var.get()
-    selected_task = task_var.get()
+    task_var.set("")  # Clear the task selection
 
-    if selected_team in data and selected_task in data[selected_team]:
-        selected_option = data[selected_team][selected_task]["option"]
-        task_dropdown["values"] = list(data[selected_team].keys())
-        task_dropdown.set(selected_task)
+    if selected_team in data:
+        tasks_for_team = list(data[selected_team].keys())
+        task_dropdown["values"] = tasks_for_team
+        entry.configure(state="disabled")  # Disable the input field initially
 
-        if selected_option == "Variable":
-            entry.configure(state="normal")  # Enable the input field
-        else:
-            entry.configure(state="disabled")  # Disable the input field
-    else:
-        task_dropdown.set("")
-        task_dropdown["values"] = []
-        entry.configure(state="disabled")  # Disable the input field
-
-# Initialize the initial state based on the first selected option
-update_task_dropdown(None)  # Call it once to set the initial state
+team_dropdown.bind("<<ComboboxSelected>>", update_task_dropdown)
