@@ -18,7 +18,3 @@ def submit():
         messagebox.showerror("Error", "Team and task not found in data.")
 
 # ...
-
-# Set the "option" based on your predefined data
-team_var.set("Team A")  # Replace with the desired team name
-task_var.set("Task 1")  # Replace with the desired task name
