@@ -26,6 +26,13 @@ def submit(index):
     else:
         messagebox.showerror("Error", "Team and task not found in data.")
 
+# Function to update task dropdown options based on the selected team
+def update_task_dropdown(index):
+    selected_team = team_vars[index].get()
+    task_vars[index].set("")  # Clear the task selection
+    task_dropdowns[index]["values"] = list(data.get(selected_team, {}).keys())
+    entry_widgets[index].configure(state="disabled")  # Disable the input field
+
 # Function to add a new set of input fields
 def add_set():
     new_index = len(team_vars)
@@ -39,34 +46,37 @@ def add_set():
     # Create team dropdown for the new set
     teams = list(data.keys())
     team_dropdown = ttk.Combobox(app, textvariable=team_vars[-1], values=teams)
-    team_dropdown.grid(row=new_index + 1, column=0)
+    team_dropdown.grid(row=new_index + 2, column=0)
+    team_dropdown.bind("<<ComboboxSelected>>", lambda event, index=new_index: update_task_dropdown(index))
     
     # Create task dropdown for the new set
     task_dropdown = ttk.Combobox(app, textvariable=task_vars[-1], values=[])
-    task_dropdown.grid(row=new_index + 1, column=1)
+    task_dropdown.grid(row=new_index + 2, column=1)
+    task_dropdowns.append(task_dropdown)
     
     # Create entry for entering variable value for the new set
     entry = ttk.Entry(app, state="disabled")
-    entry.grid(row=new_index + 1, column=2)
+    entry.grid(row=new_index + 2, column=2)
     entry_widgets.append(entry)
     
     # Create a 'Submit' button for the new set
     submit_button = ttk.Button(app, text="Submit", command=lambda index=new_index: submit(index))
-    submit_button.grid(row=new_index + 1, column=3)
+    submit_button.grid(row=new_index + 2, column=3)
     
     # Create a label for the result of the new set
     result_label = ttk.Label(app, textvariable=result_vars[-1])
-    result_label.grid(row=new_index + 1, column=4)
+    result_label.grid(row=new_index + 2, column=4)
 
 # Initialize the main application window
 app = tk.Tk()
 app.title("Excel Data App")
 
-# Initialize lists for variables and entry widgets
+# Initialize lists for variables, entry widgets, and task dropdowns
 team_vars = []
 task_vars = []
 result_vars = []
 entry_widgets = []
+task_dropdowns = []
 
 # Create a text entry field for the user's name
 name_label = ttk.Label(app, text="Enter Your Name:")
