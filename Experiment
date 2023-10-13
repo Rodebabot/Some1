@@ -26,35 +26,35 @@ def submit(index):
     else:
         messagebox.showerror("Error", "Team and task not found in data.")
 
-# Function to add a new row of input fields
-def add_row():
+# Function to add a new set of input fields
+def add_set():
     new_index = len(team_vars)
     
-    # Create variables for the new row
+    # Create variables for the new set
     team_vars.append(tk.StringVar())
     task_vars.append(tk.StringVar())
     result_vars.append(tk.StringVar())
     result_vars[-1].set("Result will appear here")
     
-    # Create team dropdown for the new row
+    # Create team dropdown for the new set
     teams = list(data.keys())
     team_dropdown = ttk.Combobox(app, textvariable=team_vars[-1], values=teams)
     team_dropdown.grid(row=new_index, column=0)
     
-    # Create task dropdown for the new row
+    # Create task dropdown for the new set
     task_dropdown = ttk.Combobox(app, textvariable=task_vars[-1], values=[])
     task_dropdown.grid(row=new_index, column=1)
     
-    # Create entry for entering variable value for the new row
+    # Create entry for entering variable value for the new set
     entry = ttk.Entry(app, state="disabled")
     entry.grid(row=new_index, column=2)
     entry_widgets.append(entry)
     
-    # Create a 'Submit' button for the new row
+    # Create a 'Submit' button for the new set
     submit_button = ttk.Button(app, text="Submit", command=lambda index=new_index: submit(index))
     submit_button.grid(row=new_index, column=3)
     
-    # Create a label for the result of the new row
+    # Create a label for the result of the new set
     result_label = ttk.Label(app, textvariable=result_vars[-1])
     result_label.grid(row=new_index, column=4)
 
@@ -68,16 +68,9 @@ task_vars = []
 result_vars = []
 entry_widgets = []
 
-# Create a text entry field for the user's name
-name_label = ttk.Label(app, text="Enter Your Name:")
-name_label.grid(row=0, column=0)
-name_var = tk.StringVar()
-name_entry = ttk.Entry(app, textvariable=name_var)
-name_entry.grid(row=0, column=1)
-
-# Create a 'Plus' button to add a new row
-plus_button = ttk.Button(app, text="Plus", command=add_row)
-plus_button.grid(row=0, column=2)
+# Create a 'Plus' button to add a new set
+plus_button = ttk.Button(app, text="Add Set", command=add_set)
+plus_button.grid(row=0, column=0, columnspan=5)
 
 # Load data from Excel file (adjust the filename and sheet name)
 workbook = openpyxl.load_workbook('your_excel_file.xlsx')
