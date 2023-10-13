@@ -1,20 +1,16 @@
-def submit():
-    team = team_var.get()
-    task = task_var.get()
-    
-    if team in data and task in data[team]:
-        option = data[team][task]["option"]
-        
+# Function to update task dropdown based on the selected team
+def update_task_dropdown(event):
+    selected_team = team_var.get()
+    tasks_for_team = list(data[selected_team].keys())
+    task_dropdown["values"] = tasks_for_team
+
+    # Check if the selected task has a "Fixed" option and disable the input field if it's fixed
+    selected_task = task_var.get()
+    if selected_team in data and selected_task in data[selected_team]:
+        option = data[selected_team][selected_task]["option"]
         if option == "Fixed":
-            result.set(data[team][task]["value"])
-            entry.configure(state="disabled")  # Disable the input field
+            entry.configure(state="disabled")
         else:
-            try:
-                value = float(entry.get())
-                result.set(value * data[team][task]["value"])
-                entry.configure(state="normal")  # Enable the input field
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number.")
-                entry.configure(state="normal")  # Enable the input field
-    else:
-        messagebox.showerror("Error", "Team and task not found in data.")
+            entry.configure(state="normal")
+
+team_dropdown.bind("<<ComboboxSelected>>", update_task_dropdown)
