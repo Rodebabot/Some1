@@ -1,134 +1,22 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
-import openpyxl
-import calendar
+import win32com.client
 
-# Function to handle the 'Submit' button for a set
-def submit(index):
-    team = team_vars[index].get()
-    task = task_vars[index].get()
+# Initialize Outlook application
+outlook = win32com.client.Dispatch("Outlook.Application")
 
-    if team in data and task in data[team]:
-        option = data[team][task]["option"]
+# Get the Inbox folder
+inbox = outlook.GetNamespace("MAPI").GetDefaultFolder(6)
 
-        if option == "Fixed":
-            result_vars[index].set(data[team][task]["value"])
-            entry_widgets[index].configure(state="disabled")  # Disable the input field
-        else:
-            try:
-                value = float(entry_widgets[index].get())
-                result_vars[index].set(value * data[team][task]["value"])
-                entry_widgets[index].configure(state="normal")  # Enable the input field
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number.")
-                entry_widgets[index].configure(state="normal")  # Enable the input field
-    else:
-        messagebox.showerror("Error", "Team and task not found in data.")
+# Iterate through emails in the Inbox folder
+for i, mail in enumerate(inbox.Items):
+    if i >= 50:
+        break  # Stop after 50 iterations
 
-# Function to update task dropdown options based on the selected team
-def update_task_dropdown(index):
-    selected_team = team_vars[index].get()
-    task_vars[index].set("")  # Clear the task selection
-    task_dropdowns[index]["values"] = list(data.get(selected_team, {}).keys())
-    entry_widgets[index].configure(state="disabled")  # Disable the input field
+    if mail.Subject == "whatever it is":
+        # Save the attachment to a specific location
+        attachments = mail.Attachments
+        for attachment in attachments:
+            attachment.SaveAsFile(r'C:\Your\Save\Location\\' + attachment.FileName)
 
-# Function to add a new set of input fields
-def add_set():
-    new_index = len(team_vars)
-    
-    # Create variables for the new set
-    team_vars.append(tk.StringVar())
-    task_vars.append(tk.StringVar())
-    result_vars.append(tk.StringVar())
-    result_vars[-1].set("Result will appear here")
-    
-    # Create team dropdown for the new set
-    teams = list(data.keys())
-    team_dropdown = ttk.Combobox(app, textvariable=team_vars[-1], values=teams)
-    team_dropdown.grid(row=new_index + 2, column=0)
-    team_dropdown.bind("<<ComboboxSelected>>", lambda event, index=new_index: update_task_dropdown(index))
-    
-    # Create task dropdown for the new set
-    task_dropdown = ttk.Combobox(app, textvariable=task_vars[-1], values=[])
-    task_dropdown.grid(row=new_index + 2, column=1)
-    task_dropdowns.append(task_dropdown)
-    
-    # Create entry for entering variable value for the new set
-    entry = ttk.Entry(app, state="disabled")
-    entry.grid(row=new_index + 2, column=2)
-    entry_widgets.append(entry)
-    
-    # Create a 'Submit' button for the new set
-    submit_button = ttk.Button(app, text="Submit", command=lambda index=new_index: submit(index))
-    submit_button.grid(row=new_index + 2, column=3)
-    
-    # Create a label for the result of the new set
-    result_label = ttk.Label(app, textvariable=result_vars[-1])
-    result_label.grid(row=new_index + 2, column=4)
-
-# Initialize the main application window
-app = tk.Tk()
-app.title("Excel Data App")
-
-# Initialize lists for variables, entry widgets, and task dropdowns
-team_vars = []
-task_vars = []
-result_vars = []
-entry_widgets = []
-task_dropdowns = []
-
-# Create a text entry field for the user's name
-name_label = ttk.Label(app, text="Enter Your Name:")
-name_label.grid(row=0, column=0)
-name_var = tk.StringVar()
-name_entry = ttk.Entry(app, textvariable=name_var)
-name_entry.grid(row=0, column=1)
-
-# Create a 'Plus' button to add a new set
-plus_button = ttk.Button(app, text="Add Set", command=add_set)
-plus_button.grid(row=0, column=2)
-
-# Create date selection fields
-date_label = ttk.Label(app, text="Select Date:")
-date_label.grid(row=1, column=0)
-
-# Day
-day_label = ttk.Label(app, text="Day:")
-day_label.grid(row=1, column=1)
-day_dropdown = ttk.Combobox(app, textvariable=tk.StringVar(), values=[str(day) for day in range(1, 32)])
-day_dropdown.grid(row=1, column=2)
-
-# Month
-month_label = ttk.Label(app, text="Month:")
-month_label.grid(row=1, column=3)
-month_names = list(calendar.month_name[1:])  # Get full month names
-month_dropdown = ttk.Combobox(app, textvariable=tk.StringVar(), values=month_names)
-month_dropdown.grid(row=1, column=4)
-
-# Year
-year_label = ttk.Label(app, text="Year:")
-year_label.grid(row=1, column=5)
-year_dropdown = ttk.Combobox(app, textvariable=tk.StringVar(), values=[str(year) for year in range(2000, 2030)])
-year_dropdown.grid(row=1, column=6)
-
-# Load data from Excel file (adjust the filename and sheet name)
-workbook = openpyxl.load_workbook('your_excel_file.xlsx')
-sheet = workbook['your_sheet_name']
-
-data = {}
-
-# Iterate through the Excel sheet and populate the data dictionary
-for row in sheet.iter_rows(min_row=2, values_only=True):
-    team_name = row[0]
-    task_name = row[1]
-    option = row[2]
-    value = row[3]
-
-    if team_name not in data:
-        data[team_name] = {}
-
-    data[team_name][task_name] = {"option": option, "value": value}
-
-# Start the application
-app.mainloop()
+        # Move the email to a subfolder
+        subfolder = inbox.Folders["Your Subfolder Name"]
+        mail.Move(subfolder)
