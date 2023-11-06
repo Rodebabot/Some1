@@ -6,17 +6,17 @@ outlook = win32com.client.Dispatch("Outlook.Application")
 # Get the Inbox folder
 inbox = outlook.GetNamespace("MAPI").GetDefaultFolder(6)
 
+# Specify the target location to save attachments
+save_location = r'C:\Your\Save\Location\\'
+
 # Iterate through emails in the Inbox folder
-for i, mail in enumerate(inbox.Items):
-    if i >= 50:
-        break  # Stop after 50 iterations
+for mail in inbox.Items:
+    if mail.Subject == "what":
+        # Save attachments to the specified location
+        for attachment in mail.Attachments:
+            attachment.SaveAsFile(save_location + attachment.FileName)
 
-    if mail.Subject == "whatever it is":
-        # Save the attachment to a specific location
-        attachments = mail.Attachments
-        for attachment in attachments:
-            attachment.SaveAsFile(r'C:\Your\Save\Location\\' + attachment.FileName)
-
-        # Move the email to a subfolder
-        subfolder = inbox.Folders["Your Subfolder Name"]
+        # Move the email to a subfolder (replace "Your Subfolder Name")
+        subfolder_name = "Your Subfolder Name"
+        subfolder = inbox.Folders[subfolder_name]
         mail.Move(subfolder)
