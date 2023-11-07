@@ -30,3 +30,37 @@ df.to_excel(excel_file_name, index=False)
 outlook.close()
 
 print(f"Extracted email bodies with 'inline' (case-insensitive) subject to {excel_file_name}")
+
+
+
+import pandas as pd
+
+# Define the list of economic indicators and their weights
+indicators = {
+    "GDP Growth": 0.4,
+    "Unemployment Rate": 0.3,
+    "Inflation Rate": 0.3,
+}
+
+# Load economic data from an Excel file
+data_file = "economic_data.xlsx"
+df = pd.read_excel(data_file)
+
+# Calculate the economic score
+economic_score = (df["GDP Growth"] * indicators["GDP Growth"] +
+                  df["Unemployment Rate"] * indicators["Unemployment Rate"] +
+                  df["Inflation Rate"] * indicators["Inflation Rate"])
+
+# Define score thresholds for interpretation
+thresholds = {
+    "Good": 0.8,
+    "Moderate": 0.4,
+    "Bad": 0.0,
+}
+
+# Determine the economic situation based on the score
+for situation, threshold in thresholds.items():
+    if economic_score >= threshold:
+        print(f"Economic Situation: {situation}")
+        break
+
