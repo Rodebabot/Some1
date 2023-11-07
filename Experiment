@@ -1,22 +1,32 @@
-import win32com.client
+import pandas as pd
+from pyOutlook import Outlook
 
-# Initialize Outlook application
-outlook = win32com.client.Dispatch("Outlook.Application")
+# Connect to Outlook
+outlook = Outlook()
 
-# Get the Inbox folder
-inbox = outlook.GetNamespace("MAPI").GetDefaultFolder(6)
+# Specify the mailbox and subfolder
+mailbox_name = "your_mailbox_name@example.com"
+subfolder_name = "Your Subfolder Name"
 
-# Specify the target location to save attachments
-save_location = r'C:\Your\Save\Location\\'
+# Get all emails from the subfolder
+emails = outlook.get_emails(mailbox_name, subfolder_name)
 
-# Iterate through emails in the Inbox folder
-for mail in inbox.Items:
-    if mail.Subject == "what":
-        # Save attachments to the specified location
-        for attachment in mail.Attachments:
-            attachment.SaveAsFile(save_location + attachment.FileName)
+# Initialize an empty list to store email bodies
+email_bodies = []
 
-        # Move the email to a subfolder (replace "Your Subfolder Name")
-        subfolder_name = "Your Subfolder Name"
-        subfolder = inbox.Folders[subfolder_name]
-        mail.Move(subfolder)
+# Iterate through emails and extract email bodies with subject containing "inline" (case-insensitive)
+for email in emails:
+    if "inline" in email.subject.lower():
+        email_bodies.append(email.body)
+
+# Create a DataFrame from the email bodies
+df = pd.DataFrame({'Email_Body': email_bodies})
+
+# Save the DataFrame to an Excel file
+excel_file_name = "email_bodies_with_inline_subject.xlsx"
+df.to_excel(excel_file_name, index=False)
+
+# Close the Outlook connection
+outlook.close()
+
+print(f"Extracted email bodies with 'inline' (case-insensitive) subject to {excel_file_name}")
