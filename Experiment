@@ -14,6 +14,15 @@ df = pd.read_excel(data_file)
 # Create an empty list to store the results
 results = []
 
+# Set your custom thresholds
+custom_thresholds = {
+    "Excellent": 0.8,
+    "Good": 0.6,
+    "Moderate": 0.4,
+    "Poor": 0.2,
+    "Bad": 0.0,
+}
+
 # Loop through each row in the DataFrame
 for index, row in df.iterrows():
     country_name = row["Country"]  # Assuming "Country" is the column with country names
@@ -21,8 +30,9 @@ for index, row in df.iterrows():
                       row["Unemployment Rate"] * indicators["Unemployment Rate"] +
                       row["Inflation Rate"] * indicators["Inflation Rate"])
 
-    # Determine the economic situation based on the score
-    for situation, threshold in thresholds.items():
+    # Determine the economic situation based on the custom thresholds
+    economic_situation = None
+    for situation, threshold in custom_thresholds.items():
         if economic_score >= threshold:
             economic_situation = situation
             break
