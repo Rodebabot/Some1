@@ -2,7 +2,6 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
 import pandas as pd
-from dash.exceptions import PreventUpdate
 import openpyxl
 
 # Load the Excel file into a DataFrame
@@ -18,8 +17,7 @@ app.layout = html.Div([
         options=[{'label': company, 'value': company} for company in df['Company']],
         placeholder="Select a company"
     ),
-    html.Div(id='comment-output'),
-    html.Div(id='highlighted-cells'),
+    html.Div(id='variable-values'),
     dcc.RadioItems(
         id='final-update',
         options=[
@@ -33,24 +31,25 @@ app.layout = html.Div([
 
 # Define callback functions
 @app.callback(
-    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
+    Output('variable-values', 'children'),
     Input('company-dropdown', 'value')
 )
-def update_displayed_data(selected_company):
+def display_variables(selected_company):
     if not selected_company:
         raise PreventUpdate
 
-    # Get the comment for the selected company
-    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
+    # Filter data for the selected company
+    selected_data = df[df['Company'] == selected_company]
 
-    # Filter and highlight cells with a value of 1 for the selected company
-    selected_row = df[df['Company'] == selected_company]
-    highlighted_cells = []
-    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
-        if selected_row[column].values[0] == 1:
-            highlighted_cells.append(html.Div(f'{column}: 1'))
+    # Create a table to display variables and values
+    table = html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in selected_data.columns[1:-2]])] +
+        # Data
+        [html.Tr([html.Td(selected_data.iloc[0][col]) for col in selected_data.columns[1:-2]])]
+    )
 
-    return comment, highlighted_cells
+    return table
 
 @app.callback(
     Output('final-update', 'value'),
