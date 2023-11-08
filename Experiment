@@ -1,47 +1,71 @@
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
 import pandas as pd
+from dash.exceptions import PreventUpdate
+import openpyxl
 
-# Define the list of economic indicators and their weights
-indicators = {
-    "GDP Growth": 0.4,
-    "Unemployment Rate": 0.3,
-    "Inflation Rate": 0.3,
-}
+# Load the Excel file into a DataFrame
+df = pd.read_excel('company_data.xlsx')
 
-# Load economic data from an Excel file
-data_file = "economic_data.xlsx"
-df = pd.read_excel(data_file)
+# Initialize the Dash app
+app = dash.Dash(__name__)
 
-# Create an empty list to store the results
-results = []
+# Define the app layout
+app.layout = html.Div([
+    dcc.Dropdown(
+        id='company-dropdown',
+        options=[{'label': company, 'value': company} for company in df['Company']],
+        placeholder="Select a company"
+    ),
+    html.Div(id='comment-output'),
+    html.Div(id='highlighted-cells'),
+    dcc.RadioItems(
+        id='final-update',
+        options=[
+            {'label': 'Downfall', 'value': 'Downfall'},
+            {'label': 'Rise', 'value': 'Rise'}
+        ],
+        labelStyle={'display': 'block'},
+        style={'margin-top': '20px'}
+    )
+])
 
-# Set your custom thresholds
-custom_thresholds = {
-    "Excellent": 0.8,
-    "Good": 0.6,
-    "Moderate": 0.4,
-    "Poor": 0.2,
-    "Bad": 0.0,
-}
+# Define callback functions
+@app.callback(
+    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
+    Input('company-dropdown', 'value')
+)
+def update_displayed_data(selected_company):
+    if not selected_company:
+        raise PreventUpdate
 
-# Loop through each row in the DataFrame
-for index, row in df.iterrows():
-    country_name = row["Country"]  # Assuming "Country" is the column with country names
-    economic_score = (row["GDP Growth"] * indicators["GDP Growth"] +
-                      row["Unemployment Rate"] * indicators["Unemployment Rate"] +
-                      row["Inflation Rate"] * indicators["Inflation Rate"])
+    # Get the comment for the selected company
+    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
 
-    # Determine the economic situation based on the custom thresholds
-    economic_situation = None
-    for situation, threshold in custom_thresholds.items():
-        if economic_score >= threshold:
-            economic_situation = situation
-            break
+    # Filter and highlight cells with a value of 1 for the selected company
+    selected_row = df[df['Company'] == selected_company]
+    highlighted_cells = []
+    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
+        if selected_row[column].values[0] == 1:
+            highlighted_cells.append(html.Div(f'{column}: 1'))
 
-    # Add the results to the list
-    results.append({"Country": country_name, "Economic Score": economic_score, "Economic Situation": economic_situation})
+    return comment, highlighted_cells
 
-# Create a DataFrame to store the results
-result_df = pd.DataFrame(results)
+@app.callback(
+    Output('final-update', 'value'),
+    Input('final-update', 'value')
+)
+def update_final_update(value):
+    if value is not None and app.callback_context.triggered[0]['prop_id'] == 'final-update.value':
+        # Update the 'Final Update' column in the DataFrame
+        selected_company = app.callback_context.inputs_list[0]['value']
+        df.loc[df['Company'] == selected_company, 'Final Update'] = value
 
-# Save the results to a new Excel file or do further analysis as needed
-result_df.to_excel("economic_scores.xlsx", index=False)
+        # Save the updated DataFrame back to the Excel file
+        df.to_excel('company_data.xlsx', index=False, engine='openpyxl')
+
+    return value
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
