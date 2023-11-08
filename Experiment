@@ -53,16 +53,17 @@ def display_variables(selected_company):
 
 @app.callback(
     Output('final-update', 'value'),
-    Input('final-update', 'value')
+    Input('final-update', 'value'),
+    Input('company-dropdown', 'value')
 )
-def update_final_update(value):
+def update_final_update(value, selected_company):
     if value is not None and app.callback_context.triggered[0]['prop_id'] == 'final-update.value':
         # Update the 'Final Update' column in the DataFrame
-        selected_company = app.callback_context.inputs_list[0]['value']
         df.loc[df['Company'] == selected_company, 'Final Update'] = value
 
-        # Save the updated DataFrame back to the Excel file
-        df.to_excel('company_data.xlsx', index=False, engine='openpyxl')
+        # Save the updated DataFrame back to the Excel file using openpyxl
+        with pd.ExcelWriter('company_data.xlsx', engine='openpyxl', mode='a') as writer:
+            df.to_excel(writer, sheet_name='Sheet1', index=False)
 
     return value
 
