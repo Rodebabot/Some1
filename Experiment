@@ -67,3 +67,84 @@ def update_final_update(value, selected_company):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
+
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output, State, ALL
+import pandas as pd
+
+# Load the Excel file into a DataFrame
+df = pd.read_excel('company_data.xlsx')
+
+# Initialize the Dash app
+app = dash.Dash(__name__)
+
+# Define the app layout
+app.layout = html.Div([
+    dcc.Dropdown(
+        id='company-dropdown',
+        options=[{'label': company, 'value': company} for company in df['Company']],
+        placeholder="Select a company"
+    ),
+    html.Div(id='comment-output'),
+    html.Div(id='highlighted-cells'),
+    dcc.RadioItems(
+        id='final-update',
+        options=[
+            {'label': 'Downfall', 'value': 'Downfall'},
+            {'label': 'Rise', 'value': 'Rise'}
+        ],
+        labelStyle={'display': 'block'},
+        style={'margin-top': '20px'}
+    )
+])
+
+# Define callback functions
+@app.callback(
+    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
+    Input('company-dropdown', 'value')
+)
+def update_displayed_data(selected_company):
+    if not selected_company:
+        raise PreventUpdate
+
+    # Get the comment for the selected company
+    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
+
+    # Filter and highlight cells with a value of 1 for the selected company
+    selected_row = df[df['Company'] == selected_company]
+    highlighted_cells = []
+    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
+        if selected_row[column].values[0] == 1:
+            highlighted_cells.append(html.Div(f'{column}: 1'))
+
+    return comment, highlighted_cells
+
+@app.callback(
+    Output('final-update', 'value'),
+    Input('final-update', 'value'),
+    State('company-dropdown', 'value')
+)
+def update_final_update(value, selected_company):
+    if value is not None and selected_company is not None:
+        # Update the 'Final Update' column in the DataFrame
+        df.loc[df['Company'] == selected_company, 'Final Update'] = value
+
+        # Save the updated DataFrame back to the Excel file
+        df.to_excel('company_data.xlsx', index=False)
+
+    return value
+
+@app.callback(
+    Output('final-update', 'value'),
+    Input('company-dropdown', 'value'),
+    prevent_initial_call=True
+)
+def reset_final_update(selected_company):
+    # Reset the value of 'final-update' when a new company is selected
+    return None
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
