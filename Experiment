@@ -1,8 +1,7 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import pandas as pd
-import openpyxl
 
 # Load the Excel file into a DataFrame
 df = pd.read_excel('company_data.xlsx')
@@ -17,7 +16,8 @@ app.layout = html.Div([
         options=[{'label': company, 'value': company} for company in df['Company']],
         placeholder="Select a company"
     ),
-    html.Div(id='variable-values'),
+    html.Div(id='comment-output'),
+    html.Div(id='highlighted-cells'),
     dcc.RadioItems(
         id='final-update',
         options=[
@@ -31,39 +31,37 @@ app.layout = html.Div([
 
 # Define callback functions
 @app.callback(
-    Output('variable-values', 'children'),
+    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
     Input('company-dropdown', 'value')
 )
-def display_variables(selected_company):
+def update_displayed_data(selected_company):
     if not selected_company:
         raise PreventUpdate
 
-    # Filter data for the selected company
-    selected_data = df[df['Company'] == selected_company]
+    # Get the comment for the selected company
+    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
 
-    # Create a table to display variables and values
-    table = html.Table(
-        # Header
-        [html.Tr([html.Th(col) for col in selected_data.columns[1:-2]])] +
-        # Data
-        [html.Tr([html.Td(selected_data.iloc[0][col]) for col in selected_data.columns[1:-2]])]
-    )
+    # Filter and highlight cells with a value of 1 for the selected company
+    selected_row = df[df['Company'] == selected_company]
+    highlighted_cells = []
+    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
+        if selected_row[column].values[0] == 1:
+            highlighted_cells.append(html.Div(f'{column}: 1'))
 
-    return table
+    return comment, highlighted_cells
 
 @app.callback(
     Output('final-update', 'value'),
     Input('final-update', 'value'),
-    Input('company-dropdown', 'value')
+    State('company-dropdown', 'value')
 )
 def update_final_update(value, selected_company):
-    if value is not None and app.callback_context.triggered[0]['prop_id'] == 'final-update.value':
+    if value is not None and selected_company is not None:
         # Update the 'Final Update' column in the DataFrame
         df.loc[df['Company'] == selected_company, 'Final Update'] = value
 
-        # Save the updated DataFrame back to the Excel file using openpyxl
-        with pd.ExcelWriter('company_data.xlsx', engine='openpyxl', mode='a') as writer:
-            df.to_excel(writer, sheet_name='Sheet1', index=False)
+        # Save the updated DataFrame back to the Excel file
+        df.to_excel('company_data.xlsx', index=False)
 
     return value
 
