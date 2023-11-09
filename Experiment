@@ -1,163 +1,15 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output, State
-import pandas as pd
+from dash.dependencies import Input, Output
 
-# Load the Excel file into a DataFrame
-df = pd.read_excel('company_data.xlsx')
-
-# Initialize the Dash app
 app = dash.Dash(__name__)
 
-# Define the app layout
 app.layout = html.Div([
-    dcc.Dropdown(
-        id='company-dropdown',
-        options=[{'label': company, 'value': company} for company in df['Company']],
-        placeholder="Select a company"
-    ),
-    html.Div(id='comment-output'),
-    html.Div(id='highlighted-cells'),
-    dcc.RadioItems(
-        id='final-update',
-        options=[
-            {'label': 'Downfall', 'value': 'Downfall'},
-            {'label': 'Rise', 'value': 'Rise'}
-        ],
-        labelStyle={'display': 'block'},
-        style={'margin-top': '20px'}
-    )
+    html.Label("Enter root node data:"),
+    dcc.Input(id='root-input', type='text', value=''),
+    html.Button('Create Tree', id='create-button'),
+    dcc.Graph(id='tree-diagram'),
 ])
-
-# Define callback functions
-@app.callback(
-    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
-    Input('company-dropdown', 'value')
-)
-def update_displayed_data(selected_company):
-    if not selected_company:
-        raise PreventUpdate
-
-    # Get the comment for the selected company
-    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
-
-    # Filter and highlight cells with a value of 1 for the selected company
-    selected_row = df[df['Company'] == selected_company]
-    highlighted_cells = []
-    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
-        if selected_row[column].values[0] == 1:
-            highlighted_cells.append(html.Div(f'{column}: 1'))
-
-    return comment, highlighted_cells
-
-@app.callback(
-    Output('final-update', 'value'),
-    Input('final-update', 'value'),
-    State('company-dropdown', 'value')
-)
-def update_final_update(value, selected_company):
-    if value is not None and selected_company is not None:
-        # Update the 'Final Update' column in the DataFrame
-        df.loc[df['Company'] == selected_company, 'Final Update'] = value
-
-        # Save the updated DataFrame back to the Excel file
-        df.to_excel('company_data.xlsx', index=False)
-
-    return value
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
-
-
-
-
-
-
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output, State, ALL
-import pandas as pd
-
-# Load the Excel file into a DataFrame
-df = pd.read_excel('company_data.xlsx')
-
-# Initialize the Dash app
-app = dash.Dash(__name__)
-
-# Define the app layout
-app.layout = html.Div([
-    dcc.Dropdown(
-        id='company-dropdown',
-        options=[{'label': company, 'value': company} for company in df['Company']],
-        placeholder="Select a company"
-    ),
-    html.Div(id='comment-output'),
-    html.Div(id='highlighted-cells'),
-    dcc.RadioItems(
-        id='final-update',
-        options=[
-            {'label': 'Downfall', 'value': 'Downfall'},
-            {'label': 'Rise', 'value': 'Rise'}
-        ],
-        labelStyle={'display': 'block'},
-        style={'margin-top': '20px'}
-    )
-])
-
-# Define callback functions
-@app.callback(
-    [Output('comment-output', 'children'), Output('highlighted-cells', 'children')],
-    Input('company-dropdown', 'value')
-)
-def update_displayed_data(selected_company):
-    if not selected_company:
-        raise PreventUpdate
-
-    # Get the comment for the selected company
-    comment = df.loc[df['Company'] == selected_company, 'Comment'].values[0]
-
-    # Filter and highlight cells with a value of 1 for the selected company
-    selected_row = df[df['Company'] == selected_company]
-    highlighted_cells = []
-    for column in df.columns[2:-2]:  # Exclude 'Company', 'Comment', and 'Final Update'
-        if selected_row[column].values[0] == 1:
-            highlighted_cells.append(html.Div(f'{column}: 1'))
-
-    return comment, highlighted_cells
-
-@app.callback(
-    Output('final-update', 'value'),
-    Input('final-update', 'value'),
-    State('company-dropdown', 'value')
-)
-def update_final_update(value, selected_company):
-    if value is not None and selected_company is not None:
-        # Update the 'Final Update' column in the DataFrame
-        df.loc[df['Company'] == selected_company, 'Final Update'] = value
-
-        # Save the updated DataFrame back to the Excel file
-        df.to_excel('company_data.xlsx', index=False)
-
-    return value
-
-@app.callback(
-    Output('final-update', 'value'),
-    Input('company-dropdown', 'value'),
-    prevent_initial_call=True
-)
-def reset_final_update(selected_company):
-    # Reset the value of 'final-update' when a new company is selected
-    return None
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
-
-
-
-
-
-
-
 
 class Node:
     def __init__(self, data):
@@ -165,48 +17,7 @@ class Node:
         self.children = []
 
 def create_tree(node):
-    print(f"Enter children for node {node.data} (comma-separated, or press Enter for no children): ")
-    children_input = input().split(',')
-
-    for child_data in children_input:
-        child_data = child_data.strip()
-        if child_data:
-            child_node = Node(child_data)
-            node.children.append(child_node)
-            create_tree(child_node)
-
-def print_tree(node, level=0):
-    print("  " * level + node.data)
-    for child in node.children:
-        print_tree(child, level + 1)
-
-if __name__ == "__main__":
-    root_data = input("Enter root node data: ")
-    root = Node(root_data)
-
-    create_tree(root)
-
-    print("\nTree Structure:")
-    print_tree(root)
-
-
-
-
-
-
-
-from graphviz import Digraph
-
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.children = []
-
-def create_tree(node, dot=None):
-    if dot is None:
-        dot = Digraph(comment='Tree')
-
-    dot.node(node.data)
+    tree_data = {'id': node.data, 'children': []}
 
     print(f"Enter children for node {node.data} (comma-separated, or press Enter for no children): ")
     children_input = input().split(',')
@@ -216,16 +27,36 @@ def create_tree(node, dot=None):
         if child_data:
             child_node = Node(child_data)
             node.children.append(child_node)
-            create_tree(child_node, dot)
-            dot.edge(node.data, child_node.data)
+            tree_data['children'].append(create_tree(child_node))
 
-    return dot
+    return tree_data
 
-if __name__ == "__main__":
-    root_data = input("Enter root node data: ")
+@app.callback(
+    Output('tree-diagram', 'figure'),
+    [Input('create-button', 'n_clicks')],
+    prevent_initial_call=True
+)
+def update_tree(n_clicks):
+    root_data = app.callback_context.inputs['root-input.value']
     root = Node(root_data)
+    tree_data = create_tree(root)
 
-    tree_diagram = create_tree(root)
+    return {
+        'data': [],
+        'layout': {
+            'title': 'Tree Diagram',
+            'annotations': [
+                {
+                    'text': root_data,
+                    'x': 0.5,
+                    'y': 0.5,
+                    'showarrow': False,
+                },
+            ],
+        },
+        'layout': {'title': 'Tree Diagram'},
+        'tree': tree_data
+    }
 
-    print("\nTree Diagram:")
-    tree_diagram.view()
+if __name__ == '__main__':
+    app.run_server(debug=True)
