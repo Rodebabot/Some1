@@ -188,3 +188,44 @@ if __name__ == "__main__":
 
     print("\nTree Structure:")
     print_tree(root)
+
+
+
+
+
+
+
+from graphviz import Digraph
+
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+def create_tree(node, dot=None):
+    if dot is None:
+        dot = Digraph(comment='Tree')
+
+    dot.node(node.data)
+
+    print(f"Enter children for node {node.data} (comma-separated, or press Enter for no children): ")
+    children_input = input().split(',')
+
+    for child_data in children_input:
+        child_data = child_data.strip()
+        if child_data:
+            child_node = Node(child_data)
+            node.children.append(child_node)
+            create_tree(child_node, dot)
+            dot.edge(node.data, child_node.data)
+
+    return dot
+
+if __name__ == "__main__":
+    root_data = input("Enter root node data: ")
+    root = Node(root_data)
+
+    tree_diagram = create_tree(root)
+
+    print("\nTree Diagram:")
+    tree_diagram.view()
