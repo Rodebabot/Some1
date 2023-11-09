@@ -151,3 +151,40 @@ def reset_final_update(selected_company):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
+
+
+
+
+
+
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+def create_tree(node):
+    print(f"Enter children for node {node.data} (comma-separated, or press Enter for no children): ")
+    children_input = input().split(',')
+
+    for child_data in children_input:
+        child_data = child_data.strip()
+        if child_data:
+            child_node = Node(child_data)
+            node.children.append(child_node)
+            create_tree(child_node)
+
+def print_tree(node, level=0):
+    print("  " * level + node.data)
+    for child in node.children:
+        print_tree(child, level + 1)
+
+if __name__ == "__main__":
+    root_data = input("Enter root node data: ")
+    root = Node(root_data)
+
+    create_tree(root)
+
+    print("\nTree Structure:")
+    print_tree(root)
