@@ -32,3 +32,44 @@ for filename in os.listdir(directory_path):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files.")
+
+
+
+
+
+import os
+import pandas as pd
+
+# Specify the directory path
+directory_path = '/path/to/your/excel/files'
+
+# Loop through each file in the directory
+for filename in os.listdir(directory_path):
+    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
+        file_path = os.path.join(directory_path, filename)
+
+        # Read the Excel file
+        xls = pd.ExcelFile(file_path)
+
+        # Create a dictionary to store updated DataFrames for each sheet
+        updated_sheets = {}
+
+        # Loop through each sheet in the Excel file
+        for sheet_name in xls.sheet_names:
+            # Read the sheet
+            df = xls.parse(sheet_name)
+
+            # Check if the sheet is one of the target sheets
+            if sheet_name in ['sh1', 'sh2', 'sh3']:
+                # Add an empty column named 'cols'
+                df['cols'] = ''
+
+            # Store the updated DataFrame in the dictionary
+            updated_sheets[sheet_name] = df
+
+        # Save all sheets back to the Excel file
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            for sheet_name, df in updated_sheets.items():
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files without dropping other sheets.")
