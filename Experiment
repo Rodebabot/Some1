@@ -1,62 +1,27 @@
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
+import os
+import pandas as pd
 
-app = dash.Dash(__name__)
+# Specify the directory path
+directory_path = '/path/to/your/excel/files'
 
-app.layout = html.Div([
-    html.Label("Enter root node data:"),
-    dcc.Input(id='root-input', type='text', value=''),
-    html.Button('Create Tree', id='create-button'),
-    dcc.Graph(id='tree-diagram'),
-])
+# Loop through each file in the directory
+for filename in os.listdir(directory_path):
+    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
+        file_path = os.path.join(directory_path, filename)
 
-class Node:
-    def __init__(self, data):
-        self.data = data
-        self.children = []
+        # Read the Excel file
+        xls = pd.ExcelFile(file_path)
 
-def create_tree(node):
-    tree_data = {'id': node.data, 'children': []}
+        # Loop through each sheet in the Excel file
+        for sheet_name in ['sh1', 'sh2', 'sh3']:
+            # Read the sheet
+            df = xls.parse(sheet_name)
 
-    print(f"Enter children for node {node.data} (comma-separated, or press Enter for no children): ")
-    children_input = input().split(',')
+            # Add an empty column named 'cols'
+            df['cols'] = ''
 
-    for child_data in children_input:
-        child_data = child_data.strip()
-        if child_data:
-            child_node = Node(child_data)
-            node.children.append(child_node)
-            tree_data['children'].append(create_tree(child_node))
+            # Save the updated sheet back to the Excel file
+            with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
 
-    return tree_data
-
-@app.callback(
-    Output('tree-diagram', 'figure'),
-    [Input('create-button', 'n_clicks')],
-    prevent_initial_call=True
-)
-def update_tree(n_clicks):
-    root_data = app.callback_context.inputs['root-input.value']
-    root = Node(root_data)
-    tree_data = create_tree(root)
-
-    return {
-        'data': [],
-        'layout': {
-            'title': 'Tree Diagram',
-            'annotations': [
-                {
-                    'text': root_data,
-                    'x': 0.5,
-                    'y': 0.5,
-                    'showarrow': False,
-                },
-            ],
-        },
-        'layout': {'title': 'Tree Diagram'},
-        'tree': tree_data
-    }
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files.")
