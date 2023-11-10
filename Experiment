@@ -12,6 +12,9 @@ for filename in os.listdir(directory_path):
         # Read the Excel file
         xls = pd.ExcelFile(file_path)
 
+        # Create a dictionary to store updated DataFrames for each sheet
+        updated_sheets = {}
+
         # Loop through each sheet in the Excel file
         for sheet_name in ['sh1', 'sh2', 'sh3']:
             # Read the sheet
@@ -20,8 +23,12 @@ for filename in os.listdir(directory_path):
             # Add an empty column named 'cols'
             df['cols'] = ''
 
-            # Save the updated sheet back to the Excel file
-            with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            # Store the updated DataFrame in the dictionary
+            updated_sheets[sheet_name] = df
+
+        # Save the updated sheets back to the Excel file
+        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
+            for sheet_name, df in updated_sheets.items():
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
 
 print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files.")
