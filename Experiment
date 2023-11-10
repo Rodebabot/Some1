@@ -21,3 +21,36 @@ for filename in os.listdir(directory_path):
             # Save the modified DataFrame back to the Excel file
             with pd.ExcelWriter(file_path, engine='openpyxl', mode='a') as writer:
                 df.to_excel(writer, sheet_name='dps_new', index=False, header=False)
+
+
+
+
+
+import os
+import pandas as pd
+
+# Specify the directory containing your Excel files
+directory_path = '/path/to/your/excel/files'
+
+# Loop through each file in the directory
+for filename in os.listdir(directory_path):
+    if filename.endswith('.xlsx'):  # Adjust the extension if needed
+        file_path = os.path.join(directory_path, filename)
+
+        # Read the Excel file and locate the 'dps_new' sheet
+        df = pd.read_excel(file_path, sheet_name='dps_new', header=None)
+
+        # Find the row containing 'Business Date' and add 'abcdefg' at the end
+        business_date_row = df[df.eq('Business Date').any(axis=1)].index
+        if not business_date_row.empty:
+            business_date_row = business_date_row[0]
+            df.loc[business_date_row, df.columns[-1]] = 'abcdefg'
+
+            # Save the modified DataFrame back to the Excel file
+            with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+                writer.book = pd.load_workbook(file_path)
+                writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
+                df.to_excel(writer, sheet_name='dps_new', index=False, header=False)
+
+# The existing 'dps_new' sheet in each Excel file will be updated with 'abcdefg' added at the end of the row containing 'Business Date'.
+
