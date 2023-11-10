@@ -16,23 +16,27 @@ for filename in os.listdir(directory_path):
         updated_sheets = {}
 
         # Loop through each sheet in the Excel file
-        for sheet_name in ['sh1', 'sh2', 'sh3']:
+        for sheet_name in xls.sheet_names:
             # Read the sheet
             df = xls.parse(sheet_name)
 
-            # Add an empty column named 'cols'
-            df['cols'] = ''
+            # Check if the sheet is one of the target sheets
+            if sheet_name in ['sh1', 'sh2', 'sh3']:
+                # Add an empty column named 'cols'
+                df['cols'] = ''
+            else:
+                # Keep the other sheets unchanged
+                pass
 
             # Store the updated DataFrame in the dictionary
             updated_sheets[sheet_name] = df
 
-        # Save the updated sheets back to the Excel file
+        # Save all sheets back to the Excel file
         with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
             for sheet_name, df in updated_sheets.items():
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
 
-print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files.")
-
+print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files without changing other sheets.")
 
 
 
