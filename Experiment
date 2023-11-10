@@ -1,183 +1,23 @@
 import os
 import pandas as pd
 
-# Specify the directory path
+# Specify the directory containing your Excel files
 directory_path = '/path/to/your/excel/files'
 
 # Loop through each file in the directory
 for filename in os.listdir(directory_path):
-    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
+    if filename.endswith('.xlsx'):  # Adjust the extension if needed
         file_path = os.path.join(directory_path, filename)
 
-        # Read the Excel file
-        xls = pd.ExcelFile(file_path)
+        # Read the Excel file and locate the 'dps_new' sheet
+        df = pd.read_excel(file_path, sheet_name='dps_new', header=None)
 
-        # Create a dictionary to store updated DataFrames for each sheet
-        updated_sheets = {}
+        # Find the row containing 'Business Date' and add 'abcdefg' at the end
+        business_date_row = df[df.eq('Business Date').any(axis=1)].index
+        if not business_date_row.empty:
+            business_date_row = business_date_row[0]
+            df.loc[business_date_row, df.columns[-1]] = 'abcdefg'
 
-        # Loop through each sheet in the Excel file
-        for sheet_name in xls.sheet_names:
-            # Read the sheet
-            df = xls.parse(sheet_name)
-
-            # Check if the sheet is one of the target sheets
-            if sheet_name in ['sh1', 'sh2', 'sh3']:
-                # Add an empty column named 'cols'
-                df['cols'] = ''
-            else:
-                # Keep the other sheets unchanged
-                pass
-
-            # Store the updated DataFrame in the dictionary
-            updated_sheets[sheet_name] = df
-
-        # Save all sheets back to the Excel file
-        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
-            for sheet_name, df in updated_sheets.items():
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files without changing other sheets.")
-
-
-
-
-import os
-import pandas as pd
-
-# Specify the directory path
-directory_path = '/path/to/your/excel/files'
-
-# Loop through each file in the directory
-for filename in os.listdir(directory_path):
-    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
-        file_path = os.path.join(directory_path, filename)
-
-        # Read the Excel file
-        xls = pd.ExcelFile(file_path)
-
-        # Create a dictionary to store updated DataFrames for each sheet
-        updated_sheets = {}
-
-        # Loop through each sheet in the Excel file
-        for sheet_name in xls.sheet_names:
-            # Read the sheet
-            df = xls.parse(sheet_name)
-
-            # Check if the sheet is one of the target sheets
-            if sheet_name in ['sh1', 'sh2', 'sh3']:
-                # Add an empty column named 'cols'
-                df['cols'] = ''
-
-            # Store the updated DataFrame in the dictionary
-            updated_sheets[sheet_name] = df
-
-        # Save all sheets back to the Excel file
-        with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
-            for sheet_name, df in updated_sheets.items():
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files without dropping other sheets.")
-
-
-
-
-import os
-import pandas as pd
-from openpyxl import load_workbook
-
-# Specify the directory path
-directory_path = '/path/to/your/excel/files'
-
-# Loop through each file in the directory
-for filename in os.listdir(directory_path):
-    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
-        file_path = os.path.join(directory_path, filename)
-
-        # Read the Excel file
-        xls = pd.ExcelFile(file_path)
-
-        # Create a dictionary to store updated DataFrames for each sheet
-        updated_sheets = {}
-
-        # Loop through each sheet in the Excel file
-        for sheet_name in xls.sheet_names:
-            # Read the sheet
-            df = xls.parse(sheet_name)
-
-            # Check if the sheet is one of the target sheets
-            if sheet_name in ['sh1', 'sh2', 'sh3']:
-                # Add an empty column named 'cols'
-                df['cols'] = ''
-            else:
-                # Keep the other sheets unchanged
-                pass
-
-            # Store the updated DataFrame in the dictionary
-            updated_sheets[sheet_name] = df
-
-        # Save all sheets back to the Excel file with maintaining formatting
-        with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-            writer.book = load_workbook(file_path)
-
-            for sheet_name, df in updated_sheets.items():
-                writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files without changing other sheets' formatting.")
-
-
-
-
-import os
-import pandas as pd
-from openpyxl import load_workbook
-
-# Specify the directory path
-directory_path = '/path/to/your/excel/files'
-
-# Loop through each file in the directory
-for filename in os.listdir(directory_path):
-    if filename.endswith('.xlsx'):  # Adjust the file extension if necessary
-        file_path = os.path.join(directory_path, filename)
-
-        # Read the Excel file
-        xls = pd.ExcelFile(file_path)
-
-        # Create a dictionary to store updated DataFrames for each sheet
-        updated_sheets = {}
-
-        # Loop through each sheet in the Excel file
-        for sheet_name in xls.sheet_names:
-            # Read the sheet
-            df = xls.parse(sheet_name)
-
-            # Check if the sheet is 'sh2'
-            if sheet_name == 'sh2':
-                # Find the row index containing 'business date' and consider it as the header
-                header_row_index = df[df.apply(lambda row: 'business date' in str(row).lower(), axis=1)].index[0]
-
-                # Add an empty column named 'cols' to the identified header row
-                df.loc[header_row_index, 'cols'] = ''
-            elif sheet_name in ['sh1', 'sh3']:
-                # For 'sh1' and 'sh3', add an empty column named 'cols'
-                df['cols'] = ''
-            else:
-                # Keep the other sheets unchanged
-                pass
-
-            # Store the updated DataFrame in the dictionary
-            updated_sheets[sheet_name] = df
-
-        # Save all sheets back to the Excel file with maintaining formatting
-        with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
-            writer.book = load_workbook(file_path)
-
-            # Set the visibility of the first sheet to ensure at least one sheet is visible
-            if writer.book.sheetnames:
-                writer.book[sheet_name].sheet_state = 'visible'
-
-            writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
-            for sheet_name, df in updated_sheets.items():
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-print("Empty column 'cols' added to sheets sh1, sh2, and sh3 in all Excel files. In sheet sh2, the identified business date row is considered as the header.")
+            # Save the modified DataFrame back to the Excel file
+            with pd.ExcelWriter(file_path, engine='openpyxl', mode='a') as writer:
+                df.to_excel(writer, sheet_name='dps_new', index=False, header=False)
