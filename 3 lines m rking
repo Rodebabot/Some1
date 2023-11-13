@@ -1,27 +1,40 @@
 import pandas as pd
-import re
-import os
+from docx import Document
 
-# Step 1: Read Excel File
-df = pd.read_excel('your_excel_file.xlsx')
+# Read the Excel file
+excel_file = 'path/to/your/excel/file.xlsx'
+df = pd.read_excel(excel_file)
 
-# Step 2: Define a Function to Extract Categories
-def extract_categories(file_path, keywords):
-    with open(file_path, 'r') as file:
-        content = file.read()
-        matches = [category for word, category in keywords if re.search(fr'\b{word}\b', content, re.IGNORECASE)]
-        return ', '.join(matches) if matches else None
+# Read the Word document
+docx_file = 'path/to/your/docx/file.docx'
+doc = Document(docx_file)
 
-# Step 3: Process Files and Generate Output
-output_data = {'File': [], 'Categories': []}
+# Create a dictionary to store the categories for each word
+word_categories = {}
 
+# Iterate through each row in the Excel file
 for index, row in df.iterrows():
-    file_path = f'path/to/your/files/{row["Col1"]}.txt'  # Adjust the path and extension accordingly
-    categories = extract_categories(file_path, zip(df['Col1'], df['col2']))
-    output_data['File'].append(file_path)
-    output_data['Categories'].append(categories)
+    word = str(row['Word'])  # Assuming 'Word' is the header for the first column
+    category = str(row['Category'])  # Assuming 'Category' is the header for the second column
+    word_categories[word] = category
 
-output_df = pd.DataFrame(output_data)
+# Function to find categories for words in the Word document
+def find_categories(text):
+    categories_found = []
+    for word in word_categories:
+        if word in text:
+            categories_found.append(word_categories[word])
+    return ', '.join(categories_found)
 
-# Step 4: Write Output to Excel
-output_df.to_excel('output_categories.xlsx', index=False)
+# Extract text from the Word document and find categories
+document_text = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
+categories_result = find_categories(document_text)
+
+# Create a new DataFrame with the results
+result_df = pd.DataFrame({'Word': list(word_categories.keys()), 'Categories Found': [find_categories(document_text) for _ in range(len(word_categories))]})
+
+# Save the result to a new Excel file
+result_excel_file = 'path/to/your/result/file.xlsx'
+result_df.to_excel(result_excel_file, index=False)
+
+print(f'Results saved to {result_excel_file}')
