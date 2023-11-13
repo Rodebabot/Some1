@@ -10,28 +10,17 @@ docx_file = 'path/to/your/docx/file.docx'
 doc = Document(docx_file)
 
 # Create a dictionary to store the categories for each word
-word_categories = {}
+word_categories = dict(zip(df['Word'], df['Category']))
 
-# Iterate through each row in the Excel file
-for index, row in df.iterrows():
-    word = str(row['Word'])  # Assuming 'Word' is the header for the first column
-    category = str(row['Category'])  # Assuming 'Category' is the header for the second column
-    word_categories[word] = category
-
-# Function to find categories for words in the Word document
-def find_categories(text):
-    categories_found = []
+# Find categories in the Word document
+categories_found = set()
+for paragraph in doc.paragraphs:
     for word in word_categories:
-        if word in text:
-            categories_found.append(word_categories[word])
-    return ', '.join(categories_found)
+        if word.lower() in paragraph.text.lower():
+            categories_found.add(word_categories[word])
 
-# Extract text from the Word document and find categories
-document_text = '\n'.join([paragraph.text for paragraph in doc.paragraphs])
-categories_result = find_categories(document_text)
-
-# Create a new DataFrame with the results
-result_df = pd.DataFrame({'Word': list(word_categories.keys()), 'Categories Found': [find_categories(document_text) for _ in range(len(word_categories))]})
+# Create a DataFrame with the results
+result_df = pd.DataFrame({'Category found': [', '.join(categories_found)]})
 
 # Save the result to a new Excel file
 result_excel_file = 'path/to/your/result/file.xlsx'
