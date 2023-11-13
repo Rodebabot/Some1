@@ -1,235 +1,27 @@
+import pandas as pd
 import re
-import pandas as pd
-
-def extract_data_from_notepad(notepad_file):
-    with open(notepad_file, 'r', encoding='utf-8') as file:
-        content = file.readlines()
-
-    extracted_data = []
-    for i in range(0, len(content), 3):
-        line1 = content[i].strip()
-        line2 = content[i + 1].strip()
-        line3 = content[i + 2].strip()
-        columns = re.split(r'\s+', line1)  # Split line1 based on spaces
-
-        # Extend columns with values from line2 and line3
-        columns.extend(re.split(r'\s+', line2))
-        columns.extend(re.split(r'\s+', line3))
-
-        extracted_data.append(columns)
-
-    return extracted_data
-
-# Prompt the user to input the path to the notepad file
-notepad_file = input("Enter the path to the notepad file: ")
-
-# Extract data from the notepad file
-data = extract_data_from_notepad(notepad_file)
-
-# Convert the extracted data to a pandas DataFrame
-df = pd.DataFrame(data)
-
-# Save the DataFrame to an Excel file
-df.to_excel("output_excel_file.xlsx", index=False)
-
-
-
-
-
-import pyautogui
-import keyboard
-
-recorded_actions = []
-
-def record_event(e):
-    recorded_actions.append(e.name)
-
-def main():
-    print("Recording started. Press 'Shift + Enter' to stop recording.")
-    
-    keyboard.hook(record_event)
-    
-    while True:
-        if keyboard.is_pressed('shift') and keyboard.is_pressed('enter'):
-            break
-    
-    keyboard.unhook_all()
-    
-    print("Recording stopped. Replaying actions...")
-    
-    pyautogui.PAUSE = 1  # Adjust the pause between actions if needed
-    
-    for action in recorded_actions:
-        if action == "esc":
-            pyautogui.press(action)
-        elif action == "space":
-            pyautogui.press(action)
-        else:
-            pyautogui.typewrite(action)
-    
-    print("Replay completed.")
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
-
-
-from pynput import keyboard, mouse
-import time
-
-events = []
-
-def on_key_release(key):
-    if key == keyboard.Key.shift:
-        return False
-
-def on_click(x, y, button, pressed):
-    events.append(('click', x, y, button, pressed))
-
-def on_type(key):
-    events.append(('type', key.char))
-
-def record():
-    with keyboard.Listener(on_release=on_key_release) as key_listener, \
-         mouse.Listener(on_click=on_click) as mouse_listener:
-        print("Recording started. Press 'Shift + Enter' to stop recording.")
-        key_listener.join()
-        mouse_listener.join()
-
-def replay():
-    for event in events:
-        if event[0] == 'click':
-            x, y, button, pressed = event[1], event[2], event[3], event[4]
-            if pressed:
-                mouse.Controller().position = (x, y)
-                mouse.Controller().click(button)
-        elif event[0] == 'type':
-            key = event[1]
-            keyboard.Controller().type(key)
-        time.sleep(0.1)  # Adjust the delay if needed
-
-def main():
-    record()
-    print("Recording stopped. Replaying actions...")
-    replay()
-    print("Replay completed.")
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
-
-
-from pynput import keyboard, mouse
-import time
-
-events = []
-recording = True
-
-def on_key_release(key):
-    if key == keyboard.Key.shift:
-        global recording
-        recording = False
-        return False
-
-def on_click(x, y, button, pressed):
-    if recording:
-        events.append(('click', x, y, button, pressed))
-
-def on_type(key):
-    if recording:
-        events.append(('type', key.char))
-
-def record():
-    with keyboard.Listener(on_release=on_key_release) as key_listener, \
-         mouse.Listener(on_click=on_click) as mouse_listener:
-        print("Recording started. Press 'Shift + Enter' to stop recording.")
-        key_listener.join()
-        mouse_listener.join()
-
-def replay():
-    for event in events:
-        if event[0] == 'click':
-            x, y, button, pressed = event[1], event[2], event[3], event[4]
-            if pressed:
-                mouse.Controller().position = (x, y)
-                mouse.Controller().click(button)
-        elif event[0] == 'type':
-            key = event[1]
-            keyboard.Controller().type(key)
-        time.sleep(0.1)  # Adjust the delay if needed
-
-def main():
-    record()
-    print("Recording stopped. Replaying actions...")
-    replay()
-    print("Replay completed.")
-
-if __name__ == "__main__":
-    main()
-
-import pandas as pd
-import numpy as np
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.metrics import mean_squared_error
-
-# Load your data into a pandas DataFrame
-# Make sure the date column is named 'ds' and the volume column is named 'y'
-data = pd.read_csv('your_data.csv')
-data['ds'] = pd.to_datetime(data['ds'])
-data.set_index('ds', inplace=True)
-
-# Prepare data for SARIMA model
-y = data['y']
-
-# Initialize and fit the SARIMA model on the full data
-order = (1, 1, 1)  # You can adjust the order based on your data
-seasonal_order = (1, 1, 1, 12)  # Considering monthly seasonality
-sarima_model = SARIMAX(y, order=order, seasonal_order=seasonal_order)
-sarima_result = sarima_model.fit(disp=False)
-
-# Forecast the next 12 months
-forecast = sarima_result.get_forecast(steps=12)
-
-# Create a table of predicted volume for the next 12 months
-predicted_volumes = forecast.predicted_mean.reset_index()
-predicted_volumes.columns = ['Date', 'Predicted Volume']
-predicted_volumes.set_index('Date', inplace=True)
-
-
-
-print(predicted_volumes)
-
-
-
-
-
-
-
-
-
-import pandas as pd
-
-# Load the CSV file with custom delimiter
-csv_file_path = 'path_to_your_csv_file.csv'
-sheet_name = input("Enter the name of the sheet you want to convert: ")
-data = pd.read_csv(csv_file_path, sep=',,', engine='python', header=None, sheet_name=sheet_name)
-
-# Extract the file name without extension
-file_name = csv_file_path.split('/')[-1].split('.')[0]
-
-# Convert and save as Excel file with the same name
-excel_file_path = f'{file_name}.xlsx'
-data.to_excel(excel_file_path, index=False, sheet_name=sheet_name)
-
-print(f"Sheet '{sheet_name}' from CSV file with custom delimiter converted to Excel: {excel_file_path}")
-
+import os
+
+# Step 1: Read Excel File
+df = pd.read_excel('your_excel_file.xlsx')
+
+# Step 2: Define a Function to Extract Categories
+def extract_categories(file_path, keywords):
+    with open(file_path, 'r') as file:
+        content = file.read()
+        matches = [category for word, category in keywords if re.search(fr'\b{word}\b', content, re.IGNORECASE)]
+        return ', '.join(matches) if matches else None
+
+# Step 3: Process Files and Generate Output
+output_data = {'File': [], 'Categories': []}
+
+for index, row in df.iterrows():
+    file_path = f'path/to/your/files/{row["Col1"]}.txt'  # Adjust the path and extension accordingly
+    categories = extract_categories(file_path, zip(df['Col1'], df['col2']))
+    output_data['File'].append(file_path)
+    output_data['Categories'].append(categories)
+
+output_df = pd.DataFrame(output_data)
+
+# Step 4: Write Output to Excel
+output_df.to_excel('output_categories.xlsx', index=False)
