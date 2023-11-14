@@ -27,3 +27,40 @@ result_excel_file = 'path/to/your/result/file.xlsx'
 result_df.to_excel(result_excel_file, index=False)
 
 print(f'Results saved to {result_excel_file}')
+
+
+
+
+
+
+
+import pandas as pd
+from docx import Document
+
+# Read the Excel file
+excel_file = 'path/to/your/excel/file.xlsx'
+df = pd.read_excel(excel_file)
+
+# Read the Word document
+docx_file = 'path/to/your/docx/file.docx'
+doc = Document(docx_file)
+
+# Create a list to store the words found in the document
+words_found = []
+
+# Iterate through each row in the Excel file
+for index, row in df.iterrows():
+    word = str(row['Word'])  # Assuming 'Word' is the header for the first column
+    # Iterate through each paragraph in the Word document
+    for paragraph in doc.paragraphs:
+        if word.lower() in paragraph.text.lower():
+            words_found.append(word)
+
+# Create a DataFrame with the results
+result_df = pd.DataFrame({'Words found': [', '.join(words_found)]})
+
+# Save the result to a new Excel file
+result_excel_file = 'path/to/your/result/file.xlsx'
+result_df.to_excel(result_excel_file, index=False)
+
+print(f'Results saved to {result_excel_file}')
