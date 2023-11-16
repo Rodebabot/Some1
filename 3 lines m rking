@@ -1,66 +1,62 @@
-import pandas as pd
-from docx import Document
+import pyaudio
+import wave
 
-# Read the Excel file
-excel_file = 'path/to/your/excel/file.xlsx'
-df = pd.read_excel(excel_file)
+def list_input_devices():
+    p = pyaudio.PyAudio()
+    info = p.get_host_api_info_by_index(0)
+    num_devices = info.get('deviceCount')
 
-# Read the Word document
-docx_file = 'path/to/your/docx/file.docx'
-doc = Document(docx_file)
+    print("Available audio input devices:")
+    for i in range(0, num_devices):
+        device_info = p.get_device_info_by_host_api_device_index(0, i)
+        print(f"{i + 1}. {device_info['name']}")
 
-# Create a dictionary to store the categories for each word
-word_categories = dict(zip(df['Word'], df['Category']))
+    p.terminate()
 
-# Find categories in the Word document
-categories_found = set()
-for paragraph in doc.paragraphs:
-    for word in word_categories:
-        if word.lower() in paragraph.text.lower():
-            categories_found.add(word_categories[word])
+def record_audio(device_index, duration, output_filename):
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+    CHUNK = 1024
 
-# Create a DataFrame with the results
-result_df = pd.DataFrame({'Category found': [', '.join(categories_found)]})
+    audio = pyaudio.PyAudio()
 
-# Save the result to a new Excel file
-result_excel_file = 'path/to/your/result/file.xlsx'
-result_df.to_excel(result_excel_file, index=False)
+    stream = audio.open(format=FORMAT, channels=CHANNELS,
+                        rate=RATE, input=True,
+                        input_device_index=device_index,
+                        frames_per_buffer=CHUNK)
 
-print(f'Results saved to {result_excel_file}')
+    print("Recording...")
 
+    frames = []
 
+    for _ in range(0, int(RATE / CHUNK * duration)):
+        data = stream.read(CHUNK)
+        frames.append(data)
 
+    print("Finished recording.")
 
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
 
+    with wave.open(output_filename, 'wb') as wf:
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(audio.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
 
+    print(f"Audio saved as {output_filename}")
 
-import pandas as pd
-from docx import Document
+# List available input devices
+list_input_devices()
 
-# Read the Excel file
-excel_file = 'path/to/your/excel/file.xlsx'
-df = pd.read_excel(excel_file)
+# Ask the user to select an input device
+selected_device_index = int(input("Enter the number of the desired input device: ")) - 1
 
-# Read the Word document
-docx_file = 'path/to/your/docx/file.docx'
-doc = Document(docx_file)
+# Set recording parameters
+record_duration = 5
+output_file = "output.wav"
 
-# Create a list to store the words found in the document
-words_found = []
-
-# Iterate through each row in the Excel file
-for index, row in df.iterrows():
-    word = str(row['Word'])  # Assuming 'Word' is the header for the first column
-    # Iterate through each paragraph in the Word document
-    for paragraph in doc.paragraphs:
-        if word.lower() in paragraph.text.lower():
-            words_found.append(word)
-
-# Create a DataFrame with the results
-result_df = pd.DataFrame({'Words found': [', '.join(words_found)]})
-
-# Save the result to a new Excel file
-result_excel_file = 'path/to/your/result/file.xlsx'
-result_df.to_excel(result_excel_file, index=False)
-
-print(f'Results saved to {result_excel_file}')
+# Record audio using the selected input device
+record_audio(selected_device_index, record_duration, output_file)
