@@ -74,3 +74,28 @@ result = pd.concat([file1, file2], ignore_index=True)
 
 # Save the result to a new CSV file
 result.to_csv('merged_file.csv', index=False)
+
+
+
+
+
+import pandas as pd
+
+# Your initial data
+data = {'Col1': ['1,2'], 'Col2': ['x,y']}
+
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+# Split the values in Col1 and Col2
+df['Col1'] = df['Col1'].str.split(',')
+df['Col2'] = df['Col2'].str.split(',')
+
+# Explode the lists in Col1 and Col2
+df = df.explode('Col1').explode('Col2')
+
+# Reset the index
+df.reset_index(drop=True, inplace=True)
+
+# Display the resulting DataFrame
+print(df)
