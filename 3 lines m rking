@@ -99,3 +99,25 @@ df.reset_index(drop=True, inplace=True)
 
 # Display the resulting DataFrame
 print(df)
+
+
+
+import pandas as pd
+
+# Load the first Excel file into a DataFrame
+file1 = pd.read_excel('path/to/file1.xlsx')
+
+# Load the second Excel file into another DataFrame
+file2 = pd.read_excel('path/to/file2.xlsx')
+
+# Specify the columns you want to use for the VLOOKUP
+lookup_column_file1 = 'column_name1'  # replace with the actual column name
+lookup_column_file2 = 'column_name2'  # replace with the actual column name
+
+# Perform the VLOOKUP
+result = pd.merge(file1, file2, how='left', left_on=lookup_column_file1, right_on=lookup_column_file2)
+
+# Print or save the result
+print(result)
+# or result.to_excel('path/to/output.xlsx', index=False)
+
