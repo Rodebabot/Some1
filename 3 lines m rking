@@ -121,3 +121,59 @@ result = pd.merge(file1, file2, how='left', left_on=lookup_column_file1, right_o
 print(result)
 # or result.to_excel('path/to/output.xlsx', index=False)
 
+
+
+
+
+
+import win32com.client
+import pandas as pd
+
+def check_replied_status(mail_item):
+    conversation_topic = mail_item.ConversationTopic
+    conversation_table = mail_item.GetNamespace("MAPI").GetTable("urn:schemas:httpmail:conversationIndex")
+
+    # Fetch all rows with the same ConversationTopic
+    conversation_table.Restrict(f"[ConversationTopic] = '{conversation_topic}'")
+    rows = [row for row in conversation_table]
+
+    # Get the maximum index length
+    max_index_length = max(len(row.GetEx("http://schemas.microsoft.com/mapi/proptag/0x00710102")) for row in rows)
+
+    # Check if the current email has the maximum index length
+    if len(mail_item.GetEx("http://schemas.microsoft.com/mapi/proptag/0x00710102")) == max_index_length:
+        return "Unreplied"
+    else:
+        return "Replied"
+
+def get_outlook_mails():
+    outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+    inbox = outlook_app.GetDefaultFolder(6)  # 6 corresponds to the Inbox folder
+
+    # Get all items in the Inbox
+    items = inbox.Items
+
+    return items
+
+def main():
+    # Get all emails from Outlook Inbox
+    all_emails = get_outlook_mails()
+
+    # Create a DataFrame to store the results
+    data = {"ID/Index": [], "Replied Status": []}
+
+    # Iterate through all emails
+    for index, email in enumerate(all_emails):
+        data["ID/Index"].append(index + 1)  # Index starts from 1
+        data["Replied Status"].append(check_replied_status(email))
+
+    # Create a DataFrame from the collected data
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to an Excel file
+    df.to_excel("outlook_replied_status.xlsx", index=False)
+    print("Excel file created successfully.")
+
+if __name__ == "__main__":
+    main()
+
