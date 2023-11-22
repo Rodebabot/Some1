@@ -1,30 +1,26 @@
 import pandas as pd
-from openpyxl import load_workbook
-from openpyxl.styles import PatternFill
 
-# Assuming you have a DataFrame named 'reference_df' with columns 'Affected Countries' and 'Currency'
-# Replace 'your_user_excel_file.xlsx' with the actual file path
+# Assuming you have a DataFrame named 'df' with columns 'Affected Countries' and 'Currency'
+# Replace 'your_excel_file.xlsx' with the actual file path
 
-reference_df = pd.DataFrame({
-    'Affected Countries': ['Country1', 'Country2', 'Country3'],
-    'Currency': ['Currency1', 'Currency2', 'Currency3']
-})
+file_path = 'your_excel_file.xlsx'
+new_df = pd.read_excel(file_path)
 
-user_excel_file_path = 'your_user_excel_file.xlsx'
-user_df = pd.read_excel(user_excel_file_path)
+# Assuming df is your existing DataFrame with columns 'Affected Countries' and 'Currency'
+# If not, replace it with the actual DataFrame name
 
-# Create a PatternFill object for yellow color
-yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+affected_countries = set(df['Affected Countries'].dropna())
+currencies = set(df['Currency'].dropna())
 
-# Load the Excel file
-book = load_workbook(user_excel_file_path)
-sheet = book.active
+# Create a mask for rows that contain values from the specified columns
+mask = new_df.apply(lambda row: any(value in affected_countries or value in currencies for value in row), axis=1)
 
-# Iterate through rows and highlight if any value matches
-for index, user_row in user_df.iterrows():
-    for _, reference_row in reference_df.iterrows():
-        if user_row.isin(reference_row).any():
-            sheet.row_dimensions[index + 2].fill = yellow_fill
+# Create a new DataFrame containing only the rows that match the criteria
+df2 = new_df[mask]
 
-# Save the changes
-book.save(user_excel_file_path)
+# Drop the other rows from the original DataFrame
+new_df = new_df[mask]
+
+# If you want to reset the index of the new DataFrame
+df2.reset_index(drop=True, inplace=True)
+new_df.reset_index(drop=True, inplace=True)
