@@ -18,19 +18,15 @@ yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='s
 
 # Load the Excel file
 book = load_workbook(user_excel_file_path)
-writer = pd.ExcelWriter(user_excel_file_path, engine='openpyxl')
-writer.book = book
-
-# Access the default sheet
 sheet = book.active
 
 # Iterate through rows and highlight if any value matches
 for index, user_row in user_df.iterrows():
     for _, reference_row in reference_df.iterrows():
         if user_row.isin(reference_row).any():
-            for cell in sheet[f"A{index+2}":"{sheet.max_column}{index+2}"]:
-                for c in cell:
-                    c.fill = yellow_fill
+            for col_idx in range(1, sheet.max_column + 1):
+                cell = sheet.cell(row=index + 2, column=col_idx)
+                cell.fill = yellow_fill
 
 # Save the changes
-writer.save()
+book.save(user_excel_file_path)
