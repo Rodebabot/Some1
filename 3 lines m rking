@@ -1,151 +1,35 @@
-import pyaudio
-import wave
-
-def list_input_devices():
-    p = pyaudio.PyAudio()
-    info = p.get_host_api_info_by_index(0)
-    num_devices = info.get('deviceCount')
-
-    print("Available audio input devices:")
-    for i in range(0, num_devices):
-        device_info = p.get_device_info_by_host_api_device_index(0, i)
-        print(f"{i + 1}. {device_info['name']}")
-
-    p.terminate()
-
-def record_audio(device_index, duration, output_filename):
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 44100
-    CHUNK = 1024
-
-    audio = pyaudio.PyAudio()
-
-    stream = audio.open(format=FORMAT, channels=CHANNELS,
-                        rate=RATE, input=True,
-                        input_device_index=device_index,
-                        frames_per_buffer=CHUNK)
-
-    print("Recording...")
-
-    frames = []
-
-    for _ in range(0, int(RATE / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    print("Finished recording.")
-
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-
-    with wave.open(output_filename, 'wb') as wf:
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(audio.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-
-    print(f"Audio saved as {output_filename}")
-
-# List available input devices
-list_input_devices()
-
-# Ask the user to select an input device
-selected_device_index = int(input("Enter the number of the desired input device: ")) - 1
-
-# Set recording parameters
-record_duration = 5
-output_file = "output.wav"
-
-# Record audio using the selected input device
-record_audio(selected_device_index, record_duration, output_file)
-
-
-
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
 
-# Assuming you have two CSV files: 'file1.csv' and 'file2.csv'
-file1 = pd.read_csv('file1.csv')
-file2 = pd.read_csv('file2.csv')
+# Assuming you have a DataFrame named 'df' with columns 'Affected Countries' and 'Currency'
+# Replace 'your_excel_file.xlsx' with the actual file path
 
-# Concatenate along rows
-result = pd.concat([file1, file2], ignore_index=True)
-
-# Save the result to a new CSV file
-result.to_csv('merged_file.csv', index=False)
-
-
-
-
-
-import pandas as pd
-
-# Your initial data
-data = {'Col1': ['1,2'], 'Col2': ['x,y']}
-
-# Create a DataFrame
-df = pd.DataFrame(data)
-
-# Split the values in Col1 and Col2
-df['Col1'] = df['Col1'].str.split(',')
-df['Col2'] = df['Col2'].str.split(',')
-
-# Explode the lists in Col1 and Col2
-df = df.explode('Col1').explode('Col2')
-
-# Reset the index
-df.reset_index(drop=True, inplace=True)
-
-# Display the resulting DataFrame
-print(df)
-
-
-
-import pandas as pd
-
-# Load the first Excel file into a DataFrame
-file1 = pd.read_excel('path/to/file1.xlsx')
-
-# Load the second Excel file into another DataFrame
-file2 = pd.read_excel('path/to/file2.xlsx')
-
-# Specify the columns you want to use for the VLOOKUP
-lookup_column_file1 = 'column_name1'  # replace with the actual column name
-lookup_column_file2 = 'column_name2'  # replace with the actual column name
-
-# Perform the VLOOKUP
-result = pd.merge(file1, file2, how='left', left_on=lookup_column_file1, right_on=lookup_column_file2)
-
-# Print or save the result
-print(result)
-# or 
-
-
-
-
-
-
-import pandas as pd
-
-# Load the Excel file into a DataFrame
-file_path = 'your_excel_file.xlsx'  # Replace with your file path
+file_path = 'your_excel_file.xlsx'
 df = pd.read_excel(file_path)
 
-# Convert 'RecievedTime' to datetime type
-df['RecievedTime'] = pd.to_datetime(df['RecievedTime'])
+# List of affected countries and currencies
+affected_countries = ['Country1', 'Country2', 'Country3']
+currencies = ['Currency1', 'Currency2', 'Currency3']
 
-# Sort DataFrame by 'RecievedTime' in descending order
-df = df.sort_values(by=['Id', 'RecievedTime'], ascending=[True, False])
+# Create a PatternFill object for yellow color
+yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
 
-# Create 'RNR' column
-df['RNR'] = 'Replied'
+# Load the Excel file
+book = load_workbook(file_path)
+writer = pd.ExcelWriter(file_path, engine='openpyxl')
+writer.book = book
 
-# Mark the latest 'RecievedTime' for each 'Id' as 'Unreplied' in 'RNR'
-df.loc[df.groupby('Id').head(1).index, 'RNR'] = 'Unreplied'
+# Access the default sheet
+sheet = book.active
 
-# Resetting the index
-df = df.reset_index(drop=True)
+# Iterate through rows and highlight if any value matches
+for index, row in df.iterrows():
+    for col in df.columns:
+        if row[col] in affected_countries or row[col] in currencies:
+            for cell in sheet[f"{col}{index+2}":"{sheet.max_column}{index+2}"]:
+                for c in cell:
+                    c.fill = yellow_fill
 
-# Save the updated DataFrame back to the Excel file
-df.to_excel(file_path, index=False)
+# Save the changes
+writer.save()
