@@ -24,9 +24,7 @@ sheet = book.active
 for index, user_row in user_df.iterrows():
     for _, reference_row in reference_df.iterrows():
         if user_row.isin(reference_row).any():
-            for col_idx in range(1, sheet.max_column + 1):
-                cell = sheet.cell(row=index + 2, column=col_idx)
-                cell.fill = yellow_fill
+            sheet.row_dimensions[index + 2].fill = yellow_fill
 
 # Save the changes
 book.save(user_excel_file_path)
