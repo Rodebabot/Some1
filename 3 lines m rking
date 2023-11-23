@@ -1,7 +1,18 @@
-import pyautogui
+import os
+import shutil
+from datetime import datetime, timedelta
 
-# Take a screenshot
-screenshot = pyautogui.screenshot()
+compute_folder_path = "/path/to/Compute"
+archival_folder_path = "/path/to/Archival"
 
-# Save the screenshot
-screenshot.save("screenshot.png")
+today = datetime.now()
+
+for filename in os.listdir(compute_folder_path):
+    if filename.endswith(".xlsx"):
+        date_string = filename.split('-')[0:3]
+        file_date = datetime.strptime('-'.join(date_string), "%d-%m-%Y")
+        if today - file_date > timedelta(days=30):
+            file_path = os.path.join(compute_folder_path, filename)
+            destination_path = os.path.join(archival_folder_path, filename)
+            shutil.move(file_path, destination_path)
+
