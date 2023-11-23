@@ -2,23 +2,17 @@ import os
 import shutil
 from datetime import datetime, timedelta
 
-base_folder_path = "/path/to/"
+compute_folder_paths = ["/path/to/Compute1", "/path/to/Compute2", "/path/to/Compute3"]
+archival_folder_paths = ["/path/to/Archival1", "/path/to/Archival2", "/path/to/Archival3"]
 
 today = datetime.now()
 
-# Assuming you have pairs of Compute and Archival folders with the same names
-compute_folder_names = ["Compute1", "Compute2", "Compute3"]
-archival_folder_names = ["Archival1", "Archival2", "Archival3"]
-
-for compute_folder_name, archival_folder_name in zip(compute_folder_names, archival_folder_names):
-    compute_folder_path = os.path.join(base_folder_path, compute_folder_name)
-    archival_folder_path = os.path.join(base_folder_path, archival_folder_name)
-
-    for filename in os.listdir(compute_folder_path):
+for compute_path, archival_path in zip(compute_folder_paths, archival_folder_paths):
+    for filename in os.listdir(compute_path):
         if filename.endswith(".xlsx"):
             date_string = filename.split('-')[0:3]
             file_date = datetime.strptime('-'.join(date_string), "%d-%m-%Y")
             if today - file_date > timedelta(days=30):
-                file_path = os.path.join(compute_folder_path, filename)
-                destination_path = os.path.join(archival_folder_path, filename)
+                file_path = os.path.join(compute_path, filename)
+                destination_path = os.path.join(archival_path, filename)
                 shutil.move(file_path, destination_path)
