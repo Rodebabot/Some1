@@ -1,42 +1,7 @@
-import pandas as pd
+import pyautogui
 
-# Assuming you have a DataFrame named 'df' with columns 'Affected Countries' and 'Currency'
-# Replace 'your_excel_file.xlsx' with the actual file path
+# Take a screenshot
+screenshot = pyautogui.screenshot()
 
-file_path = 'your_excel_file.xlsx'
-new_df = pd.read_excel(file_path)
-
-# Assuming df is your existing DataFrame with columns 'Affected Countries' and 'Currency'
-# If not, replace it with the actual DataFrame name
-
-affected_countries = set(df['Affected Countries'].dropna())
-currencies = set(df['Currency'].dropna())
-
-# Create a mask for rows that contain values from the specified columns
-mask = new_df.apply(lambda row: any(value in affected_countries or value in currencies for value in row), axis=1)
-
-# Create a new DataFrame containing only the rows that match the criteria
-df2 = new_df[mask]
-
-# Drop the other rows from the original DataFrame
-new_df = new_df[mask]
-
-# If you want to reset the index of the new DataFrame
-df2.reset_index(drop=True, inplace=True)
-new_df.reset_index(drop=True, inplace=True)
-
-
-
-
-
-
-
-In a startling turn of events, tensions between neighboring nations escalated into a full-blown conflict, sending shockwaves across the international community. The conflict, fueled by territorial disputes and longstanding animosities, has led to a surge in military activities.
-
-Reports indicate that the nations involved are mobilizing their forces, with both ground and air units engaged in strategic maneuvers. The situation has prompted a global response, with concerns over the impact on regional stability and the potential for a wider war.
-
-Economic markets have reacted swiftly to the uncertainty, with currencies like the Indian Rupee (INR) and the Australian Dollar (AUD) experiencing heightened volatility. Investors are closely monitoring the situation as geopolitical risks weigh on financial markets.
-
-The conflict has raised fears of an invasion, and diplomatic efforts to diffuse tensions appear to be faltering. The international community is calling for a peaceful resolution, urging the conflicting parties to engage in dialogue and find a diplomatic solution to avoid further escalation.
-
-As the world watches nervously, the specter of war looms large, casting a shadow over the affected regions and leaving many anxiously awaiting updates on the unfolding situation.
+# Save the screenshot
+screenshot.save("screenshot.png")
