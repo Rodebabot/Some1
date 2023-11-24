@@ -1,29 +1,37 @@
 import os
+from datetime import datetime
+from collections import defaultdict
 import shutil
-from datetime import datetime, timedelta
 
-compute_folder_paths = ["/path/to/Compute1", "/path/to/Compute2", "/path/to/Compute3"]
-archival_folder_paths = ["/path/to/Archival1", "/path/to/Archival2", "/path/to/Archival3"]
+compute_folder = "path/to/Compute"
+archival_folder = "path/to/Archival"
 
-today = datetime.now()
-latest_files = {}
+# Get a list of all files in the Compute folder
+files = os.listdir(compute_folder)
 
-for compute_path, archival_path in zip(compute_folder_paths, archival_folder_paths):
-    for filename in os.listdir(compute_path):
-        if filename.endswith(".xlsx"):
-            date_string = filename.split('-')[0:3]
-            file_date = datetime.strptime('-'.join(date_string), "%d-%m-%Y")
+# Create a dictionary to store files grouped by date
+date_files = defaultdict(list)
 
-            if file_date not in latest_files or file_date > latest_files[file_date][0]:
-                latest_files[file_date] = (file_date, os.path.join(compute_path, filename))
+for file in files:
+    if file.endswith(".xlsx"):
+        # Extract date from the file name
+        date_str = file.split("-")[0:3]
+        date_key = "-".join(date_str)
+        
+        # Convert date string to datetime object
+        date_obj = datetime.strptime(date_key, "%d-%m-%Y")
+        
+        # Append file and date to the dictionary
+        date_files[date_obj].append(file)
 
-# Move files older than 1 month, except the latest for each date
-for date, (latest_date, latest_file_path) in latest_files.items():
-    if today - latest_date > timedelta(days=30):
-        for compute_path, archival_path in zip(compute_folder_paths, archival_folder_paths):
-            source_path = os.path.join(compute_path, f"{date.strftime('%d-%m-%Y')}*.xlsx")
-            destination_path = os.path.join(archival_path, f"{date.strftime('%d-%m-%Y')}*.xlsx")
-            files_to_move = glob.glob(source_path)
-            for file_to_move in files_to_move:
-                if file_to_move != latest_file_path:
-                    shutil.move(file_to_move, destination_path)
+# Iterate through the dictionary and move files
+for date, file_list in date_files.items():
+    # Get the latest file for each date
+    latest_file = max(file_list, key=lambda x: datetime.strptime(x.split("-")[3], "%H%M%S"))
+    
+    for file in file_list:
+        # Move files to Archival folder if they are not the latest
+        if file != latest_file:
+            source_path = os.path.join(compute_folder, file)
+            destination_path = os.path.join(archival_folder, file)
+            shutil.move(source_path, destination_path)
