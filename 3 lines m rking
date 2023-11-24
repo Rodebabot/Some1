@@ -26,8 +26,8 @@ for file in files:
 
 # Iterate through the dictionary and move files
 for date, file_list in date_files.items():
-    # Get the latest file for each date
-    latest_file = max(file_list, key=lambda x: datetime.strptime(x.split("-")[3], "%H%M%S"))
+    # Get the latest file for each date based on modification time
+    latest_file = max(file_list, key=lambda x: os.path.getmtime(os.path.join(compute_folder, x)))
     
     for file in file_list:
         # Move files to Archival folder if they are not the latest
