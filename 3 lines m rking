@@ -6,13 +6,24 @@ compute_folder_paths = ["/path/to/Compute1", "/path/to/Compute2", "/path/to/Comp
 archival_folder_paths = ["/path/to/Archival1", "/path/to/Archival2", "/path/to/Archival3"]
 
 today = datetime.now()
+latest_files = {}
 
 for compute_path, archival_path in zip(compute_folder_paths, archival_folder_paths):
     for filename in os.listdir(compute_path):
         if filename.endswith(".xlsx"):
             date_string = filename.split('-')[0:3]
             file_date = datetime.strptime('-'.join(date_string), "%d-%m-%Y")
-            if today - file_date > timedelta(days=30):
-                file_path = os.path.join(compute_path, filename)
-                destination_path = os.path.join(archival_path, filename)
-                shutil.move(file_path, destination_path)
+
+            if file_date not in latest_files or file_date > latest_files[file_date][0]:
+                latest_files[file_date] = (file_date, os.path.join(compute_path, filename))
+
+# Move files older than 1 month, except the latest for each date
+for date, (latest_date, latest_file_path) in latest_files.items():
+    if today - latest_date > timedelta(days=30):
+        for compute_path, archival_path in zip(compute_folder_paths, archival_folder_paths):
+            source_path = os.path.join(compute_path, f"{date.strftime('%d-%m-%Y')}*.xlsx")
+            destination_path = os.path.join(archival_path, f"{date.strftime('%d-%m-%Y')}*.xlsx")
+            files_to_move = glob.glob(source_path)
+            for file_to_move in files_to_move:
+                if file_to_move != latest_file_path:
+                    shutil.move(file_to_move, destination_path)
