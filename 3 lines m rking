@@ -2,54 +2,11 @@ import os
 from datetime import datetime
 from collections import defaultdict
 import shutil
-
-compute_folder = "path/to/Compute"
-archival_folder = "path/to/Archival"
-
-# Get a list of all files in the Compute folder
-files = os.listdir(compute_folder)
-
-# Create a dictionary to store files grouped by date
-date_files = defaultdict(list)
-
-for file in files:
-    if file.endswith(".xlsx"):
-        # Extract date from the file name
-        date_str = file.split("-")[0:3]
-        date_key = "-".join(date_str)
-        
-        # Convert date string to datetime object
-        date_obj = datetime.strptime(date_key, "%d-%m-%Y")
-        
-        # Append file and date to the dictionary
-        date_files[date_obj].append(file)
-
-# Iterate through the dictionary and move files
-for date, file_list in date_files.items():
-    # Get the latest file for each date based on modification time
-    latest_file = max(file_list, key=lambda x: os.path.getmtime(os.path.join(compute_folder, x)))
-    
-    for file in file_list:
-        # Move files to Archival folder if they are not the latest
-        if file != latest_file:
-            source_path = os.path.join(compute_folder, file)
-            destination_path = os.path.join(archival_folder, file)
-            shutil.move(source_path, destination_path)
-
-
-
-
-
-
-
-
-import os
-from datetime import datetime
-from collections import defaultdict
-import shutil
+from itertools import islice
 
 compute_folders = ["path/to/Compute1", "path/to/Compute2"]
 archival_folders = ["path/to/Archival1", "path/to/Archival2"]
+max_iterations = 8  # Maximum number of iterations for each folder
 
 # Iterate through each pair of compute and archival folders
 for compute_folder, archival_folder in zip(compute_folders, archival_folders):
@@ -71,8 +28,8 @@ for compute_folder, archival_folder in zip(compute_folders, archival_folders):
             # Append file and date to the dictionary
             date_files[date_obj].append(file)
 
-    # Iterate through the dictionary and move files
-    for date, file_list in date_files.items():
+    # Iterate through the first 8 items in the dictionary and move files
+    for date, file_list in islice(date_files.items(), max_iterations):
         # Get the latest file for each date based on modification time
         latest_file = max(file_list, key=lambda x: os.path.getmtime(os.path.join(compute_folder, x)))
 
