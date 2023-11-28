@@ -119,3 +119,30 @@ def load_families(self, event):
             if row[0] == selected_country and row[1] == selected_state and row[2] == first_family:
                 self.weight_var.set(row[3])
                 break
+
+
+
+
+
+def calculate_result(self):
+    selected_country = self.country_var.get()
+    selected_state = self.state_var.get()
+    selected_family = self.family_var.get()
+    weight = self.weight_var.get()
+    value = self.value_var.get()
+
+    # Automatically update weight based on the first family in the list
+    if not isinstance(weight, (float, int)):
+        for row in self.dataset:
+            if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
+                weight = row[3]
+                self.weight_var.set(weight)
+                break
+
+    try:
+        result = float(value) * weight
+        self.result_var.set(result)
+    except ValueError:
+        # If the entered value is a string, set the weight as the result
+        self.result_var.set(str(weight))
+
