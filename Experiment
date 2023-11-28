@@ -99,3 +99,23 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = DataProcessingApp(root)
     root.mainloop()
+
+
+
+
+
+
+def load_families(self, event):
+    selected_state = self.state_var.get()
+    selected_country = self.country_var.get()
+
+    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
+    self.family_dropdown['values'] = families
+
+    # Automatically update weight based on the first family in the list
+    if families:
+        first_family = families[0]
+        for row in self.dataset:
+            if row[0] == selected_country and row[1] == selected_state and row[2] == first_family:
+                self.weight_var.set(row[3])
+                break
