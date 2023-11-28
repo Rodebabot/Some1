@@ -8,9 +8,9 @@ class DataProcessingApp:
 
         # Sample dataset
         self.dataset = [
-            ["Country1", "a", "b", 0.5, "SomeValue"],
-            ["Country2", "d", "e", 0.2, "AnotherValue"],
-            ["Country1", "c", "f", 0.7, "YetAnotherValue"],
+            ["Country1", "State1", "a", 0.5, "SomeValue"],
+            ["Country2", "State2", "d", 0.2, "AnotherValue"],
+            ["Country1", "State1", "c", 0.7, "YetAnotherValue"],
             # Add more rows as needed
         ]
 
@@ -23,6 +23,7 @@ class DataProcessingApp:
         self.state_label = ttk.Label(root, text="Select State:")
         self.state_var = tk.StringVar()
         self.state_dropdown = ttk.Combobox(root, textvariable=self.state_var)
+        self.state_dropdown.bind("<<ComboboxSelected>>", self.load_families)
 
         self.family_label = ttk.Label(root, text="Select Family:")
         self.family_var = tk.StringVar()
@@ -68,8 +69,13 @@ class DataProcessingApp:
 
     def load_states(self, event):
         selected_country = self.country_var.get()
-        states = [row[1] for row in self.dataset if row[0] == selected_country]
+        states = list(set(row[1] for row in self.dataset if row[0] == selected_country))
         self.state_dropdown['values'] = states
+
+    def load_families(self, event):
+        selected_state = self.state_var.get()
+        families = list(set(row[2] for row in self.dataset if row[1] == selected_state))
+        self.family_dropdown['values'] = families
 
     def calculate_result(self):
         selected_country = self.country_var.get()
