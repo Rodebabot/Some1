@@ -181,3 +181,22 @@ def load_families(self, event):
             if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
                 self.weight_var.set(row[3])
                 break
+
+
+
+
+def load_families(self, event):
+    selected_state = self.state_var.get()
+    selected_country = self.country_var.get()
+
+    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
+    self.family_dropdown['values'] = families
+
+    # Update weight based on the selected family
+    selected_family = self.family_var.get()
+    if selected_family:
+        for row in self.dataset:
+            if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
+                self.weight_var.set(row[3])
+                break
+
