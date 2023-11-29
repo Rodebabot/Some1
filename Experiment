@@ -1,228 +1,50 @@
-import tkinter as tk
-from tkinter import ttk
-
-class DataProcessingApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Data Processing App")
-
-        # Sample dataset
-        self.dataset = [
-            ["Country1", "State1", "a", 0.5, "SomeValue"],
-            ["Country2", "State2", "d", 0.2, "AnotherValue"],
-            ["Country1", "State1", "c", 0.7, "YetAnotherValue"],
-            # Add more rows as needed
-        ]
-
-        # Create UI elements
-        self.country_label = ttk.Label(root, text="Select Country:")
-        self.country_var = tk.StringVar()
-        self.country_dropdown = ttk.Combobox(root, textvariable=self.country_var, values=self.get_countries())
-        self.country_dropdown.bind("<<ComboboxSelected>>", self.load_states)
-
-        self.state_label = ttk.Label(root, text="Select State:")
-        self.state_var = tk.StringVar()
-        self.state_dropdown = ttk.Combobox(root, textvariable=self.state_var)
-        self.state_dropdown.bind("<<ComboboxSelected>>", self.load_families)
-
-        self.family_label = ttk.Label(root, text="Select Family:")
-        self.family_var = tk.StringVar()
-        self.family_dropdown = ttk.Combobox(root, textvariable=self.family_var)
-
-        self.weight_label = ttk.Label(root, text="Weight:")
-        self.weight_var = tk.DoubleVar()
-        self.weight_entry = ttk.Entry(root, textvariable=self.weight_var, state='readonly')
-
-        self.value_label = ttk.Label(root, text="Enter Value:")
-        self.value_var = tk.StringVar()
-        self.value_entry = ttk.Entry(root, textvariable=self.value_var)
-
-        self.result_label = ttk.Label(root, text="Result:")
-        self.result_var = tk.StringVar()
-        self.result_entry = ttk.Entry(root, textvariable=self.result_var, state='readonly')
-
-        self.calculate_button = ttk.Button(root, text="Calculate", command=self.calculate_result)
-
-        # Layout UI elements
-        self.country_label.grid(row=0, column=0, padx=10, pady=10)
-        self.country_dropdown.grid(row=0, column=1, padx=10, pady=10)
-
-        self.state_label.grid(row=1, column=0, padx=10, pady=10)
-        self.state_dropdown.grid(row=1, column=1, padx=10, pady=10)
-
-        self.family_label.grid(row=2, column=0, padx=10, pady=10)
-        self.family_dropdown.grid(row=2, column=1, padx=10, pady=10)
-
-        self.weight_label.grid(row=3, column=0, padx=10, pady=10)
-        self.weight_entry.grid(row=3, column=1, padx=10, pady=10)
-
-        self.value_label.grid(row=4, column=0, padx=10, pady=10)
-        self.value_entry.grid(row=4, column=1, padx=10, pady=10)
-
-        self.result_label.grid(row=5, column=0, padx=10, pady=10)
-        self.result_entry.grid(row=5, column=1, padx=10, pady=10)
-
-        self.calculate_button.grid(row=6, column=0, columnspan=2, pady=10)
-
-    def get_countries(self):
-        return list(set(row[0] for row in self.dataset))
-
-    def load_states(self, event):
-        selected_country = self.country_var.get()
-        states = list(set(row[1] for row in self.dataset if row[0] == selected_country))
-        self.state_dropdown['values'] = states
-
-    def load_families(self, event):
-        selected_state = self.state_var.get()
-        families = list(set(row[2] for row in self.dataset if row[1] == selected_state))
-        self.family_dropdown['values'] = families
-
-    def calculate_result(self):
-        selected_country = self.country_var.get()
-        selected_state = self.state_var.get()
-        selected_family = self.family_var.get()
-        weight = self.weight_var.get()
-        value = self.value_var.get()
-
-        if isinstance(weight, str):  # If the user selected a string, get the corresponding value from the 4th column
-            for row in self.dataset:
-                if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
-                    weight = row[3]
-                    break
-
-        # Implement the necessary calculations based on user selections
-        # You'll need to fetch corresponding values from the dataset using the selected_country, selected_state, and selected_family
-
-        # Update self.result_var with the final result
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = DataProcessingApp(root)
-    root.mainloop()
-
-
-
-
-
-
-def load_families(self, event):
-    selected_state = self.state_var.get()
-    selected_country = self.country_var.get()
-
-    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
-    self.family_dropdown['values'] = families
-
-    # Automatically update weight based on the first family in the list
-    if families:
-        first_family = families[0]
-        for row in self.dataset:
-            if row[0] == selected_country and row[1] == selected_state and row[2] == first_family:
-                self.weight_var.set(row[3])
-                break
-
-
-
-
-
-def calculate_result(self):
-    selected_country = self.country_var.get()
-    selected_state = self.state_var.get()
-    selected_family = self.family_var.get()
-    weight = self.weight_var.get()
-    value = self.value_var.get()
-
-    # Automatically update weight based on the first family in the list
-    if not isinstance(weight, (float, int)):
-        for row in self.dataset:
-            if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
-                weight = row[3]
-                self.weight_var.set(weight)
-                break
-
-    try:
-        result = float(value) * weight
-        self.result_var.set(result)
-    except ValueError:
-        # If the entered value is a string, set the weight as the result
-        self.result_var.set(str(weight))
-
-
-
-
-
-def load_families(self, event):
-    selected_state = self.state_var.get()
-    selected_country = self.country_var.get()
-
-    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
-    self.family_dropdown['values'] = families
-
-    # Automatically update weight based on the first family in the list
-    if families:
-        first_family = families[0]
-        for row in self.dataset:
-            if row[0] == selected_country and row[1] == selected_state and row[2] == first_family:
-                self.weight_var.set(row[3])
-                break
-
-
-def load_families(self, event):
-    selected_state = self.state_var.get()
-    selected_country = self.country_var.get()
-
-    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
-    self.family_dropdown['values'] = families
-
-    selected_family = self.family_var.get()
-
-    # Update weight only if the selected family changes
-    if selected_family:
-        for row in self.dataset:
-            if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
-                self.weight_var.set(row[3])
-                break
-
-
-
-
-def load_families(self, event):
-    selected_state = self.state_var.get()
-    selected_country = self.country_var.get()
-
-    families = list(set(row[2] for row in self.dataset if row[1] == selected_state and row[0] == selected_country))
-    self.family_dropdown['values'] = families
-
-    # Update weight based on the selected family
-    selected_family = self.family_var.get()
-    if selected_family:
-        for row in self.dataset:
-            if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
-                self.weight_var.set(row[3])
-                break
-
-
-
-
-def calculate_result(self):
-    selected_country = self.country_var.get()
-    selected_state = self.state_var.get()
-    selected_family = self.family_var.get()
-    value = self.value_var.get()
-
-    # Fetch the weight from the dataset based on the selected country, state, and family
-    weight = None
-    for row in self.dataset:
-        if row[0] == selected_country and row[1] == selected_state and row[2] == selected_family:
-            weight = row[3]
-            self.weight_var.set(weight)
-            break
-
-    try:
-        if isinstance(weight, (float, int)):
-            result = float(value) * weight
-            self.result_var.set(result)
-        else:
-            self.result_var.set("Invalid weight")
-    except ValueError:
-        self.result_var.set("Invalid value entered")
-
+import pandas as pd
+import plotly.express as px
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+from datetime import datetime, timedelta
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+# Read the Excel file
+df = pd.read_excel('your_excel_file.xlsx')
+
+# Convert the date column to datetime format
+df['Date'] = pd.to_datetime(df['Date'], format="%b'%y")
+
+# Sort DataFrame by date
+df = df.sort_values('Date')
+
+# Define SARIMA order
+order = (1, 1, 1, 12)  # You may need to adjust these parameters based on your data and requirements
+
+# Fit SARIMA model
+model = SARIMAX(df['Volume'], order=order)
+results = model.fit(disp=-1)
+
+# Forecast next 6 months
+forecast_dates = [df['Date'].max() + pd.DateOffset(months=i) for i in range(1, 7)]
+forecast = results.get_forecast(steps=6)
+forecast_values = forecast.predicted_mean.values
+
+# Create a new DataFrame for the forecasted values
+forecast_df = pd.DataFrame({'Date': forecast_dates, 'Projected Volume': forecast_values})
+
+# Concatenate the original DataFrame and the forecasted DataFrame
+df = pd.concat([df, forecast_df])
+
+# Create a Dash app
+app = dash.Dash(__name__)
+
+# Define the layout
+app.layout = html.Div([
+    dcc.Graph(
+        id='line-chart',
+        figure=px.line(df, x='Date', y='Volume', title='Volume Projection')
+    )
+])
+
+# Run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
