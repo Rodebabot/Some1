@@ -1,50 +1,34 @@
 import pandas as pd
-import plotly.express as px
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import numpy as np
 from datetime import datetime, timedelta
-from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-# Read the Excel file
-df = pd.read_excel('your_excel_file.xlsx')
+# Assuming df is your DataFrame with columns 'date' and 'volume'
+# Make sure 'date' is in datetime format
+df['date'] = pd.to_datetime(df['date'])
 
-# Convert the date column to datetime format
-df['Date'] = pd.to_datetime(df['Date'], format="%b'%y")
+# Create a new column for the number of days since the start
+df['days_since_start'] = (df['date'] - df['date'].min()).dt.days
 
-# Sort DataFrame by date
-df = df.sort_values('Date')
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(df[['days_since_start']], df['volume'], test_size=0.2, random_state=42)
 
-# Define SARIMA order
-order = (1, 1, 1, 12)  # You may need to adjust these parameters based on your data and requirements
+# Create and train the linear regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
 
-# Fit SARIMA model
-model = SARIMAX(df['Volume'], order=order)
-results = model.fit(disp=-1)
+# Predict the next 6 months
+last_date = df['date'].max()
+future_dates = [last_date + timedelta(days=i) for i in range(1, 182)]
+future_days_since_start = [(d - df['date'].min()).days for d in future_dates]
 
-# Forecast next 6 months
-forecast_dates = [df['Date'].max() + pd.DateOffset(months=i) for i in range(1, 7)]
-forecast = results.get_forecast(steps=6)
-forecast_values = forecast.predicted_mean.values
+# Make predictions for the future dates
+future_predictions = model.predict(np.array(future_days_since_start).reshape(-1, 1))
 
-# Create a new DataFrame for the forecasted values
-forecast_df = pd.DataFrame({'Date': forecast_dates, 'Projected Volume': forecast_values})
+# Create a DataFrame for the future predictions
+future_df = pd.DataFrame({'date': future_dates, 'predicted_volume': future_predictions})
 
-# Concatenate the original DataFrame and the forecasted DataFrame
-df = pd.concat([df, forecast_df])
-
-# Create a Dash app
-app = dash.Dash(__name__)
-
-# Define the layout
-app.layout = html.Div([
-    dcc.Graph(
-        id='line-chart',
-        figure=px.line(df, x='Date', y='Volume', title='Volume Projection')
-    )
-])
-
-# Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# Print or use future_df as needed
+print(future_df)
