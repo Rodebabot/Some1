@@ -27,6 +27,9 @@ data_to_upload = excel_data.to_dict(orient="records")
 
 # Upload data to SharePoint
 for item in data_to_upload:
-    library.add_item(item)
+    try:
+        library.add_item(item)
+    except Exception as e:
+        print(f"Error uploading item: {item}. Error: {e}")
 
 print("Data uploaded successfully to SharePoint.")
