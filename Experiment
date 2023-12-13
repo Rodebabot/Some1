@@ -16,3 +16,24 @@ result_df = pd.DataFrame({'id': date_difference.index.get_level_values('id'),
 
 # Print or use the result_df as needed
 print(result_df)
+
+
+
+
+import pandas as pd
+
+# Assuming df is your original DataFrame
+data = {'Col1': ['A', 'A', 'C'],
+        'Col2': ['ab', 'bc', 'ab'],
+        'Col3': [2, 5, 3]}
+
+df = pd.DataFrame(data)
+
+# Pivot the DataFrame to turn 'Col2' values into columns
+pivoted_df = df.pivot_table(index='Col1', columns='Col2', values='Col3', aggfunc='first')
+
+# Reset the index if needed
+pivoted_df.reset_index(inplace=True)
+
+# Print or use the pivoted_df as needed
+print(pivoted_df)
