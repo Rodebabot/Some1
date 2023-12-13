@@ -1,39 +1,26 @@
-import pandas as pd
+from shareplum import Site
+from shareplum.site import Version
 
-# Assuming df is your DataFrame with columns 'id', 'roc', and 'date'
-df = pd.read_excel('your_excel_file.xlsx')  # Replace 'your_excel_file.xlsx' with the actual path
+# SharePoint site credentials and URL
+username = "your_username"
+password = "your_password"
+site_url = "https://your-sharepoint-site.com/sites/your-site"
 
-# Convert the 'date' column to datetime if it's not already in datetime format
-df['date'] = pd.to_datetime(df['date'])
+# Local path to your Excel file
+excel_file_path = "path/to/your/excel/file.xlsx"
 
-# Group by 'id' and 'roc', then calculate the difference between the highest and lowest dates
-date_difference = df.groupby(['id', 'roc'])['date'].max() - df.groupby(['id', 'roc'])['date'].min()
+# SharePoint library name
+library_name = "Documents"
 
-# Extract the number of days from the timedelta and create a new DataFrame
-result_df = pd.DataFrame({'id': date_difference.index.get_level_values('id'),
-                          'roc': date_difference.index.get_level_values('roc'),
-                          'days_difference': date_difference.dt.days})
+# Connect to SharePoint site
+site = Site(site_url, version=Version.v365, auth=(username, password))
 
-# Print or use the result_df as needed
-print(result_df)
+# Get the library
+library = site.List(library_name)
 
+# Upload the Excel file to SharePoint
+with open(excel_file_path, "rb") as file:
+    data = file.read()
+    library.Folder("/").upload_file(file_name="your_file_name.xlsx", file_data=data)
 
-
-
-import pandas as pd
-
-# Assuming df is your original DataFrame
-data = {'Col1': ['A', 'A', 'C'],
-        'Col2': ['ab', 'bc', 'ab'],
-        'Col3': [2, 5, 3]}
-
-df = pd.DataFrame(data)
-
-# Pivot the DataFrame to turn 'Col2' values into columns
-pivoted_df = df.pivot_table(index='Col1', columns='Col2', values='Col3', aggfunc='first')
-
-# Reset the index if needed
-pivoted_df.reset_index(inplace=True)
-
-# Print or use the pivoted_df as needed
-print(pivoted_df)
+print("Excel file uploaded successfully to SharePoint.")
