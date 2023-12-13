@@ -1,3 +1,4 @@
+import pandas as pd
 from shareplum import Site
 from shareplum.site import Version
 
@@ -6,7 +7,7 @@ username = "your_username"
 password = "your_password"
 site_url = "https://your-sharepoint-site.com/sites/your-site"
 
-# Local path to your Excel file
+# Excel file path
 excel_file_path = "path/to/your/excel/file.xlsx"
 
 # SharePoint library name
@@ -18,9 +19,14 @@ site = Site(site_url, version=Version.v365, auth=(username, password))
 # Get the library
 library = site.List(library_name)
 
-# Upload the Excel file to SharePoint
-with open(excel_file_path, "rb") as file:
-    data = file.read()
-    library.Folder("/").upload_file(file_name="your_file_name.xlsx", file_data=data)
+# Read Excel data into a DataFrame
+excel_data = pd.read_excel(excel_file_path)
 
-print("Excel file uploaded successfully to SharePoint.")
+# Convert DataFrame to a list of dictionaries (each row becomes a dictionary)
+data_to_upload = excel_data.to_dict(orient="records")
+
+# Upload data to SharePoint
+for item in data_to_upload:
+    library.add_item(item)
+
+print("Data uploaded successfully to SharePoint.")
