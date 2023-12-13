@@ -13,23 +13,27 @@ excel_file_path = "path/to/your/excel/file.xlsx"
 # SharePoint library name
 library_name = "Documents"
 
-# Connect to SharePoint site
-site = Site(site_url, version=Version.v365, auth=(username, password))
+try:
+    # Connect to SharePoint site
+    site = Site(site_url, version=Version.v365, auth=(username, password))
 
-# Get the library
-library = site.List(library_name)
+    # Get the library
+    library = site.List(library_name)
 
-# Read Excel data into a DataFrame
-excel_data = pd.read_excel(excel_file_path)
+    # Read Excel data into a DataFrame
+    excel_data = pd.read_excel(excel_file_path)
 
-# Convert DataFrame to a list of dictionaries (each row becomes a dictionary)
-data_to_upload = excel_data.to_dict(orient="records")
+    # Convert DataFrame to a list of dictionaries (each row becomes a dictionary)
+    data_to_upload = excel_data.to_dict(orient="records")
 
-# Upload data to SharePoint
-for item in data_to_upload:
-    try:
-        library.add_item(item)
-    except Exception as e:
-        print(f"Error uploading item: {item}. Error: {e}")
+    # Upload data to SharePoint
+    for item in data_to_upload:
+        try:
+            library.add_item(item)
+        except Exception as e:
+            print(f"Error uploading item: {item}. Error: {e}")
 
-print("Data uploaded successfully to SharePoint.")
+    print("Data uploaded successfully to SharePoint.")
+
+except Exception as e:
+    print(f"Error connecting to SharePoint. Error: {e}")
