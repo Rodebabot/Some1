@@ -65,3 +65,33 @@ combined_data.to_excel(output_excel_file, index=False)
 
 except Exception as e:
     print(f"Error connecting to SharePoint. Error: {e}")
+
+
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = '/path/to/your/folder'
+output_excel_file = '/path/to/output/combined_file.xlsx'
+
+# Initialize an empty list to store DataFrames
+dfs = []
+
+# Iterate through all files in the folder
+for filename in os.listdir(folder_path):
+    file_path = os.path.join(folder_path, filename)
+    
+    # Check if the file is an Excel file
+    if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
+        # Read the Excel file into a DataFrame and append it to the list
+        excel_data = pd.read_excel(file_path)
+        dfs.append(excel_data)
+
+# Concatenate all DataFrames in the list
+combined_data = pd.concat(dfs, ignore_index=True)
+
+# Write the combined data to a new Excel file
+combined_data.to_excel(output_excel_file, index=False)
