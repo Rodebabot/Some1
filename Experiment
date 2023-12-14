@@ -1,70 +1,25 @@
-import requests
-from bs4 import BeautifulSoup
-from docx import Document
+import webbrowser
+import tkinter as tk
 
-# Replace 'YOUR_WEBSITE_URL' with the actual URL of the website you want to fetch data from
-website_url = 'YOUR_WEBSITE_URL'
+def google_search(query):
+    search_url = f"https://www.google.com/search?q={query}"
+    webbrowser.open(search_url)
 
-# Send a GET request to the website
-response = requests.get(website_url)
+def on_search_button_click():
+    query = entry.get()
+    google_search(query)
 
-# Check if the request was successful (status code 200)
-if response.status_code == 200:
-    # Parse the HTML content of the page
-    soup = BeautifulSoup(response.text, 'html.parser')
+# Create a simple Tkinter window
+window = tk.Tk()
+window.title("Google Search")
 
-    # Find and extract the text content
-    text_content = soup.get_text()
+# Create a text entry for the search query
+entry = tk.Entry(window, width=30)
+entry.pack(pady=10)
 
-    # Create a new Word document
-    doc = Document()
+# Create a button to perform the Google search
+search_button = tk.Button(window, text="Search Google", command=on_search_button_click)
+search_button.pack()
 
-    # Add the extracted text to the document
-    doc.add_paragraph(text_content)
-
-    # Save the document
-    doc.save('output.docx')
-
-    print('Data successfully fetched and saved to output.docx')
-else:
-    print(f'Failed to fetch data. Status code: {response.status_code}')
-
-
-
-
-
-
-
-
-
-
-
-import requests
-from bs4 import BeautifulSoup
-from requests.exceptions import Timeout
-
-# Replace 'YOUR_WEBSITE_URL' with the actual URL of the website you want to fetch data from
-website_url = 'YOUR_WEBSITE_URL'
-
-try:
-    # Send a GET request to the website with a timeout of 5 seconds
-    response = requests.get(website_url, timeout=5)
-
-    # Check if the request was successful (status code 200)
-    response.raise_for_status()
-
-    # Parse the HTML content of the page
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Find and extract the text content
-    text_content = soup.get_text()
-
-    # Print the extracted text
-    print(text_content)
-
-except Timeout:
-    print('Connection timeout. Partial content fetched:')
-    print(text_content if 'text_content' in locals() else 'No content fetched before timeout.')
-except Exception as e:
-    print(f'Error: {e}')
-
+# Run the Tkinter event loop
+window.mainloop()
