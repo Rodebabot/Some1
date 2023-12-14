@@ -28,3 +28,43 @@ if response.status_code == 200:
     print('Data successfully fetched and saved to output.docx')
 else:
     print(f'Failed to fetch data. Status code: {response.status_code}')
+
+
+
+
+
+
+
+
+
+
+
+import requests
+from bs4 import BeautifulSoup
+from requests.exceptions import Timeout
+
+# Replace 'YOUR_WEBSITE_URL' with the actual URL of the website you want to fetch data from
+website_url = 'YOUR_WEBSITE_URL'
+
+try:
+    # Send a GET request to the website with a timeout of 5 seconds
+    response = requests.get(website_url, timeout=5)
+
+    # Check if the request was successful (status code 200)
+    response.raise_for_status()
+
+    # Parse the HTML content of the page
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Find and extract the text content
+    text_content = soup.get_text()
+
+    # Print the extracted text
+    print(text_content)
+
+except Timeout:
+    print('Connection timeout. Partial content fetched:')
+    print(text_content if 'text_content' in locals() else 'No content fetched before timeout.')
+except Exception as e:
+    print(f'Error: {e}')
+
