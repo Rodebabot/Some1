@@ -1,6 +1,18 @@
 import win32com.client
+import re
 import requests
 from urllib.parse import urlparse
+
+def extract_link_from_email_body(body):
+    # Regular expression to find URLs in the email body
+    url_pattern = re.compile(r'https?://\S+')
+    matches = url_pattern.findall(body)
+
+    if matches:
+        # Assuming you want the first URL found in the email body
+        return matches[0]
+    else:
+        return None
 
 def download_file(url, save_path):
     response = requests.get(url)
@@ -15,16 +27,19 @@ def save_file_from_outlook():
     message = inbox.Items.GetLast()
 
     # Extracting the link from the email body
-    link = "extracted_link_from_email"
+    link = extract_link_from_email_body(message.Body)
 
-    # Extracting the file name from the URL
-    file_name = urlparse(link).path.split("/")[-1]
+    if link:
+        # Extracting the file name from the URL
+        file_name = urlparse(link).path.split("/")[-1]
 
-    # Specify the destination path where you want to save the file
-    save_path = "C:/path/to/save/" + file_name
+        # Specify the destination path where you want to save the file
+        save_path = "C:/path/to/save/" + file_name
 
-    # Download the file
-    download_file(link, save_path)
+        # Download the file
+        download_file(link, save_path)
+    else:
+        print("No valid link found in the email body.")
 
 # Example usage
 save_file_from_outlook()
