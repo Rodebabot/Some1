@@ -2,7 +2,7 @@ import win32com.client
 
 # Replace these with your actual values
 outlook_folder_path = r'Mailbox\SubfolderName'
-subject_to_search = 'Mlt iob'
+keyword_in_subject = 'Mlt iob'
 
 # Connect to Outlook
 outlook_app = win32com.client.Dispatch('Outlook.Application')
@@ -12,10 +12,10 @@ inbox = namespace.GetDefaultFolder(6)  # 6 corresponds to the Inbox folder
 # Access the specified subfolder
 subfolder = inbox.Folders[outlook_folder_path]
 
-# Search for the email with the specified subject
+# Search for the email with the subject containing the specified keyword
 target_email = None
 for item in subfolder.Items:
-    if item.Subject == subject_to_search:
+    if keyword_in_subject.lower() in item.Subject.lower():
         target_email = item
         break
 
