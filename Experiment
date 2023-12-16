@@ -24,3 +24,46 @@ if target_email:
     print(target_email.Body)
 else:
     print('Email not found.')
+
+
+
+
+
+
+import win32com.client
+import re
+
+# Replace these with your actual values
+outlook_folder_path = r'Mailbox\SubfolderName'
+keyword_in_subject = 'Mlt iob'
+
+# Connect to Outlook
+outlook_app = win32com.client.Dispatch('Outlook.Application')
+namespace = outlook_app.GetNamespace('MAPI')
+inbox = namespace.GetDefaultFolder(6)  # 6 corresponds to the Inbox folder
+
+# Access the specified subfolder
+subfolder = inbox.Folders[outlook_folder_path]
+
+# Search for the email with the subject containing the specified keyword
+target_email = None
+for item in subfolder.Items:
+    if keyword_in_subject.lower() in item.Subject.lower():
+        target_email = item
+        break
+
+# Extract the desired line from the email body if found
+if target_email:
+    body_lines = target_email.Body.split('\r\n')  # assuming line breaks are '\r\n'
+    
+    # Search for the line starting with '<<\\global' and ending with '.xlsx>>'
+    pattern = re.compile(r'<<\\\\global.*\.xlsx>>')
+    matching_lines = [line for line in body_lines if pattern.match(line)]
+    
+    if matching_lines:
+        print(matching_lines[0])
+    else:
+        print('Matching line not found in the email body.')
+else:
+    print('Email not found.')
+
