@@ -70,5 +70,27 @@ else:
 
 
 
+
+import shutil
+
+# Replace this with the cleaned line obtained from the email body
+cleaned_line = r'C:\Path\To\Your\File.xlsx'  # Replace this with the actual cleaned line
+
+destination_folder = r'C:\Path\To\Your\Destination\Folder'  # Change this to your desired destination folder
+
+# Remove '<' and '>' signs from the cleaned line
+cleaned_line = cleaned_line.replace('<', '').replace('>', '')
+
+# Copy the file to the destination folder
+try:
+    shutil.copy(cleaned_line, destination_folder)
+    print(f'File copied to {destination_folder}')
+except FileNotFoundError:
+    print('File not found. Please check the file path.')
+except Exception as e:
+    print(f'An error occurred: {e}')
+
+
+
 cleaned_line = matching_lines[0].replace('<', '').replace('>', '')
         print(cleaned_line)
