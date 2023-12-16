@@ -1,45 +1,26 @@
 import win32com.client
-import re
-import requests
-from urllib.parse import urlparse
 
-def extract_link_from_email_body(body):
-    # Regular expression to find URLs in the email body
-    url_pattern = re.compile(r'https?://\S+')
-    matches = url_pattern.findall(body)
+# Replace these with your actual values
+outlook_folder_path = r'Mailbox\SubfolderName'
+subject_to_search = 'Mlt iob'
 
-    if matches:
-        # Assuming you want the first URL found in the email body
-        return matches[0]
-    else:
-        return None
+# Connect to Outlook
+outlook_app = win32com.client.Dispatch('Outlook.Application')
+namespace = outlook_app.GetNamespace('MAPI')
+inbox = namespace.GetDefaultFolder(6)  # 6 corresponds to the Inbox folder
 
-def download_file(url, save_path):
-    response = requests.get(url)
-    with open(save_path, 'wb') as file:
-        file.write(response.content)
+# Access the specified subfolder
+subfolder = inbox.Folders[outlook_folder_path]
 
-def save_file_from_outlook():
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    inbox = outlook.GetDefaultFolder(6)  # 6 represents the Inbox folder
+# Search for the email with the specified subject
+target_email = None
+for item in subfolder.Items:
+    if item.Subject == subject_to_search:
+        target_email = item
+        break
 
-    # Assuming you want to process the latest email
-    message = inbox.Items.GetLast()
-
-    # Extracting the link from the email body
-    link = extract_link_from_email_body(message.Body)
-
-    if link:
-        # Extracting the file name from the URL
-        file_name = urlparse(link).path.split("/")[-1]
-
-        # Specify the destination path where you want to save the file
-        save_path = "C:/path/to/save/" + file_name
-
-        # Download the file
-        download_file(link, save_path)
-    else:
-        print("No valid link found in the email body.")
-
-# Example usage
-save_file_from_outlook()
+# Fetch and print the email body if found
+if target_email:
+    print(target_email.Body)
+else:
+    print('Email not found.')
