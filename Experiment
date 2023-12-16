@@ -67,3 +67,8 @@ if target_email:
 else:
     print('Email not found.')
 
+
+
+
+cleaned_line = matching_lines[0].replace('<', '').replace('>', '')
+        print(cleaned_line)
