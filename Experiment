@@ -1,25 +1,10 @@
-import shutil
-import os
+import pandas as pd
 
-# Replace this with the cleaned line obtained from the email body
-cleaned_line = r'C:\Path\To\Your\File.xlsx'  # Replace this with the actual cleaned line
+# Assuming df_existing is your existing DataFrame
+# Assuming df_new is your new DataFrame
 
-destination_folder = r'C:\Path\To\Your\Destination\Folder'  # Change this to your desired destination folder
+# Find rows that are in df_new but not in df_existing
+new_rows = pd.concat([df_new, df_existing]).drop_duplicates(keep=False)
 
-# Remove '<' and '>' signs from the cleaned line
-cleaned_line = cleaned_line.replace('<', '').replace('>', '')
-
-# Extract the file name from the path
-file_name = os.path.basename(cleaned_line)
-
-# Construct the destination path
-destination_path = os.path.join(destination_folder, file_name)
-
-# Copy the file to the destination folder
-try:
-    shutil.copy(cleaned_line, destination_path)
-    print(f'File copied to {destination_path}')
-except FileNotFoundError:
-    print('File not found. Please check the file path.')
-except Exception as e:
-    print(f'An error occurred: {e}')
+# Append only the new rows to df_existing
+df_existing = pd.concat([df_existing, new_rows], ignore_index=True)
