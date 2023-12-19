@@ -1,10 +1,8 @@
-import pandas as pd
+data = [{'id': 2, 'date': '2023-01-15'},
+        {'id': 1, 'date': '2023-01-10'},
+        {'id': 2, 'date': '2023-01-20'},
+        {'id': 1, 'date': '2023-01-05'}]
 
-# Assuming df_existing is your existing DataFrame
-# Assuming df_new is your new DataFrame
+sorted_data = sorted(data, key=lambda x: (x['id'], x['date']))
 
-# Find rows that are in df_new but not in df_existing
-new_rows = pd.concat([df_new, df_existing]).drop_duplicates(keep=False)
-
-# Append only the new rows to df_existing
-df_existing = pd.concat([df_existing, new_rows], ignore_index=True)
+print(sorted_data)
