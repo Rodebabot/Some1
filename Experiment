@@ -6,3 +6,15 @@ data = [{'id': 2, 'date': '2023-01-15'},
 sorted_data = sorted(data, key=lambda x: (x['id'], x['date']))
 
 print(sorted_data)
+import pandas as pd
+
+# Assuming you have a DataFrame 'df' with columns 'id' and 'date'
+df = pd.DataFrame({
+    'id': [2, 1, 2, 1],
+    'date': ['2023-01-15', '2023-01-10', '2023-01-20', '2023-01-05']
+})
+
+# Sort the DataFrame by 'id' and 'date'
+sorted_df = df.sort_values(by=['id', 'date'])
+
+print(sorted_df)
