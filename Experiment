@@ -13,20 +13,21 @@ def fetch_outlook_email():
     iteration_count = 0
 
     # Iterate through emails with the specified subject
-    for item in subfolder.Items.Restrict("[Subject] LIKE '%pom pomb%'"):
-        # Assuming you want to save the body as a .txt file
-        save_path = f"{item.Subject}.txt"
+    for item in subfolder.Items:
+        if "pom pomb" in item.Subject.lower():
+            # Assuming you want to save the body as a .txt file
+            save_path = f"{item.Subject}.txt"
 
-        # Get the plain text body content
-        plain_text_body = item.Body
+            # Get the plain text body content
+            plain_text_body = item.Body
 
-        # Save the plain text body content to a .txt file
-        with open(save_path, 'w', encoding='utf-8') as file:
-            file.write(plain_text_body)
+            # Save the plain text body content to a .txt file
+            with open(save_path, 'w', encoding='utf-8') as file:
+                file.write(plain_text_body)
 
-        iteration_count += 1
-        if iteration_count >= max_iterations:
-            break
+            iteration_count += 1
+            if iteration_count >= max_iterations:
+                break
 
 if __name__ == "__main__":
     fetch_outlook_email()
