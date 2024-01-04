@@ -1,33 +1,40 @@
-import os
-import win32com.client
+import pandas as pd
+from pyOutlook import Outlook
+from bs4 import BeautifulSoup
 
-def fetch_outlook_email():
-    outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+# Connect to Outlook
+outlook = Outlook()
 
-    # Replace 'YourMailbox' and 'YourSubfolder' with your actual mailbox and subfolder names
-    mailbox = outlook_app.Folders.Item("YourMailbox")
-    subfolder = mailbox.Folders.Item("YourSubfolder")
+# Specify the mailbox and subfolder
+mailbox_name = "your_mailbox_name@example.com"
+subfolder_name = "Your Subfolder Name"
 
-    # Limit the iterations to 15
-    max_iterations = 15
-    iteration_count = 0
+# Get all emails from the subfolder
+emails = outlook.get_emails(mailbox_name, subfolder_name)
 
-    # Iterate through emails with the specified subject
-    for item in subfolder.Items:
-        if "pom pomb" in item.Subject.lower():
-            # Assuming you want to save the body as a .txt file
-            save_path = f"{item.Subject}.txt"
+# Initialize an empty list to store table data
+table_data = []
 
-            # Access the HTML body using pywin32
-            html_body = item.HTMLBody
+# Iterate through emails and extract tables from email bodies with subject containing "inline" (case-insensitive)
+for email in emails:
+    if "inline" in email.subject.lower():
+        soup = BeautifulSoup(email.body, 'html.parser')
+        tables = soup.find_all('table')
+        for table in tables:
+            # Extract table data and store it
+            table_data.append(pd.read_html(str(table))[0])
 
-            # Save the HTML body content to a .txt file
-            with open(save_path, 'w', encoding='utf-8') as file:
-                file.write(html_body)
+# Concatenate the tables into a single DataFrame
+if table_data:
+    df_tables = pd.concat(table_data, ignore_index=True)
 
-            iteration_count += 1
-            if iteration_count >= max_iterations:
-                break
+    # Save the DataFrame to an Excel file
+    excel_file_name = "tables_with_inline_subject.xlsx"
+    df_tables.to_excel(excel_file_name, index=False)
 
-if __name__ == "__main__":
-    fetch_outlook_email()
+    print(f"Extracted tables from emails with 'inline' (case-insensitive) subject to {excel_file_name}")
+else:
+    print("No tables found in emails with 'inline' (case-insensitive) subject")
+
+# Close the Outlook connection
+outlook.close()
