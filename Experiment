@@ -1,12 +1,32 @@
-import pandas as pd
+import os
+import win32com.client
 
-# Assuming df is your DataFrame
-df['Number'] = df.groupby(['ID', 'ROC']).cumcount() + 1
+def fetch_outlook_email():
+    outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-# Display the updated DataFrame
-print(df)
+    # Replace 'YourMailbox' and 'YourSubfolder' with your actual mailbox and subfolder names
+    mailbox = outlook_app.Folders.Item("YourMailbox")
+    subfolder = mailbox.Folders.Item("YourSubfolder")
 
+    # Limit the iterations to 15
+    max_iterations = 15
+    iteration_count = 0
 
+    # Iterate through emails with the specified subject
+    for item in subfolder.Items.Restrict("[Subject] LIKE '%pom pomb%'"):
+        # Assuming you want to save the body as a .txt file
+        save_path = f"{item.Subject}.txt"
 
+        # Get the plain text body content
+        plain_text_body = item.Body
 
-max_frds_rows = df.loc[df.groupby(['id', 'roc'])['frds'].idxmax()]
+        # Save the plain text body content to a .txt file
+        with open(save_path, 'w', encoding='utf-8') as file:
+            file.write(plain_text_body)
+
+        iteration_count += 1
+        if iteration_count >= max_iterations:
+            break
+
+if __name__ == "__main__":
+    fetch_outlook_email()
