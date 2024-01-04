@@ -18,12 +18,12 @@ def fetch_outlook_email():
             # Assuming you want to save the body as a .txt file
             save_path = f"{item.Subject}.txt"
 
-            # Get the plain text body content
-            plain_text_body = item.Body
+            # Access the HTML body using pywin32
+            html_body = item.HTMLBody
 
-            # Save the plain text body content to a .txt file
+            # Save the HTML body content to a .txt file
             with open(save_path, 'w', encoding='utf-8') as file:
-                file.write(plain_text_body)
+                file.write(html_body)
 
             iteration_count += 1
             if iteration_count >= max_iterations:
