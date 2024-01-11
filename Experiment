@@ -2,21 +2,30 @@ import pandas as pd
 from plyer import notification
 import time
 
-# Load your Excel file
+# Initial load of your Excel file
 excel_file_path = 'your_excel_file.xlsx'  # Update with your file path
-df = pd.read_excel(excel_file_path)
 
-# Infinite loop to check 'result' column every 2 minutes
-while True:
+# Set the maximum number of iterations or another exit condition
+max_iterations = 50  # Adjust this based on your needs
+
+# Loop for a maximum of 'max_iterations'
+for iteration in range(max_iterations):
+    # Reload the Excel file in each iteration
+    df = pd.read_excel(excel_file_path)
+
     for index, row in df.iterrows():
+        name = row['NAME']
         result_value = row['result']
         if result_value > 1000:
             title = 'Reminder'
-            message = f'Result in row {index+2} is greater than 1000: {result_value}'
+            message = f'For the Name {name}, it exceeds 1000: {result_value}'
             notification.notify(title=title, message=message, app_name='Reminder')
 
     # Wait for 2 minutes before checking again
     time.sleep(120)
+
+# End of the loop
+print("Program completed.")
 
 
 
