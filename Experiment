@@ -1,42 +1,19 @@
 import pandas as pd
-import re
-from pyOutlook import Outlook
+from plyer import notification
+import time
 
-# Connect to Outlook
-outlook = Outlook()
+# Load your Excel file
+excel_file_path = 'your_excel_file.xlsx'  # Update with your file path
+df = pd.read_excel(excel_file_path)
 
-# Specify the mailbox and subfolder
-mailbox_name = "your_mailbox_name@example.com"
-subfolder_name = "Your Subfolder Name"
+# Infinite loop to check 'result' column every 2 minutes
+while True:
+    for index, row in df.iterrows():
+        result_value = row['result']
+        if result_value > 1000:
+            title = 'Reminder'
+            message = f'Result in row {index+2} is greater than 1000: {result_value}'
+            notification.notify(title=title, message=message, app_name='Reminder')
 
-# Get all emails from the subfolder
-emails = outlook.get_emails(mailbox_name, subfolder_name)
-
-# Initialize an empty list to store tabular data
-tabular_data = []
-
-# Regular expression to match a simple tabular structure (adjust as needed)
-table_pattern = re.compile(r'\s*\w+\s*\|\s*\w+\s*\|\s*\w+\s*')
-
-# Iterate through emails and extract tabular data with subject containing "inline" (case-insensitive)
-for email in emails:
-    if "inline" in email.subject.lower():
-        matches = table_pattern.findall(email.body)
-        if matches:
-            # Extracted tabular data is stored as a list
-            tabular_data.extend([match.split('|') for match in matches])
-
-# Create a DataFrame from the tabular data
-if tabular_data:
-    df_tabular = pd.DataFrame(tabular_data, columns=['Column1', 'Column2', 'Column3'])
-
-    # Save the DataFrame to an Excel file
-    excel_file_name = "tabular_data_with_inline_subject.xlsx"
-    df_tabular.to_excel(excel_file_name, index=False)
-
-    print(f"Extracted tabular data from emails with 'inline' (case-insensitive) subject to {excel_file_name}")
-else:
-    print("No tabular data found in emails with 'inline' (case-insensitive) subject")
-
-# Close the Outlook connection
-outlook.close()
+    # Wait for 2 minutes before checking again
+    time.sleep(120)
