@@ -7,20 +7,12 @@ folder_path = 'path/to/your/excel/files'
 output_folder = 'path/to/your/output/folder'
 os.makedirs(output_folder, exist_ok=True)
 
-def shift_and_clear(file_path, output_folder):
+def drop_empty_columns(file_path, output_folder):
     # Read the Excel file
     df = pd.read_excel(file_path, engine='openpyxl')
 
-    # Iterate through each row
-    for index, row in df.iterrows():
-        # Identify the leftmost empty cell
-        empty_column_index = row.first_valid_index()
-
-        # If there is an empty cell, shift the data to the left
-        if empty_column_index:
-            non_empty_data = row[empty_column_index:].tolist()
-            df.iloc[index, :len(non_empty_data)] = non_empty_data
-            df.iloc[index, len(non_empty_data):] = [None] * (len(row) - len(non_empty_data))
+    # Drop empty columns
+    df = df.dropna(axis=1, how='all')
 
     # Construct the output file path with a new extension
     output_file = os.path.join(output_folder, os.path.basename(file_path))
@@ -32,4 +24,4 @@ def shift_and_clear(file_path, output_folder):
 for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
-        shift_and_clear(file_path, output_folder)
+        drop_empty_columns(file_path, output_folder)
