@@ -18,3 +18,36 @@ for file_name in os.listdir(folder_path):
 # Write the appended dataframe to a new Excel file
 output_file = 'path/to/your/output/folder/appended_data.xlsx'
 appended_df.to_excel(output_file, index=False)
+
+
+
+
+
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Get the list of Excel files in the specified folder
+excel_files = [file for file in os.listdir(folder_path) if file.endswith('.xlsx') or file.endswith('.xls')]
+
+# Ensure there is only one Excel file in the folder
+if len(excel_files) == 1:
+    file_name = excel_files[0]
+    file_path = os.path.join(folder_path, file_name)
+
+    # Read the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Remove duplicate rows based on all values in a row
+    df_deduplicated = df.drop_duplicates()
+
+    # Overwrite the original Excel file with the deduplicated data
+    df_deduplicated.to_excel(file_path, index=False)
+    print(f"Deduplicated data overwritten to {file_name}")
+else:
+    print("There should be exactly one Excel file in the specified folder.")
