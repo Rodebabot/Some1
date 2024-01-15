@@ -7,9 +7,12 @@ folder_path = 'path/to/your/excel/files'
 output_folder = 'path/to/your/output/folder'
 os.makedirs(output_folder, exist_ok=True)
 
-def shift_data_for_empty_leftmost_cell(file_path, output_folder):
+def process_and_clean(file_path, output_folder):
     # Read the Excel file
     df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
+
+    # Drop rows where the first cell contains "Unnamed"
+    df = df[df.iloc[:, 0].notna() & ~df.iloc[:, 0].astype(str).str.startswith('Unnamed')]
 
     # Identify rows where the leftmost cell is empty
     empty_first_cell_rows = df.iloc[:, 0].isnull()
@@ -32,4 +35,4 @@ def shift_data_for_empty_leftmost_cell(file_path, output_folder):
 for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
-        shift_data_for_empty_leftmost_cell(file_path, output_folder)
+        process_and_clean(file_path, output_folder)
