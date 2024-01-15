@@ -1,6 +1,29 @@
-file_name = os.path.basename(file_path)
+import os
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store modified Excel files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def extract_substring(file_path, output_folder):
+    # Extract a substring from the file name where it starts with '2' and ends just before the next '.'
+    file_name = os.path.basename(file_path)
     start_index = file_name.find('2')
     end_index = file_name.find('.', start_index)
     if start_index != -1 and end_index != -1:
         substring = file_name[start_index:end_index]
-        df['Substring'] = substring
+
+        # Construct the output file path with the new substring as the file name
+        output_file = os.path.join(output_folder, f"{substring}.xlsx")
+
+        # Copy the original file to the new file with the extracted substring as the name
+        with open(file_path, 'rb') as original_file:
+            with open(output_file, 'wb') as new_file:
+                new_file.write(original_file.read())
+
+# Iterate through all Excel files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        file_path = os.path.join(folder_path, file_name)
+        extract_substring(file_path, output_folder)
