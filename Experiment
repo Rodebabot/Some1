@@ -63,3 +63,31 @@ def process_excel_file(file_path):
     print(f"Processed {file_name}, Shape: {df.shape}")
 
     return df
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store xlsx files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def convert_to_xlsx(file_path, output_folder):
+    # Read the xlsm file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Construct the output file path with a new extension
+    output_file = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + '.xlsx')
+
+    # Write the dataframe to the new xlsx file
+    df.to_excel(output_file, index=False)
+
+# Iterate through all xlsm files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsm'):
+        file_path = os.path.join(folder_path, file_name)
+        convert_to_xlsx(file_path, output_folder)
