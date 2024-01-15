@@ -91,3 +91,38 @@ for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsm'):
         file_path = os.path.join(folder_path, file_name)
         convert_to_xlsx(file_path, output_folder)
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store xlsx files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def convert_and_append(file_path, output_folder):
+    # Read the xlsm file
+    df_main = pd.read_excel(file_path, engine='openpyxl', sheet_name=0)  # Read the first sheet
+
+    # Construct the output file path with a new extension
+    output_file = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + '.xlsx')
+
+    # Check if the file has a second sheet
+    try:
+        df_second_sheet = pd.read_excel(file_path, engine='openpyxl', sheet_name=1)
+        df_main = pd.concat([df_main, df_second_sheet], ignore_index=True)
+    except IndexError:
+        pass  # No second sheet
+
+    # Write the combined dataframe to the new xlsx file
+    df_main.to_excel(output_file, index=False)
+
+# Iterate through all xlsm files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsm'):
+        file_path = os.path.join(folder_path, file_name)
+        convert_and_append(file_path, output_folder)
