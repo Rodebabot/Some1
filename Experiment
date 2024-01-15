@@ -7,20 +7,19 @@ folder_path = 'path/to/your/excel/files'
 output_folder = 'path/to/your/output/folder'
 os.makedirs(output_folder, exist_ok=True)
 
-def shift_non_empty_cells(file_path, output_folder):
+def shift_data_left(file_path, output_folder):
     # Read the Excel file
-    df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
+    df = pd.read_excel(file_path, engine='openpyxl')
 
     # Iterate through each row
     for index, row in df.iterrows():
-        # Find the index of the leftmost non-empty cell in each row
-        first_non_empty_index = row.first_valid_index()
+        # Identify the leftmost empty cell
+        empty_column_index = row.first_valid_index()
 
-        # Create a new row with non-empty cells left-aligned
-        new_row = row[first_non_empty_index:].tolist() + [None] * (len(df.columns) - len(row))
-
-        # Update the original row with the modified data
-        df.loc[index] = new_row
+        # If there is an empty cell, shift the data to the left
+        if empty_column_index:
+            non_empty_data = row[empty_column_index:].tolist()
+            df.iloc[index, :len(non_empty_data)] = non_empty_data
 
     # Construct the output file path with a new extension
     output_file = os.path.join(output_folder, os.path.basename(file_path))
@@ -32,4 +31,4 @@ def shift_non_empty_cells(file_path, output_folder):
 for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
-        shift_non_empty_cells(file_path, output_folder)
+        shift_data_left(file_path, output_folder)
