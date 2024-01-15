@@ -7,7 +7,7 @@ output_file = 'path/to/your/output/file/merged_data.xlsx'
 
 def process_excel_file(file_path):
     # Read the Excel file
-    df = pd.read_excel(file_path, skiprows=3)
+    df = pd.read_excel(file_path, skiprows=3, engine='openpyxl')
 
     # Drop the 'Fees' and 'rate' columns if present
     df = df.drop(['Fees', 'rate'], axis=1, errors='ignore')
@@ -25,7 +25,7 @@ def process_excel_file(file_path):
 # Iterate through all Excel files in the specified folder
 all_dfs = []
 for file_name in os.listdir(folder_path):
-    if file_name.endswith('.xlsx'):
+    if file_name.endswith('.xlsm'):
         file_path = os.path.join(folder_path, file_name)
         cleaned_df = process_excel_file(file_path)
         all_dfs.append(cleaned_df)
