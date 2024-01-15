@@ -7,12 +7,12 @@ folder_path = 'path/to/your/excel/files'
 output_folder = 'path/to/your/output/folder'
 os.makedirs(output_folder, exist_ok=True)
 
-def drop_unnamed_rows(file_path, output_folder):
+def remove_unnamed_rows(file_path, output_folder):
     # Read the Excel file
-    df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
+    df = pd.read_excel(file_path, engine='openpyxl')
 
     # Drop rows where the first cell contains "Unnamed"
-    df = df[df.iloc[:, 0].notna() & ~df.iloc[:, 0].astype(str).str.startswith('Unnamed')]
+    df = df[~df.iloc[:, 0].astype(str).str.startswith('Unnamed')]
 
     # Construct the output file path with a new extension
     output_file = os.path.join(output_folder, os.path.basename(file_path))
@@ -24,4 +24,4 @@ def drop_unnamed_rows(file_path, output_folder):
 for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
-        drop_unnamed_rows(file_path, output_folder)
+        remove_unnamed_rows(file_path, output_folder)
