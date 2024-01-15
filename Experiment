@@ -56,3 +56,47 @@ for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
         remove_columns(file_path, output_folder)
+
+
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store modified Excel files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def extract_and_create_columns(file_path, output_folder):
+    # Read the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Extract substring after '_'
+    df['Substring1'] = df.apply(lambda row: str(row['FileName']).split('_')[-1].split('.')[0] if '_' in str(row['FileName']) else None, axis=1)
+
+    # Extract substring before '_'
+    df['Substring2'] = df.apply(lambda row: str(row['FileName']).split('_')[1] if '_' in str(row['FileName']) else None, axis=1)
+
+    # Construct the output file path with a new extension
+    output_file = os.path.join(output_folder, os.path.basename(file_path))
+
+    # Write the modified dataframe to the new Excel file
+    df.to_excel(output_file, index=False)
+
+# Iterate through all Excel files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        file_path = os.path.join(folder_path, file_name)
+
+        # Extract filename without extension for use in DataFrame
+        filename_without_extension = os.path.splitext(file_name)[0]
+
+        # Create DataFrame with FileName column containing filename without extension
+        df = pd.DataFrame({'FileName': [filename_without_extension]})
+
+        # Process the DataFrame and write the result back to a new Excel file
+        extract_and_create_columns(df, output_folder)
