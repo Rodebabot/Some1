@@ -55,3 +55,43 @@ for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
         drop_topmost_row(file_path, output_folder)
+
+
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store modified Excel files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def shift_data_for_empty_rows(file_path, output_folder):
+    # Read the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
+
+    # Identify rows where the leftmost cell is empty
+    empty_first_cell_rows = df.iloc[:, 0].isnull()
+
+    # Iterate through each column starting from the second row
+    for col in df.columns[1:]:
+        # Identify non-blank cells
+        non_blank_cells = df[col].notnull()
+
+        # Shift the non-blank cells to the leftmost position for rows where the leftmost cell is empty
+        df.loc[empty_first_cell_rows, col] = df[col][empty_first_cell_rows & non_blank_cells].tolist()
+
+    # Construct the output file path with a new extension
+    output_file = os.path.join(output_folder, os.path.basename(file_path))
+
+    # Write the modified dataframe to the new Excel file
+    df.to_excel(output_file, index=False)
+
+# Iterate through all Excel files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        file_path = os.path.join(folder_path, file_name)
+        shift_data_for_empty_rows(file_path, output_folder)
