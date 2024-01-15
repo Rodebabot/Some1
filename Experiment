@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from datetime import datetime
 
 folder_path = 'path/to/your/excel/files'
 output_file = 'path/to/your/output/file/merged_data.xlsx'
@@ -15,10 +14,13 @@ def process_excel_file(file_path):
     # Drop images if any (assuming they are in the first row)
     df = df[df.columns.drop(list(df.filter(regex='Image')))]
 
-    # Extract date and time from the file name and create a new column
+    # Extract a substring from the file name where it starts with '2' and ends just before the next '.'
     file_name = os.path.basename(file_path)
-    date_time_str = file_name[:14]  # Assuming the date and time are the first 14 characters
-    df['Date_Time'] = datetime.strptime(date_time_str, '%Y%m%d%H%M%S')
+    start_index = file_name.find('2')
+    end_index = file_name.find('.', start_index)
+    if start_index != -1 and end_index != -1:
+        substring = file_name[start_index:end_index]
+        df['Substring'] = substring
 
     return df
 
