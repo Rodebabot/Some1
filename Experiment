@@ -1,100 +1,37 @@
+import os
 import pandas as pd
-from plyer import notification
-import time
+from datetime import datetime
 
-# Initial load of your Excel file
-excel_file_path = 'your_excel_file.xlsx'  # Update with your file path
+folder_path = 'path/to/your/excel/files'
+output_file = 'path/to/your/output/file/merged_data.xlsx'
 
-# Set the maximum number of iterations or another exit condition
-max_iterations = 50  # Adjust this based on your needs
+def process_excel_file(file_path):
+    # Read the Excel file
+    df = pd.read_excel(file_path, skiprows=3)
 
-# Loop for a maximum of 'max_iterations'
-for iteration in range(max_iterations):
-    # Reload the Excel file in each iteration
-    df = pd.read_excel(excel_file_path)
+    # Drop the 'Fees' and 'rate' columns if present
+    df = df.drop(['Fees', 'rate'], axis=1, errors='ignore')
 
-    for index, row in df.iterrows():
-        name = row['NAME']
-        result_value = row['result']
-        if result_value > 1000:
-            title = 'Reminder'
-            message = f'For the Name {name}, it exceeds 1000: {result_value}'
-            notification.notify(title=title, message=message, app_name='Reminder')
+    # Drop images if any (assuming they are in the first row)
+    df = df[df.columns.drop(list(df.filter(regex='Image')))]
 
-    # Wait for 2 minutes before checking again
-    time.sleep(120)
+    # Extract date and time from the file name and create a new column
+    file_name = os.path.basename(file_path)
+    date_time_str = file_name[:14]  # Assuming the date and time are the first 14 characters
+    df['Date_Time'] = datetime.strptime(date_time_str, '%Y%m%d%H%M%S')
 
-# End of the loop
-print("Program completed.")
+    return df
 
+# Iterate through all Excel files in the specified folder
+all_dfs = []
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx'):
+        file_path = os.path.join(folder_path, file_name)
+        cleaned_df = process_excel_file(file_path)
+        all_dfs.append(cleaned_df)
 
+# Concatenate all dataframes
+final_df = pd.concat(all_dfs, ignore_index=True)
 
-
-import pandas as pd
-from plyer import notification
-import time
-
-# Load your Excel file
-excel_file_path = 'your_excel_file.xlsx'  # Update with your file path
-df = pd.read_excel(excel_file_path)
-
-# Infinite loop to check 'result' column every 2 minutes
-while True:
-    for index, row in df.iterrows():
-        name = row['NAME']
-        result_value = row['result']
-        if result_value > 1000:
-            title = 'Reminder'
-            message = f'For the Name {name}, it exceeds 1000: {result_value}'
-            notification.notify(title=title, message=message, app_name='Reminder')
-
-    # Wait for 2 minutes before checking again
-    time.sleep(120)
-
-
-
-
-
-
-
-import pandas as pd
-from plyer import notification
-import time
-
-# Initial load of your Excel file
-excel_file_path = 'your_excel_file.xlsx'  # Update with your file path
-
-# Set the maximum number of iterations or another exit condition
-max_iterations = 50  # Adjust this based on your needs
-
-# List to store notifications
-notification_list = []
-
-# Loop for a maximum of 'max_iterations'
-for iteration in range(max_iterations):
-    # Reload the Excel file in each iteration
-    df = pd.read_excel(excel_file_path)
-
-    for index, row in df.iterrows():
-        name = row['NAME']
-        result_value = row['result']
-        if result_value > 1000:
-            title = 'Reminder'
-            message = f'For the Name {name}, it exceeds 1000: {result_value}'
-            
-            # Add notification to the list
-            notification_list.append(f'{title}: {message}')
-
-            # Display notification
-            notification.notify(title=title, message=message, app_name='Reminder')
-
-    # Wait for 2 minutes before checking again
-    time.sleep(120)
-
-# When a notification is clicked, show the list of all notifications
-input("Click Enter to show the list of notifications.")
-for i, notification_text in enumerate(notification_list, start=1):
-    print(f'{i}. {notification_text}')
-
-# End of the program
-print("Program completed.")
+# Write the final dataframe to a new Excel file
+final_df.to_excel(output_file, index=False)
