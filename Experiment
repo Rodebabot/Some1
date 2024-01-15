@@ -25,3 +25,34 @@ for file_name in os.listdir(folder_path):
     if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
         drop_empty_columns(file_path, output_folder)
+
+
+
+import os
+import pandas as pd
+
+folder_path = 'path/to/your/excel/files'
+
+# Create a new folder to store modified Excel files
+output_folder = 'path/to/your/output/folder'
+os.makedirs(output_folder, exist_ok=True)
+
+def remove_columns(file_path, output_folder):
+    # Read the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl')
+
+    # Drop 'Fees' and 'Rate' columns if present
+    columns_to_remove = ['Fees', 'Rate']
+    df = df.drop(columns=columns_to_remove, errors='ignore')
+
+    # Construct the output file path with a new extension
+    output_file = os.path.join(output_folder, os.path.basename(file_path))
+
+    # Write the modified dataframe to the new Excel file
+    df.to_excel(output_file, index=False)
+
+# Iterate through all Excel files in the specified folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+        file_path = os.path.join(folder_path, file_name)
+        remove_columns(file_path, output_folder)
