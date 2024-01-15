@@ -37,3 +37,29 @@ final_df = pd.concat(all_dfs, ignore_index=True)
 
 # Write the final dataframe to a new Excel file
 final_df.to_excel(output_file, index=False)
+
+
+
+
+
+def process_excel_file(file_path):
+    # Read the Excel file, skipping the specified rows and handling footer
+    df = pd.read_excel(file_path, skiprows=[0, 1, 2, 4, 5], engine='openpyxl', skipfooter=1)
+
+    # Drop the 'Fees' and 'rate' columns if present
+    df = df.drop(['Fees', 'rate'], axis=1, errors='ignore')
+
+    # Drop images if any (assuming they are in the first row)
+    df = df[df.columns.drop(list(df.filter(regex='Image')))]
+
+    # Extract a substring from the file name where it starts with '2' and ends just before the next '.'
+    file_name = os.path.basename(file_path)
+    start_index = file_name.find('2')
+    end_index = file_name.find('.', start_index)
+    if start_index != -1 and end_index != -1:
+        substring = file_name[start_index:end_index]
+        df['Substring'] = substring
+
+    print(f"Processed {file_name}, Shape: {df.shape}")
+
+    return df
