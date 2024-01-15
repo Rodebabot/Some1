@@ -2,127 +2,23 @@ import os
 import pandas as pd
 
 folder_path = 'path/to/your/excel/files'
-output_file = 'path/to/your/output/file/merged_data.xlsx'
 
-def process_excel_file(file_path):
-    # Read the Excel file, skipping the specified rows
-    df = pd.read_excel(file_path, skiprows=[0, 1, 2, 4, 5], engine='openpyxl')
-
-    # Drop the 'Fees' and 'rate' columns if present
-    df = df.drop(['Fees', 'rate'], axis=1, errors='ignore')
-
-    # Drop images if any (assuming they are in the first row)
-    df = df[df.columns.drop(list(df.filter(regex='Image')))]
-
-    # Extract a substring from the file name where it starts with '2' and ends just before the next '.'
-    file_name = os.path.basename(file_path)
-    start_index = file_name.find('2')
-    end_index = file_name.find('.', start_index)
-    if start_index != -1 and end_index != -1:
-        substring = file_name[start_index:end_index]
-        df['Substring'] = substring
-
-    return df
-
-# Iterate through all Excel files in the specified folder
-all_dfs = []
-for file_name in os.listdir(folder_path):
-    if file_name.endswith('.xlsm'):
-        file_path = os.path.join(folder_path, file_name)
-        cleaned_df = process_excel_file(file_path)
-        all_dfs.append(cleaned_df)
-
-# Concatenate all dataframes
-final_df = pd.concat(all_dfs, ignore_index=True)
-
-# Write the final dataframe to a new Excel file
-final_df.to_excel(output_file, index=False)
-
-
-
-
-
-def process_excel_file(file_path):
-    # Read the Excel file, skipping the specified rows and handling footer
-    df = pd.read_excel(file_path, skiprows=[0, 1, 2, 4, 5], engine='openpyxl', skipfooter=1)
-
-    # Drop the 'Fees' and 'rate' columns if present
-    df = df.drop(['Fees', 'rate'], axis=1, errors='ignore')
-
-    # Drop images if any (assuming they are in the first row)
-    df = df[df.columns.drop(list(df.filter(regex='Image')))]
-
-    # Extract a substring from the file name where it starts with '2' and ends just before the next '.'
-    file_name = os.path.basename(file_path)
-    start_index = file_name.find('2')
-    end_index = file_name.find('.', start_index)
-    if start_index != -1 and end_index != -1:
-        substring = file_name[start_index:end_index]
-        df['Substring'] = substring
-
-    print(f"Processed {file_name}, Shape: {df.shape}")
-
-    return df
-
-
-
-
-import os
-import pandas as pd
-
-folder_path = 'path/to/your/excel/files'
-
-# Create a new folder to store xlsx files
+# Create a new folder to store modified Excel files
 output_folder = 'path/to/your/output/folder'
 os.makedirs(output_folder, exist_ok=True)
 
-def convert_to_xlsx(file_path, output_folder):
-    # Read the xlsm file
-    df = pd.read_excel(file_path, engine='openpyxl')
+def drop_first_three_rows(file_path, output_folder):
+    # Read the Excel file
+    df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
 
     # Construct the output file path with a new extension
-    output_file = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + '.xlsx')
+    output_file = os.path.join(output_folder, os.path.basename(file_path))
 
-    # Write the dataframe to the new xlsx file
+    # Write the modified dataframe to the new Excel file
     df.to_excel(output_file, index=False)
 
-# Iterate through all xlsm files in the specified folder
+# Iterate through all Excel files in the specified folder
 for file_name in os.listdir(folder_path):
-    if file_name.endswith('.xlsm'):
+    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
         file_path = os.path.join(folder_path, file_name)
-        convert_to_xlsx(file_path, output_folder)
-
-
-
-
-import os
-import pandas as pd
-
-folder_path = 'path/to/your/excel/files'
-
-# Create a new folder to store xlsx files
-output_folder = 'path/to/your/output/folder'
-os.makedirs(output_folder, exist_ok=True)
-
-def convert_and_append(file_path, output_folder):
-    # Read the xlsm file
-    df_main = pd.read_excel(file_path, engine='openpyxl', sheet_name=0)  # Read the first sheet
-
-    # Construct the output file path with a new extension
-    output_file = os.path.join(output_folder, os.path.splitext(os.path.basename(file_path))[0] + '.xlsx')
-
-    # Check if the file has a second sheet
-    try:
-        df_second_sheet = pd.read_excel(file_path, engine='openpyxl', sheet_name=1)
-        df_main = pd.concat([df_main, df_second_sheet], ignore_index=True)
-    except IndexError:
-        pass  # No second sheet
-
-    # Write the combined dataframe to the new xlsx file
-    df_main.to_excel(output_file, index=False)
-
-# Iterate through all xlsm files in the specified folder
-for file_name in os.listdir(folder_path):
-    if file_name.endswith('.xlsm'):
-        file_path = os.path.join(folder_path, file_name)
-        convert_and_append(file_path, output_folder)
+        drop_first_three_rows(file_path, output_folder)
