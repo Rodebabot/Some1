@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
 from plyer import notification
+import subprocess
 
 class ExcelNotifierApp:
     def __init__(self, root):
@@ -45,8 +46,9 @@ class ExcelNotifierApp:
             if pending_column[i] > 1000 or time_column[i] > 3:
                 self.rows_exceeded.append(i)
                 notification.notify(
-                    title="Notification",
-                    message=f"Row {i+2}: Pending exceeds 1000 or Time exceeds 3",
+                    title=f"Notification - {self.file_path}",
+                    message=f"Row {i+2} exceeded Pending or Time: "
+                            f"Pending({pending_column[i]}), Time({time_column[i]})",
                 )
 
         if self.rows_exceeded:
@@ -64,22 +66,23 @@ class ExcelNotifierApp:
         if not selected_rows:
             return
 
-        total_pending = self.df['pending'].sum()
-        total_time = self.df['time'].max()
-
         for selected_row in selected_rows:
             row_to_process = self.rows_exceeded[selected_row]
             print(f"Running action on Row {row_to_process + 2}")
 
-        if total_pending > 2000:
-            if total_time > 3:
+            total_pending = self.df['pending'].sum()
+            total_time = self.df['time'].max()
+
+            if total_pending > 2000 and total_time > 3:
                 # Run amt.ipynb
+                subprocess.run(['jupyter', 'nbconvert', '--execute', 'amt.ipynb'])
                 notification.notify(title="Action", message="Running amt.ipynb")
-            else:
+            elif total_pending > 2000:
                 # Run jub.ipynb
+                subprocess.run(['jupyter', 'nbconvert', '--execute', 'jub.ipynb'])
                 notification.notify(title="Action", message="Running jub.ipynb")
-        else:
-            notification.notify(title="Action", message="No action required")
+            else:
+                notification.notify(title="Action", message="No action required")
 
 if __name__ == "__main__":
     root = tk.Tk()
