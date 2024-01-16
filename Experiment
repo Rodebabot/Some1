@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import filedialog
 import pandas as pd
 from plyer import notification
-import subprocess
 
 class ExcelNotifierApp:
     def __init__(self, root):
@@ -68,13 +67,12 @@ class ExcelNotifierApp:
 
         for selected_row in selected_rows:
             row_to_process = self.rows_exceeded[selected_row]
-            print(f"Running action on Row {row_to_process + 2}")
+            print(f"Running custom function on Row {row_to_process + 2}")
+            self.custom_function(row_to_process)
 
-            # Replace 'path_to_ipynb_file' with the actual path to your .ipynb file
-            ipynb_file_path = 'path_to_ipynb_file'
-
-            subprocess.run(['jupyter', 'nbconvert', '--execute', ipynb_file_path])
-            notification.notify(title="Action", message=f"Running {ipynb_file_path}")
+    def custom_function(self, row):
+        # Replace this with your specific function logic
+        print(f"Custom function executed for Row {row + 2}")
 
 if __name__ == "__main__":
     root = tk.Tk()
