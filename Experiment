@@ -70,19 +70,11 @@ class ExcelNotifierApp:
             row_to_process = self.rows_exceeded[selected_row]
             print(f"Running action on Row {row_to_process + 2}")
 
-            total_pending = self.df['pending'].sum()
-            total_time = self.df['time'].max()
+            # Replace 'path_to_ipynb_file' with the actual path to your .ipynb file
+            ipynb_file_path = 'path_to_ipynb_file'
 
-            if total_pending > 2000 and total_time > 3:
-                # Run amt.ipynb
-                subprocess.run(['jupyter', 'nbconvert', '--execute', 'amt.ipynb'])
-                notification.notify(title="Action", message="Running amt.ipynb")
-            elif total_pending > 2000:
-                # Run jub.ipynb
-                subprocess.run(['jupyter', 'nbconvert', '--execute', 'jub.ipynb'])
-                notification.notify(title="Action", message="Running jub.ipynb")
-            else:
-                notification.notify(title="Action", message="No action required")
+            subprocess.run(['jupyter', 'nbconvert', '--execute', ipynb_file_path])
+            notification.notify(title="Action", message=f"Running {ipynb_file_path}")
 
 if __name__ == "__main__":
     root = tk.Tk()
