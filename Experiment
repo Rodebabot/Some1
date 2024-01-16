@@ -1,53 +1,64 @@
-import os
+import tkinter as tk
+from tkinter import filedialog
 import pandas as pd
+from plyer import notification
 
-folder_path = 'path/to/your/excel/files'
+class ExcelNotifierApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Excel Notifier App")
 
-# Create an empty dataframe to store the appended data
-appended_df = pd.DataFrame()
+        self.file_path = None
 
-# Iterate through all Excel files in the specified folder
-for file_name in os.listdir(folder_path):
-    if file_name.endswith('.xlsx') or file_name.endswith('.xls'):
-        file_path = os.path.join(folder_path, file_name)
-        
-        # Read each Excel file and append its data to the main dataframe
-        df = pd.read_excel(file_path, engine='openpyxl', skiprows=3)
-        appended_df = pd.concat([appended_df, df], ignore_index=True)
+        self.create_widgets()
 
-# Write the appended dataframe to a new Excel file
-output_file = 'path/to/your/output/folder/appended_data.xlsx'
-appended_df.to_excel(output_file, index=False)
+    def create_widgets(self):
+        tk.Label(self.root, text="Select Excel File:").pack(pady=10)
 
+        tk.Button(self.root, text="Browse", command=self.browse_file).pack(pady=5)
 
+        self.submit_button = tk.Button(self.root, text="Submit", command=self.process_excel)
+        self.submit_button.pack(pady=10)
+        self.submit_button["state"] = "disabled"
 
+        self.action_button = tk.Button(self.root, text="Action", command=self.perform_action)
+        self.action_button.pack(pady=10)
+        self.action_button["state"] = "disabled"
 
+    def browse_file(self):
+        self.file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx;*.xls")])
+        if self.file_path:
+            self.submit_button["state"] = "normal"
 
+    def process_excel(self):
+        df = pd.read_excel(self.file_path)
+        pending_column = df['pending']
+        time_column = df['time']
 
+        for i in range(len(df)):
+            if pending_column[i] > 1000 or time_column[i] > 3:
+                notification.notify(
+                    title="Notification",
+                    message=f"Row {i+2}: Pending exceeds 1000 or Time exceeds 3",
+                )
+                self.action_button["state"] = "normal"
 
+    def perform_action(self):
+        df = pd.read_excel(self.file_path)
+        total_pending = df['pending'].sum()
+        total_time = df['time'].max()
 
+        if total_pending > 2000:
+            if total_time > 3:
+                # Run amt.ipynb
+                notification.notify(title="Action", message="Running amt.ipynb")
+            else:
+                # Run jub.ipynb
+                notification.notify(title="Action", message="Running jub.ipynb")
+        else:
+            notification.notify(title="Action", message="No action required")
 
-import os
-import pandas as pd
-
-folder_path = 'path/to/your/excel/files'
-
-# Get the list of Excel files in the specified folder
-excel_files = [file for file in os.listdir(folder_path) if file.endswith('.xlsx') or file.endswith('.xls')]
-
-# Ensure there is only one Excel file in the folder
-if len(excel_files) == 1:
-    file_name = excel_files[0]
-    file_path = os.path.join(folder_path, file_name)
-
-    # Read the Excel file
-    df = pd.read_excel(file_path, engine='openpyxl')
-
-    # Remove duplicate rows based on all values in a row
-    df_deduplicated = df.drop_duplicates()
-
-    # Overwrite the original Excel file with the deduplicated data
-    df_deduplicated.to_excel(file_path, index=False)
-    print(f"Deduplicated data overwritten to {file_name}")
-else:
-    print("There should be exactly one Excel file in the specified folder.")
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ExcelNotifierApp(root)
+    root.mainloop()
