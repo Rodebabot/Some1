@@ -9,6 +9,8 @@ class ExcelNotifierApp:
         self.root.title("Excel Notifier App")
 
         self.file_path = None
+        self.df = None
+        self.rows_exceeded = []
 
         self.create_widgets()
 
@@ -25,28 +27,49 @@ class ExcelNotifierApp:
         self.action_button.pack(pady=10)
         self.action_button["state"] = "disabled"
 
+        self.listbox = tk.Listbox(self.root, selectmode=tk.MULTIPLE)
+        self.listbox.pack(pady=10)
+
     def browse_file(self):
         self.file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx;*.xls")])
         if self.file_path:
             self.submit_button["state"] = "normal"
 
     def process_excel(self):
-        df = pd.read_excel(self.file_path)
-        pending_column = df['pending']
-        time_column = df['time']
+        self.df = pd.read_excel(self.file_path)
+        pending_column = self.df['pending']
+        time_column = self.df['time']
 
-        for i in range(len(df)):
+        self.rows_exceeded = []
+        for i in range(len(self.df)):
             if pending_column[i] > 1000 or time_column[i] > 3:
+                self.rows_exceeded.append(i)
                 notification.notify(
                     title="Notification",
                     message=f"Row {i+2}: Pending exceeds 1000 or Time exceeds 3",
                 )
-                self.action_button["state"] = "normal"
+
+        if self.rows_exceeded:
+            self.action_button["state"] = "normal"
+            self.display_exceeded_rows()
+
+    def display_exceeded_rows(self):
+        self.listbox.delete(0, tk.END)
+        for row in self.rows_exceeded:
+            self.listbox.insert(tk.END, f"Row {row + 2}")
 
     def perform_action(self):
-        df = pd.read_excel(self.file_path)
-        total_pending = df['pending'].sum()
-        total_time = df['time'].max()
+        selected_rows = self.listbox.curselection()
+
+        if not selected_rows:
+            return
+
+        total_pending = self.df['pending'].sum()
+        total_time = self.df['time'].max()
+
+        for selected_row in selected_rows:
+            row_to_process = self.rows_exceeded[selected_row]
+            print(f"Running action on Row {row_to_process + 2}")
 
         if total_pending > 2000:
             if total_time > 3:
