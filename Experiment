@@ -47,15 +47,11 @@ class DocumentComparatorApp:
         doc1 = Document(file1_path)
         doc2 = Document(file2_path)
 
-        diff_lines = set()
-        for para2 in doc2.paragraphs:
-            if para2.text not in {para1.text for para1 in doc1.paragraphs}:
-                diff_lines.add(para2.text)
-
         result_doc = Document()
-        for para in doc2.paragraphs:
-            if para.text in diff_lines:
-                run = result_doc.add_paragraph().add_run(para.text)
+        for para2 in doc2.paragraphs:
+            run = result_doc.add_paragraph().add_run(para2.text)
+
+            if para2.text not in {para1.text for para1 in doc1.paragraphs}:
                 run.font.highlight_color = 6  # Yellow highlight
 
         result_path = filedialog.asksaveasfilename(defaultextension=".docx",
