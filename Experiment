@@ -1,80 +1,87 @@
 import tkinter as tk
-from tkinter import filedialog
-import pandas as pd
-from plyer import notification
+from tkinter import filedialog, scrolledtext
+import difflib
+import PyPDF2
+from docx import Document
 
-class ExcelNotifierApp:
+class DocumentComparatorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Excel Notifier App")
+        self.root.title("Document Comparator")
 
-        self.file_path = None
-        self.df = None
-        self.rows_exceeded = []
+        self.text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=50, height=10)
+        self.text_area.pack(pady=10)
 
-        self.create_widgets()
+        upload_button1 = tk.Button(root, text="Upload Document 1", command=self.load_document1)
+        upload_button1.pack()
 
-    def create_widgets(self):
-        tk.Label(self.root, text="Select Excel File:").pack(pady=10)
+        upload_button2 = tk.Button(root, text="Upload Document 2", command=self.load_document2)
+        upload_button2.pack()
 
-        tk.Button(self.root, text="Browse", command=self.browse_file).pack(pady=5)
+        compare_button = tk.Button(root, text="Compare Documents", command=self.compare_documents)
+        compare_button.pack()
 
-        self.submit_button = tk.Button(self.root, text="Submit", command=self.process_excel)
-        self.submit_button.pack(pady=10)
-        self.submit_button["state"] = "disabled"
+    def load_document1(self):
+        self.document1 = self.load_pdf_document()  # Change to self.load_word_document() for Word documents
 
-        self.action_button = tk.Button(self.root, text="Action", command=self.perform_action)
-        self.action_button.pack(pady=10)
-        self.action_button["state"] = "disabled"
+    def load_document2(self):
+        self.document2 = self.load_pdf_document()  # Change to self.load_word_document() for Word documents
 
-        self.listbox = tk.Listbox(self.root, selectmode=tk.MULTIPLE)
-        self.listbox.pack(pady=10)
+    def load_pdf_document(self):
+        file_path = filedialog.askopenfilename()
+        with open(file_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfFileReader(file)
+            document_content = ''
+            for page_num in range(pdf_reader.numPages):
+                page = pdf_reader.getPage(page_num)
+                document_content += page.extract_text()
+        return document_content
 
-    def browse_file(self):
-        self.file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx;*.xls")])
-        if self.file_path:
-            self.submit_button["state"] = "normal"
+    def load_word_document(self):
+        file_path = filedialog.askopenfilename()
+        document = Document(file_path)
+        document_content = '\n'.join([paragraph.text for paragraph in document.paragraphs])
+        return document_content
 
-    def process_excel(self):
-        self.df = pd.read_excel(self.file_path)
-        pending_column = self.df['pending']
-        time_column = self.df['time']
+    def compare_documents(self):
+        try:
+            standard_doc = self.document1
+            other_doc = self.document2
 
-        self.rows_exceeded = []
-        for i in range(len(self.df)):
-            if pending_column[i] > 1000 or time_column[i] > 3:
-                self.rows_exceeded.append(i)
-                notification.notify(
-                    title=f"Notification - {self.file_path}",
-                    message=f"Row {i+2} exceeded Pending or Time: "
-                            f"Pending({pending_column[i]}), Time({time_column[i]})",
-                )
+            d = difflib.Differ()
+            diff = list(d.compare(standard_doc.splitlines(), other_doc.splitlines()))
 
-        if self.rows_exceeded:
-            self.action_button["state"] = "normal"
-            self.display_exceeded_rows()
+            # Highlight differences
+            highlighted_text = self.highlight_diff(diff)
 
-    def display_exceeded_rows(self):
-        self.listbox.delete(0, tk.END)
-        for row in self.rows_exceeded:
-            self.listbox.insert(tk.END, f"Row {row + 2}")
+            # Display or save the highlighted text
+            self.display_highlighted_text(highlighted_text)
+        except AttributeError:
+            # Handle case where one or both documents are not loaded
+            pass
 
-    def perform_action(self):
-        selected_rows = self.listbox.curselection()
+    def highlight_diff(self, diff):
+        highlighted_text = ''
+        for line in diff:
+            if line.startswith('+ '):  # Lines unique to the second document
+                highlighted_text += f'{line[2:]}'
+                self.text_area.tag_add("highlight", "insert linestart", "insert lineend")
+                self.text_area.tag_configure("highlight", background="yellow")
+                self.text_area.update_idletasks()
+            else:
+                highlighted_text += f'{line[2:]}'
 
-        if not selected_rows:
-            return
+        return highlighted_text
 
-        for selected_row in selected_rows:
-            row_to_process = self.rows_exceeded[selected_row]
-            print(f"Running custom function on Row {row_to_process + 2}")
-            self.custom_function(row_to_process)
+    def display_highlighted_text(self, highlighted_text):
+        result_window = tk.Toplevel(self.root)
+        result_window.title("Highlighted Document")
 
-    def custom_function(self, row):
-        # Replace this with your specific function logic
-        print(f"Custom function executed for Row {row + 2}")
+        result_text = scrolledtext.ScrolledText(result_window, wrap=tk.WORD, width=50, height=10)
+        result_text.insert(tk.END, highlighted_text)
+        result_text.pack(pady=10)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = ExcelNotifierApp(root)
+    app = DocumentComparatorApp(root)
     root.mainloop()
