@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
+from datetime import datetime
 
 class TaskScorerApp:
     def __init__(self, master):
@@ -40,7 +41,7 @@ class TaskScorerApp:
             return
 
         # Create a DataFrame to store the scores
-        scores_df = pd.DataFrame(columns=['Task Name', 'Variable', 'Category', 'Score'])
+        scores_df = pd.DataFrame(columns=['Timestamp', 'Task Name', 'Variable', 'Category', 'Score'])
 
         for var, var_entry in self.var_dropdowns.items():
             category = var_entry.get()
@@ -50,14 +51,22 @@ class TaskScorerApp:
             score = excel_data[(excel_data['Variable'] == var) & (excel_data['Category'] == category)]['Score'].values[0]
 
             # Append the score to the DataFrame
-            scores_df = pd.concat([scores_df, pd.DataFrame({'Task Name': [task_name], 'Variable': [var], 'Category': [category], 'Score': [score]})], ignore_index=True)
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            scores_df = pd.concat([scores_df, pd.DataFrame({'Timestamp': [timestamp], 'Task Name': [task_name], 'Variable': [var], 'Category': [category], 'Score': [score]})], ignore_index=True)
+
+        # Append to the existing output file or create a new one if it doesn't exist
+        try:
+            existing_data = pd.read_excel('output_file.xlsx')
+            updated_data = pd.concat([existing_data, scores_df], ignore_index=True)
+            updated_data.to_excel('output_file.xlsx', index=False)
+        except FileNotFoundError:
+            scores_df.to_excel('output_file.xlsx', index=False)
 
         # Calculate the total score
         total_score = scores_df['Score'].sum()
 
-        # Display or save the result as needed (replace 'output_file.xlsx' with your desired output file)
+        # Display the result
         messagebox.showinfo("Result", f"Task: {task_name}\nTotal Score: {total_score}")
-        scores_df.to_excel('output_file.xlsx', index=False)
 
 if __name__ == "__main__":
     root = tk.Tk()
