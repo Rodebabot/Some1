@@ -1,66 +1,59 @@
 import tkinter as tk
-from tkinter import filedialog
-from docx import Document
+from tkinter import ttk
+import pandas as pd
 
-class DocumentComparatorApp:
+class TaskScorerApp:
     def __init__(self, master):
         self.master = master
-        master.title("Document Comparator")
+        self.master.title("Task Scorer App")
 
-        self.file1_path = tk.StringVar()
-        self.file2_path = tk.StringVar()
+        self.task_name_label = ttk.Label(master, text="Task Name:")
+        self.task_name_label.grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
 
-        self.create_widgets()
+        self.task_name_entry = ttk.Entry(master)
+        self.task_name_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
 
-    def create_widgets(self):
-        tk.Label(self.master, text="Select 1st Document:").pack()
+        self.variables = ['Var1', 'Var2', 'Var3', 'Var4', 'Var5']
+        self.categories = ['Very Hard', 'Hard', 'Mid', 'Low']
 
-        tk.Entry(self.master, textvariable=self.file1_path, width=50).pack()
+        self.var_entries = []
+        for i, var in enumerate(self.variables):
+            ttk.Label(master, text=var).grid(row=i + 1, column=0, padx=5, pady=5, sticky=tk.W)
+            var_entry = ttk.Combobox(master, values=self.categories)
+            var_entry.grid(row=i + 1, column=1, padx=5, pady=5, sticky=tk.W)
+            self.var_entries.append(var_entry)
 
-        tk.Button(self.master, text="Browse", command=self.browse_file1).pack()
+        self.submit_button = ttk.Button(master, text="Submit", command=self.calculate_score)
+        self.submit_button.grid(row=len(self.variables) + 2, column=0, columnspan=2, pady=10)
 
-        tk.Label(self.master, text="Select 2nd Document:").pack()
+    def calculate_score(self):
+        task_name = self.task_name_entry.get()
 
-        tk.Entry(self.master, textvariable=self.file2_path, width=50).pack()
-
-        tk.Button(self.master, text="Browse", command=self.browse_file2).pack()
-
-        tk.Button(self.master, text="Compare", command=self.compare_documents).pack()
-
-        self.result_label = tk.Label(self.master, text="")
-        self.result_label.pack()
-
-    def browse_file1(self):
-        self.file1_path.set(filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")]))
-
-    def browse_file2(self):
-        self.file2_path.set(filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")]))
-
-    def compare_documents(self):
-        file1_path = self.file1_path.get()
-        file2_path = self.file2_path.get()
-
-        if not file1_path or not file2_path:
-            self.result_label.config(text="Please select both documents.")
+        if not task_name:
+            tk.messagebox.showerror("Error", "Please enter a task name.")
             return
 
-        doc1 = Document(file1_path)
-        doc2 = Document(file2_path)
+        # Create a DataFrame to store the scores
+        scores_df = pd.DataFrame(columns=['Variable', 'Category', 'Score'])
 
-        result_doc = Document()
-        for para2 in doc2.paragraphs:
-            run = result_doc.add_paragraph().add_run(para2.text)
+        for var, entry in zip(self.variables, self.var_entries):
+            category = entry.get()
 
-            if para2.text not in {para1.text for para1 in doc1.paragraphs}:
-                run.font.highlight_color = 6  # Yellow highlight
+            # Read the score from the Excel file (replace 'your_excel_file.xlsx' with your actual file)
+            excel_data = pd.read_excel('your_excel_file.xlsx')
+            score = excel_data[(excel_data['Variable'] == var) & (excel_data['Category'] == category)]['Score'].values[0]
 
-        result_path = filedialog.asksaveasfilename(defaultextension=".docx",
-                                                    filetypes=[("Word Documents", "*.docx")],
-                                                    title="Save Result Document")
-        result_doc.save(result_path)
-        self.result_label.config(text=f"Comparison completed. Result saved at {result_path}")
+            # Append the score to the DataFrame
+            scores_df = scores_df.append({'Variable': var, 'Category': category, 'Score': score}, ignore_index=True)
 
-# Create and run the Tkinter app
-root = tk.Tk()
-app = DocumentComparatorApp(root)
-root.mainloop()
+        # Calculate the total score
+        total_score = scores_df['Score'].sum()
+
+        # Display or save the result as needed (replace 'output_file.xlsx' with your desired output file)
+        tk.messagebox.showinfo("Result", f"Task: {task_name}\nTotal Score: {total_score}")
+        scores_df.to_excel('output_file.xlsx', index=False)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TaskScorerApp(root)
+    root.mainloop()
