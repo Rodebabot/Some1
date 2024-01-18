@@ -57,3 +57,35 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = TaskScorerApp(root)
     root.mainloop()
+
+
+
+
+
+
+def calculate_score(self):
+    task_name = self.task_name_entry.get()
+
+    if not task_name:
+        messagebox.showerror("Error", "Please enter a task name.")
+        return
+
+    # Create a DataFrame to store the scores
+    scores_df = pd.DataFrame(columns=['Task Name', 'Variable', 'Category', 'Score'])
+
+    for var, entry in zip(self.variables, self.var_entries):
+        category = entry.get()
+
+        # Read the score from the Excel file (replace 'your_excel_file.xlsx' with your actual file)
+        excel_data = pd.read_excel('your_excel_file.xlsx')
+        score = excel_data[(excel_data['Variable'] == var) & (excel_data['Category'] == category)]['Score'].values[0]
+
+        # Append the score to the DataFrame
+        scores_df = pd.concat([scores_df, pd.DataFrame({'Task Name': [task_name], 'Variable': [var], 'Category': [category], 'Score': [score]})], ignore_index=True)
+
+    # Calculate the total score
+    total_score = scores_df['Score'].sum()
+
+    # Display or save the result as needed (replace 'output_file.xlsx' with your desired output file)
+    messagebox.showinfo("Result", f"Task: {task_name}\nTotal Score: {total_score}")
+    scores_df.to_excel('output_file.xlsx', index=False)
