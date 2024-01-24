@@ -1,9 +1,19 @@
-def load_excel_sheet(self, file_path):
-    try:
-        workbook = openpyxl.load_workbook(file_path)
-        sheet = workbook.active
-        email_filter = set(str(cell.value) for cell in sheet['A'][1:])  # Convert cell values to strings
-        return email_filter
-    except Exception as e:
-        print(f"Error loading Excel sheet: {e}")
-        return set()
+import win32com.client
+
+# Replace these with your specific domain names
+domain_names = ['example.com', 'anotherdomain.com']
+
+# Connect to Outlook
+outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+inbox = outlook_app.GetNamespace("MAPI").GetDefaultFolder(6)  # 6 represents the Inbox folder
+
+# Iterate through all folders and search for emails containing specified domain names
+for folder in inbox.Folders:
+    print(f"Searching in folder: {folder.Name}")
+    items = folder.Items
+    items.Sort("[ReceivedTime]", True)  # Sorting by ReceivedTime in descending order
+
+    for item in items:
+        for domain in domain_names:
+            if domain.lower() in item.Subject.lower():
+                print(f"Subject: {item.Subject}, ReceivedTime: {item.ReceivedTime}, Folder: {folder.Name}")
