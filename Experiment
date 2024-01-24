@@ -7,9 +7,11 @@ domain_names = ['example.com', 'anotherdomain.com']
 outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 inbox = outlook_app.GetNamespace("MAPI").GetDefaultFolder(6)  # 6 represents the Inbox folder
 
-# Iterate through all folders and search for emails containing specified domain names
-for folder in inbox.Folders:
-    print(f"Searching in folder: {folder.Name}")
+# Counter to track iterations
+iteration_count = 0
+
+def search_emails(folder):
+    global iteration_count
     items = folder.Items
     items.Sort("[ReceivedTime]", True)  # Sorting by ReceivedTime in descending order
 
@@ -17,3 +19,14 @@ for folder in inbox.Folders:
         for domain in domain_names:
             if domain.lower() in item.Subject.lower():
                 print(f"Subject: {item.Subject}, ReceivedTime: {item.ReceivedTime}, Folder: {folder.Name}")
+                iteration_count += 1
+
+        if iteration_count >= 50:
+            return  # Exit the function when 50 iterations are reached
+
+    # Recursively search subfolders
+    for subfolder in folder.Folders:
+        search_emails(subfolder)
+
+# Start searching from the Inbox
+search_emails(inbox)
