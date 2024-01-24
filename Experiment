@@ -1,80 +1,76 @@
-**Project Documentation: Task Distribution Model for CS-G KYC Team**
+import tkinter as tk
+from tkinter import ttk
+import openpyxl
+import win32com.client as win32
+from datetime import datetime
 
-**1. Objectives:**
+class OutlookApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Outlook Mailbox Viewer")
+        self.outlook = win32.Dispatch("Outlook.Application").GetNamespace("MAPI")
+        self.create_ui()
 
-The primary goal of this project is to develop a statistical model that optimally distributes tasks among members of the CS-G KYC team based on task complexity, employee skill levels, and tenure. The objectives include:
+    def connect_outlook(self, folder_name):
+        try:
+            inbox = self.outlook.GetDefaultFolder(6)  # 6 corresponds to the Inbox folder
+            subfolder = inbox.Folders(folder_name)
+            messages = subfolder.Items
+            messages.Sort("[ReceivedTime]", True)  # Sort by ReceivedTime in descending order
+            return messages
+        except Exception as e:
+            print(f"Error connecting to Outlook: {e}")
+            return None
 
-- Efficient allocation of tasks to enhance team productivity.
-- Utilization of individual skills to maximize overall team performance.
-- Forecasting future workloads and adjusting task assignments accordingly.
+    def load_excel_sheet(self, file_path):
+        try:
+            workbook = openpyxl.load_workbook(file_path)
+            sheet = workbook.active
+            email_filter = set(sheet['A'][1:])  # Assuming domain names or email parts are in column A
+            return email_filter
+        except Exception as e:
+            print(f"Error loading Excel sheet: {e}")
+            return set()
 
-**2. Types of Variables or Data Sets Needed:**
+    def display_emails(self, folder_name, email_filter):
+        messages = self.connect_outlook(folder_name)
+        if messages:
+            self.email_listbox.delete(0, tk.END)
+            for message in messages:
+                sender = message.SenderEmailAddress
+                if any(filter_item in sender for filter_item in email_filter):
+                    subject = message.Subject
+                    received_time = message.ReceivedTime.strftime("%Y-%m-%d %H:%M:%S")
+                    self.email_listbox.insert(tk.END, f"{subject} - {sender} - {received_time}")
 
-a. **Independent Variables:**
+    def draft_reply(self, selected_item):
+        # Implement drafting automated reply
+        pass
 
-   i. Task Complexity: A scale to measure the complexity of each KYC task.
-   
-   ii. Employee Skill Levels: Categorized based on tenure, experience, and expertise.
-   
-   iii. Time: Monthly data to analyze workload variations.
+    def create_ui(self):
+        tk.Label(self.root, text="Select Folder:").pack()
+        folder_combobox = ttk.Combobox(self.root, values=["Inbox", "Sent Items"])  # Add more folders if needed
+        folder_combobox.set("Inbox")
+        folder_combobox.pack()
 
-b. **Dependent Variables:**
+        tk.Label(self.root, text="Load Excel Sheet:").pack()
+        file_entry = tk.Entry(self.root)
+        file_entry.pack()
 
-   i. Task Allocation: Number of tasks assigned to each team member.
+        load_button = tk.Button(self.root, text="Load", command=lambda: self.load_and_display(folder_combobox.get(), file_entry.get()))
+        load_button.pack()
 
-**3. Data Collection:**
+        self.email_listbox = tk.Listbox(self.root, width=50, height=10)
+        self.email_listbox.pack()
 
-- Task Complexity: Extracted from historical task data, considering factors like regulatory changes and document intricacy.
-  
-- Employee Skill Levels: HR records, performance evaluations, and feedback.
+        reply_button = tk.Button(self.root, text="Draft Reply", command=lambda: self.draft_reply(self.email_listbox.get(tk.ACTIVE)))
+        reply_button.pack()
 
-- Time: Monthly records of completed tasks and future workload projections.
+    def load_and_display(self, folder_name, file_path):
+        email_filter = self.load_excel_sheet(file_path)
+        self.display_emails(folder_name, email_filter)
 
-**4. Timeline:**
-
-| Phase            | Duration         |
-|------------------|------------------|
-| Data Collection  | 1 month          |
-| Model Development| 2 months         |
-| Testing & Refinement | 1 month      |
-| Implementation   | 1 month          |
-| Evaluation & Adjustment | Ongoing  |
-
-**5. Tools and Techniques:**
-
-a. **Tools:**
-   
-   i. Python for statistical analysis and model development.
-   
-   ii. Excel for data preprocessing and initial analysis.
-   
-   iii. SQL for database queries and data retrieval.
-
-b. **Techniques:**
-
-   i. Regression Analysis: To understand the relationship between variables.
-   
-   ii. Machine Learning Algorithms: Depending on the complexity, decision trees or ensemble methods can be explored.
-   
-   iii. Time Series Analysis: For forecasting future workloads.
-
-**6. Data Analysis:**
-
-| Data Type       | Analysis Type                    |
-|------------------|----------------------------------|
-| Task Complexity | Regression Analysis              |
-| Skill Levels    | Classification or Clustering      |
-| Time            | Time Series Analysis              |
-
-**7. Model Evaluation:**
-
-- Accuracy of task allocation compared to actual performance.
-- Regular feedback from team members on workload distribution.
-
-**8. Expected Output:**
-
-- Optimized task assignments.
-- Insights into resource utilization and team performance.
-- Ability to adapt task distribution based on changing conditions.
-
-This project documentation provides a comprehensive outline for developing a task distribution model for the CS-G KYC team. Adjustments may be necessary based on ongoing evaluation and feedback.
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = OutlookApp(root)
+    root.mainloop()
