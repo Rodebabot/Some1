@@ -1,31 +1,8 @@
-import fitz  # PyMuPDF
-import os
+for page_num in range(pdf_reader.numPages):
+    # ... existing code ...
+    page_images = pdf_document[page_num].get_images(full=True)
 
-def extract_and_save_images(pdf_path, output_folder):
-    # Create output folder if it doesn't exist
-    os.makedirs(output_folder, exist_ok=True)
+    total_image_count += len(page_images)  # Increment the total count
 
-    pdf_document = fitz.open(pdf_path)
-
-    for page_num in range(len(pdf_document)):
-        page = pdf_document[page_num]
-        images = page.get_images(full=True)
-
-        for img_index, img_info in enumerate(images):
-            img_data = pdf_document.extract_image(img_info)
-            
-            img_index += 1  # Adjust index since it starts from 1
-            img_format = img_data["ext"]  # Get the image format
-
-            # Handle variations in img_data structure
-            img_bytes = img_data["image"] if isinstance(img_data["image"], bytes) else img_data["image"][0]
-            
-            img = Image.open(BytesIO(img_bytes))
-            img.save(os.path.join(output_folder, f"Image_Page_{page_num + 1}_{img_index}.{img_format}"), img_format)
-
-    pdf_document.close()
-
-# Example usage
-pdf_path = 'path/to/your/file.pdf'
-output_folder = 'path/to/your/output/folder'
-extract_and_save_images(pdf_path, output_folder)
+    for img_index, img_info in enumerate(page_images):
+        # ... existing code ...
