@@ -1,47 +1,27 @@
 import fitz  # PyMuPDF
-import PyPDF2
+import os
 
-def extract_images_with_text(pdf_path):
-    images_with_text = []
+def extract_and_save_images(pdf_path, output_folder):
+    # Create output folder if it doesn't exist
+    os.makedirs(output_folder, exist_ok=True)
 
-    with open(pdf_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfFileReader(file)
+    pdf_document = fitz.open(pdf_path)
 
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            page_text = page.extractText()
+    for page_num in range(len(pdf_document)):
+        page = pdf_document[page_num]
+        images = page.get_images(full=True)
 
-            pdf_document = fitz.open(pdf_path)
-            page_images = pdf_document[page_num].get_images(full=True)
+        for img_index, img_info in enumerate(images):
+            img_index += 1  # Adjust index since it starts from 1
 
-            for img_index, img_info in enumerate(page_images):
-                img_index += 1  # Adjust index since it starts from 1
+            image_index_str = f"Image_{img_index}_Page_{page_num + 1}"
+            img_data = pdf_document.extract_image(img_info)
+            img = Image.open(BytesIO(img_data['image']))
+            img.save(os.path.join(output_folder, f"{image_index_str}.png"), "PNG")
 
-                img_index_str = f"Image {img_index} on page {page_num + 1}"
-                adjacent_text = page_text[img_info['y']-50:img_info['y']+50].strip()
-
-                images_with_text.append({
-                    'image_info': img_info,
-                    'text': adjacent_text,
-                    'location_info': img_index_str
-                })
-
-    return images_with_text
+    pdf_document.close()
 
 # Example usage
 pdf_path = 'path/to/your/file.pdf'
-result = extract_images_with_text(pdf_path)
-for entry in result:
-    print(entry['location_info'])
-    print(f"Text around image: {entry['text']}")
-    print("-" * 30)
-adjacent_text = page_text[int(img_info[0]['y'])-50:int(img_info[0]['y'])+50].strip()
-
-
-
-adjacent_text = page_text[int(img_info[3]) - 50:int(img_info[3]) + 50].stri
-
-
-
-y_position = int(img_info[3])
-adjacent_text = page_text[y_position - 50:y_position + 50].strip()
+output_folder = 'path/to/your/output/folder'
+extract_and_save_images(pdf_path, output_folder)
