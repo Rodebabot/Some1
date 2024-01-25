@@ -16,6 +16,13 @@ def extract_and_save_images(pdf_path, output_folder):
 
             image_index_str = f"Image_{img_index}_Page_{page_num + 1}"
             img_data = pdf_document.extract_image(img_info)
+            
+            # Fix the image index
+            if isinstance(img_info[0], int):
+                img_index = img_info[0]
+            else:
+                img_index = img_index + 1
+
             img = Image.open(BytesIO(img_data['image']))
             img.save(os.path.join(output_folder, f"{image_index_str}.png"), "PNG")
 
