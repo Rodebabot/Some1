@@ -36,3 +36,7 @@ for entry in result:
     print(f"Text around image: {entry['text']}")
     print("-" * 30)
 adjacent_text = page_text[int(img_info[0]['y'])-50:int(img_info[0]['y'])+50].strip()
+
+
+
+adjacent_text = page_text[int(img_info[3]) - 50:int(img_info[3]) + 50].strip()
