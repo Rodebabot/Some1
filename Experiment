@@ -12,19 +12,9 @@ def extract_and_save_images(pdf_path, output_folder):
         images = page.get_images(full=True)
 
         for img_index, img_info in enumerate(images):
-            img_index += 1  # Adjust index since it starts from 1
-
-            image_index_str = f"Image_{img_index}_Page_{page_num + 1}"
             img_data = pdf_document.extract_image(img_info)
-            
-            # Fix the image index
-            if isinstance(img_info[0], int):
-                img_index = img_info[0]
-            else:
-                img_index = img_index + 1
-
             img = Image.open(BytesIO(img_data['image']))
-            img.save(os.path.join(output_folder, f"{image_index_str}.png"), "PNG")
+            img.save(os.path.join(output_folder, f"Image_Page_{page_num + 1}_{img_index + 1}.png"), "PNG")
 
     pdf_document.close()
 
@@ -32,5 +22,3 @@ def extract_and_save_images(pdf_path, output_folder):
 pdf_path = 'path/to/your/file.pdf'
 output_folder = 'path/to/your/output/folder'
 extract_and_save_images(pdf_path, output_folder)
-
-img_index = img_info[0] if isinstance(img_info[0], int) else img_index + 1
