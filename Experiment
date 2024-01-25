@@ -1,32 +1,37 @@
-import win32com.client
+import fitz  # PyMuPDF
+import PyPDF2
 
-# Replace these with your specific domain names
-domain_names = ['example.com', 'anotherdomain.com']
+def extract_images_with_text(pdf_path):
+    images_with_text = []
 
-# Connect to Outlook
-outlook_app = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-inbox = outlook_app.GetNamespace("MAPI").GetDefaultFolder(6)  # 6 represents the Inbox folder
+    with open(pdf_path, 'rb') as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
 
-# Counter to track iterations
-iteration_count = 0
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            page_text = page.extractText()
 
-def search_emails(folder):
-    global iteration_count
-    items = folder.Items
-    items.Sort("[ReceivedTime]", True)  # Sorting by ReceivedTime in descending order
+            pdf_document = fitz.open(pdf_path)
+            page_images = pdf_document[page_num].get_images(full=True)
 
-    for item in items:
-        for domain in domain_names:
-            if domain.lower() in item.Subject.lower():
-                print(f"Subject: {item.Subject}, ReceivedTime: {item.ReceivedTime}, Folder: {folder.Name}")
-                iteration_count += 1
+            for img_index, img_info in enumerate(page_images):
+                img_index += 1  # Adjust index since it starts from 1
 
-        if iteration_count >= 50:
-            return  # Exit the function when 50 iterations are reached
+                img_index_str = f"Image {img_index} on page {page_num + 1}"
+                adjacent_text = page_text[img_info['y']-50:img_info['y']+50].strip()
 
-    # Recursively search subfolders
-    for subfolder in folder.Folders:
-        search_emails(subfolder)
+                images_with_text.append({
+                    'image_info': img_info,
+                    'text': adjacent_text,
+                    'location_info': img_index_str
+                })
 
-# Start searching from the Inbox
-search_emails(inbox)
+    return images_with_text
+
+# Example usage
+pdf_path = 'path/to/your/file.pdf'
+result = extract_images_with_text(pdf_path)
+for entry in result:
+    print(entry['location_info'])
+    print(f"Text around image: {entry['text']}")
+    print("-" * 30)
