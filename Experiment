@@ -39,14 +39,9 @@ adjacent_text = page_text[int(img_info[0]['y'])-50:int(img_info[0]['y'])+50].str
 
 
 
-adjacent_text = page_text[int(img_info[3]) - 50:int(img_info[3]) + 50].strip()
+adjacent_text = page_text[int(img_info[3]) - 50:int(img_info[3]) + 50].stri
 
 
 
-
-adjacent_text = page_text[int(img_info[3]) - 50:int(img_info[3]) + 50].strip()
-
-# Extract and save the image
-img_data = pdf_document.extract_image(img_info)
-img = Image.open(BytesIO(img_data['image']))
-img.save(f"{img_index_str}.png", "PNG")
+y_position = int(img_info[3])
+adjacent_text = page_text[y_position - 50:y_position + 50].strip()
