@@ -1,22 +1,18 @@
 import fitz  # PyMuPDF
+from PIL import Image
 
-def extract_images_from_pdf(pdf_path, output_folder):
+def convert_pdf_to_images(pdf_path, output_folder):
     doc = fitz.open(pdf_path)
 
     for page_num in range(doc.page_count):
         page = doc[page_num]
-        images = page.get_images(full=True)
-
-        for img_index, img_info in enumerate(images):
-            img_index += 1  # Adjust index to start from 1
-            img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
-            img_index_str = f"{img_index_str}.png"
-
-            img_index = img_info[0]
-            img = page.get_pixmap(img_index)
-
-            with open(f"{output_folder}/{img_index_str}", "wb") as img_file:
-                img_file.write(img.get_image_data())
+        img = page.get_pixmap()
+        
+        img_index = page_num + 1
+        img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
+        img_index_str = f"{img_index_str}.png"
+        
+        img.save(f"{output_folder}/{img_index_str}")
 
     doc.close()
 
@@ -24,4 +20,4 @@ def extract_images_from_pdf(pdf_path, output_folder):
 pdf_file_path = "your_file.pdf"
 output_folder_path = "output_images"
 
-extract_images_from_pdf(pdf_file_path, output_folder_path)
+convert_pdf_to_images(pdf_file_path, output_folder_path)
