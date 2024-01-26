@@ -1,5 +1,5 @@
 import fitz  # PyMuPDF
-from PIL import Image
+from wand.image import Image as WandImage
 import io
 
 def extract_images_from_pdf(pdf_path, output_folder):
@@ -8,18 +8,19 @@ def extract_images_from_pdf(pdf_path, output_folder):
     for page_num in range(doc.page_count):
         page = doc[page_num]
         images = page.get_images(full=True)
-        
+
         for img_index, img_info in enumerate(images):
             img_index += 1  # Adjust index to start from 1
             img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
             img_index_str = f"{img_index_str}.png"
-            
+
             img_index = img_info[0]
             img = page.get_pixmap(img_index)
             
             image_bytes = img.get_image_data()
-            img = Image.open(io.BytesIO(image_bytes["image"]))
-            img.save(f"{output_folder}/{img_index_str}")
+            
+            with WandImage(blob=image_bytes["image"]) as wand_img:
+                wand_img.save(filename=f"{output_folder}/{img_index_str}")
 
     doc.close()
 
