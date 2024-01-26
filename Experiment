@@ -1,40 +1,19 @@
-import fitz  # PyMuPDF
 from PIL import Image, ImageChops
 
-def are_images_equal(image1, image2):
-    diff = ImageChops.difference(image1, image2)
-    return not diff.getbbox()
+def differentiate_images(original_image_path, output_folder):
+    original_image = Image.open(original_image_path)
 
-def convert_pdf_to_images_differentiate(pdf_path, output_folder):
-    doc = fitz.open(pdf_path)
+    # Create a new image with only different pixels
+    different_image = ImageChops.difference(original_image, Image.new(original_image.mode, original_image.size))
 
-    for page_num in range(doc.page_count):
-        page = doc[page_num]
-        img = page.get_pixmap()
-        
-        img_index = page_num + 1
-        img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
-        img_index_str = f"{img_index_str}.png"
-        
-        img_path = f"{output_folder}/{img_index_str}"
-        img.save(img_path)
-
-        original_image = Image.open(img_path)
-
-        # Create a new image with only different pixels
-        different_image = ImageChops.difference(original_image, Image.new(original_image.mode, original_image.size))
-        different_image_path = f"{output_folder}/{img_index_str[:-4]}_different.png"
+    # Check if the new image contains content
+    if different_image.getbbox():
+        # Save the different image only if there are non-white pixels
+        different_image_path = f"{output_folder}/different.png"
         different_image.save(different_image_path)
 
-        # Check if the new image contains content
-        if different_image.getbbox():
-            # Save the different image only if there are non-white pixels
-            different_image.save(different_image_path)
-
-    doc.close()
-
 # Example usage
-pdf_file_path = "your_file.pdf"
+original_image_path = "your_original_image.png"
 output_folder_path = "output_images"
 
-convert_pdf_to_images_differentiate(pdf_file_path, output_folder_path)
+differentiate_images(original_image_path, output_folder_path)
