@@ -1,8 +1,24 @@
-for page_num in range(pdf_reader.numPages):
-    # ... existing code ...
-    page_images = pdf_document[page_num].get_images(full=True)
+import fitz  # PyMuPDF
 
-    total_image_count += len(page_images)  # Increment the total count
+def extract_images_from_pdf(pdf_path, output_folder):
+    doc = fitz.open(pdf_path)
 
-    for img_index, img_info in enumerate(page_images):
-        # ... existing code ...
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        images = page.get_images(full=True)
+        
+        for img_index, img_info in enumerate(images):
+            img_index += 1  # Adjust index to start from 1
+            img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
+            img_index_str = f"{img_index_str}.png"
+            
+            img = page.get_pixmap(img_info[0])
+            img.save(f"{output_folder}/{img_index_str}")
+
+    doc.close()
+
+# Example usage
+pdf_file_path = "your_file.pdf"
+output_folder_path = "output_images"
+
+extract_images_from_pdf(pdf_file_path, output_folder_path)
