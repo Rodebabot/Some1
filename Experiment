@@ -1,5 +1,6 @@
 import fitz  # PyMuPDF
 from PIL import Image
+import io
 
 def extract_images_from_pdf(pdf_path, output_folder):
     doc = fitz.open(pdf_path)
@@ -13,7 +14,8 @@ def extract_images_from_pdf(pdf_path, output_folder):
             img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
             img_index_str = f"{img_index_str}.png"
             
-            img = Image.open(io.BytesIO(img_info["image"]))
+            img_bytes = page.get_image_data(img_info[0])  # Use img_info[0] to get image index
+            img = Image.open(io.BytesIO(img_bytes))
             img.save(f"{output_folder}/{img_index_str}")
 
     doc.close()
