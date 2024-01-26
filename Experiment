@@ -1,13 +1,11 @@
 import fitz  # PyMuPDF
-from PIL import Image
-import pytesseract
+from PIL import Image, ImageChops
 
-def is_text_present(image_path):
-    image = Image.open(image_path)
-    text = pytesseract.image_to_string(image)
-    return any(c.isalpha() or c.isdigit() for c in text)
+def are_images_equal(image1, image2):
+    diff = ImageChops.difference(image1, image2)
+    return not diff.getbbox()
 
-def convert_pdf_to_images_with_text(pdf_path, output_folder):
+def convert_pdf_to_images_differentiate(pdf_path, output_folder):
     doc = fitz.open(pdf_path)
 
     for page_num in range(doc.page_count):
@@ -21,10 +19,17 @@ def convert_pdf_to_images_with_text(pdf_path, output_folder):
         img_path = f"{output_folder}/{img_index_str}"
         img.save(img_path)
 
-        if not is_text_present(img_path):
-            # No recognizable text, save as a different PNG
-            no_text_index_str = f"{img_index_str[:-4]}_no_text.png"
-            img.save(f"{output_folder}/{no_text_index_str}")
+        original_image = Image.open(img_path)
+
+        # Create a new image with only different pixels
+        different_image = ImageChops.difference(original_image, Image.new(original_image.mode, original_image.size))
+        different_image_path = f"{output_folder}/{img_index_str[:-4]}_different.png"
+        different_image.save(different_image_path)
+
+        # Check if the new image contains content
+        if different_image.getbbox():
+            # Save the different image only if there are non-white pixels
+            different_image.save(different_image_path)
 
     doc.close()
 
@@ -32,4 +37,4 @@ def convert_pdf_to_images_with_text(pdf_path, output_folder):
 pdf_file_path = "your_file.pdf"
 output_folder_path = "output_images"
 
-convert_pdf_to_images_with_text(pdf_file_path, output_folder_path)
+convert_pdf_to_images_differentiate(pdf_file_path, output_folder_path)
