@@ -13,7 +13,7 @@ def extract_images_from_pdf(pdf_path, output_folder):
             img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
             img_index_str = f"{img_index_str}.png"
             
-            img = Image.frombytes("RGB", [img_info["width"], img_info["height"]], img_info["image"])
+            img = Image.open(io.BytesIO(img_info["image"]))
             img.save(f"{output_folder}/{img_index_str}")
 
     doc.close()
