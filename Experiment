@@ -1,35 +1,35 @@
+import fitz  # PyMuPDF
 from PIL import Image
-import numpy as np
+import pytesseract
 
-def extract_non_written_regions(image_path, output_path):
-    # Open the image
-    img = Image.open(image_path)
+def is_text_present(image_path):
+    image = Image.open(image_path)
+    text = pytesseract.image_to_string(image)
+    return any(c.isalpha() or c.isdigit() for c in text)
 
-    # Convert the image to grayscale
-    img_gray = img.convert('L')
+def convert_pdf_to_images_with_text(pdf_path, output_folder):
+    doc = fitz.open(pdf_path)
 
-    # Convert the image to a NumPy array
-    img_array = np.array(img_gray)
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        img = page.get_pixmap()
+        
+        img_index = page_num + 1
+        img_index_str = str(img_index).zfill(3)  # Zero-padding for sorting
+        img_index_str = f"{img_index_str}.png"
+        
+        img_path = f"{output_folder}/{img_index_str}"
+        img.save(img_path)
 
-    # Find regions where pixel levels are different than the written parts
-    non_written_regions = np.where(img_array < 255)  # Assuming written parts are white (pixel level 255)
+        if not is_text_present(img_path):
+            # No recognizable text, save as a different PNG
+            no_text_index_str = f"{img_index_str[:-4]}_no_text.png"
+            img.save(f"{output_folder}/{no_text_index_str}")
 
-    # Get the bounding box of the non-written regions
-    bbox = (
-        min(non_written_regions[1]),
-        min(non_written_regions[0]),
-        max(non_written_regions[1]),
-        max(non_written_regions[0])
-    )
-
-    # Crop the image to the bounding box
-    img_cropped = img.crop(bbox)
-
-    # Save the extracted region
-    img_cropped.save(output_path)
+    doc.close()
 
 # Example usage
-input_image_path = "input_image.png"
-output_image_path = "output_non_written_region.png"
+pdf_file_path = "your_file.pdf"
+output_folder_path = "output_images"
 
-extract_non_written_regions(input_image_path, output_image_path)
+convert_pdf_to_images_with_text(pdf_file_path, output_folder_path)
