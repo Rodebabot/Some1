@@ -30,17 +30,17 @@ def save_to_excel(pdf_path, event_data_parts):
     # Check if the Excel file already exists
     excel_file = 'event_data.xlsx'
     if os.path.exists(excel_file):
-        # Load existing Excel file
-        df = pd.read_excel(excel_file)
+        # Load existing Excel file with explicit data type specification
+        df = pd.read_excel(excel_file, dtype={'Part 1': str, 'Part 2': str, 'Part 3': str})
         
         # Add new data to the next available row
         new_row = {'PDF Name': pdf_path, 'Part 1': event_data_parts[0], 'Part 2': event_data_parts[1], 'Part 3': event_data_parts[2]}
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     else:
-        # Create a new Excel file and add headers
-        df = pd.DataFrame({'PDF Name': [pdf_path], 'Part 1': [event_data_parts[0]], 'Part 2': [event_data_parts[1]], 'Part 3': [event_data_parts[2]]})
+        # Create a new Excel file and add headers with explicit data type specification
+        df = pd.DataFrame({'PDF Name': [pdf_path], 'Part 1': [event_data_parts[0]], 'Part 2': [event_data_parts[1]], 'Part 3': [event_data_parts[2]]}, dtype={'Part 1': str, 'Part 2': str, 'Part 3': str})
     
-    # Save the DataFrame to Excel
+    # Save the DataFrame to Excel with explicit data type specification
     df.to_excel(excel_file, index=False)
 
 # Replace 'your_directory_path' with the actual path to your directory containing PDFs
