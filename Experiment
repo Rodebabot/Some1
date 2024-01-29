@@ -46,3 +46,27 @@ event_data = extract_event_data(pdf_path)
 
 # Save the data to Excel
 save_to_excel(pdf_path, event_data)
+
+
+
+
+
+
+
+
+def save_to_excel(pdf_path, event_data):
+    # Check if the Excel file already exists
+    excel_file = 'event_data.xlsx'
+    if os.path.exists(excel_file):
+        # Load existing Excel file
+        df = pd.read_excel(excel_file)
+        
+        # Add new data to the next available row
+        new_row = {'PDF Name': pdf_path, 'Event Data': event_data}
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    else:
+        # Create a new Excel file and add headers
+        df = pd.DataFrame({'PDF Name': [pdf_path], 'Event Data': [event_data]})
+    
+    # Save the DataFrame to Excel
+    df.to_excel(excel_file, index=False)
