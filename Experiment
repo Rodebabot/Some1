@@ -70,3 +70,9 @@ def save_to_excel(pdf_path, event_data):
     
     # Save the DataFrame to Excel
     df.to_excel(excel_file, index=False)
+
+import pandas as pd
+
+# Assuming df is your DataFrame and 'Entries' is the column with entries like 'F 1 for 1'
+df['Entries'].str.split(' ', expand=True)
+
