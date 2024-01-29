@@ -2,3 +2,4 @@ Implemented analytics for tracking and managing capacity, enhancing efficiency a
 Developed a Python-based data cleaning tool to facilitate efficient data preparation and enhance data quality.
 Configured automatic reply settings in Outlook to facilitate automated responses to incoming emails.
 Developed XploreX app, a unified platform for streamlined access to datasets, dashboards, and analytics, providing a one-stop solution based on user input.
+Implemented risk warning alert systems to monitor datasets or dashboards, triggering alerts upon crossing predefined thresholds and incorporating one-click action functionalities for prompt response.
