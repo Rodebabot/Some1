@@ -13,8 +13,11 @@ def extract_event_data(pdf_path):
         # Find the index of the word "Event"
         event_index = first_page_text.find("Event")
         
-        # Extract the text next to "Event" on the same line
-        event_data = first_page_text[event_index + len("Event"):].strip()
+        # Find the index of the end of the line after "Event"
+        end_of_line_index = first_page_text.find('\n', event_index)
+        
+        # Extract the text from "Event" to the end of the line
+        event_data = first_page_text[event_index + len("Event"):end_of_line_index].strip()
         
         return event_data
 
