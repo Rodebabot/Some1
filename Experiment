@@ -1,5 +1,45 @@
-Implemented analytics for tracking and managing capacity, enhancing efficiency and resource allocation.
-Developed a Python-based data cleaning tool to facilitate efficient data preparation and enhance data quality.
-Configured automatic reply settings in Outlook to facilitate automated responses to incoming emails.
-Developed XploreX app, a unified platform for streamlined access to datasets, dashboards, and analytics, providing a one-stop solution based on user input.
-Implemented risk warning alert systems to monitor datasets or dashboards, triggering alerts upon crossing predefined thresholds and incorporating one-click action functionalities for prompt response.
+import PyPDF2
+import pandas as pd
+import os
+
+def extract_event_data(pdf_path):
+    # Open the PDF file
+    with open(pdf_path, 'rb') as pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+        
+        # Extract text from the first page
+        first_page_text = pdf_reader.getPage(0).extract_text()
+        
+        # Find the index of the word "Event"
+        event_index = first_page_text.find("Event")
+        
+        # Extract the text next to "Event" on the same line
+        event_data = first_page_text[event_index + len("Event"):].strip()
+        
+        return event_data
+
+def save_to_excel(pdf_path, event_data):
+    # Check if the Excel file already exists
+    excel_file = 'event_data.xlsx'
+    if os.path.exists(excel_file):
+        # Load existing Excel file
+        df = pd.read_excel(excel_file)
+        
+        # Add new data to the next available row
+        new_row = {'PDF Name': pdf_path, 'Event Data': event_data}
+        df = df.append(new_row, ignore_index=True)
+    else:
+        # Create a new Excel file and add headers
+        df = pd.DataFrame({'PDF Name': [pdf_path], 'Event Data': [event_data]})
+    
+    # Save the DataFrame to Excel
+    df.to_excel(excel_file, index=False)
+
+# Replace 'your_pdf_file.pdf' with the actual PDF file path
+pdf_path = 'your_pdf_file.pdf'
+
+# Extract event data from the PDF
+event_data = extract_event_data(pdf_path)
+
+# Save the data to Excel
+save_to_excel(pdf_path, event_data)
