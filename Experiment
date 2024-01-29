@@ -47,6 +47,6 @@ def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude
 # Example usage
 pdf_path = 'your_pdf_file.pdf'
 target_sentence = 'ha ha ha hmm'
-exclude_image_path = 'your_exclude_image.png'  # Replace with the path to your image file
+exclude_image_path = 'your_exclude_image.jpeg'  # Replace with the path to your JPEG image file
 result = count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path)
 print(f"Number of images after the occurrence of '{target_sentence}' excluding the specified image: {result}")
