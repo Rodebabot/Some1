@@ -40,6 +40,10 @@ def save_to_excel(pdf_path, event_data_parts):
         # Create a new Excel file and add headers
         df = pd.DataFrame({'PDF Name': [pdf_path], 'Part 1': [event_data_parts[0]], 'Part 2': [event_data_parts[1]], 'Part 3': [event_data_parts[2]]})
     
+    # Explicitly set data types for numeric columns
+    numeric_columns = ['Part 1', 'Part 3']  # Adjust column names as needed
+    df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
+    
     # Save the DataFrame to Excel
     df.to_excel(excel_file, index=False)
 
