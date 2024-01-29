@@ -1,65 +1,52 @@
-import PyPDF2
-import pandas as pd
-import os
+import fitz  # PyMuPDF
+from PIL import Image
+import io
 
-def extract_event_data(pdf_path):
+def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path):
     # Open the PDF file
-    with open(pdf_path, 'rb') as pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-        
-        # Extract text from the first page
-        first_page_text = pdf_reader.getPage(0).extract_text()
-        
-        # Find the index of the word "Event"
-        event_index = first_page_text.find("Event")
-        
-        # Find the index of the end of the line after "Event"
-        end_of_line_index = first_page_text.find('\n', event_index)
-        
-        # Extract the text from "Event" to the end of the line
-        event_data = first_page_text[event_index + len("Event"):end_of_line_index].strip()
-        
-        return event_data
+    pdf_document = fitz.open(pdf_path)
 
-def split_event_data(event_data):
-    # Split the event data based on the provided format
-    parts = event_data.split()
-    return parts
+    # Read the content of the image to exclude
+    exclude_image = Image.open(exclude_image_path)
+    exclude_image_content = exclude_image.tobytes()
 
-def save_to_excel(pdf_path, event_data_parts):
-    # Check if the Excel file already exists
-    excel_file = 'event_data.xlsx'
-    if os.path.exists(excel_file):
-        # Load existing Excel file
-        df = pd.read_excel(excel_file)
-        
-        # Add new data to the next available row
-        new_row = {'PDF Name': pdf_path, 'Part 1': event_data_parts[0], 'Part 2': event_data_parts[1], 'Part 3': event_data_parts[2]}
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
-    else:
-        # Create a new Excel file and add headers
-        df = pd.DataFrame({'PDF Name': [pdf_path], 'Part 1': [event_data_parts[0]], 'Part 2': [event_data_parts[1]], 'Part 3': [event_data_parts[2]]})
-    
-    # Explicitly set data types for numeric columns
-    numeric_columns = ['Part 1', 'Part 3']  # Adjust column names as needed
-    df[numeric_columns] = df[numeric_columns].apply(pd.to_numeric, errors='coerce')
-    
-    # Save the DataFrame to Excel
-    df.to_excel(excel_file, index=False)
+    # Initialize variables
+    sentence_found = False
+    image_count = 0
 
-# Replace 'your_directory_path' with the actual path to your directory containing PDFs
-pdf_directory = 'your_directory_path'
+    # Iterate through each page
+    for page_number in range(pdf_document.page_count):
+        page = pdf_document[page_number]
 
-# Iterate over all PDF files in the directory
-for pdf_file in os.listdir(pdf_directory):
-    if pdf_file.endswith(".pdf"):
-        pdf_path = os.path.join(pdf_directory, pdf_file)
+        # Extract text from the page
+        page_text = page.get_text()
 
-        # Extract event data from the PDF
-        event_data = extract_event_data(pdf_path)
+        # Check if the target sentence is present on the page
+        if target_sentence in page_text:
+            sentence_found = True
+            continue  # Skip counting images on pages before the sentence
 
-        # Split event data into three parts
-        event_data_parts = split_event_data(event_data)
+        # Count images if the target sentence has been found
+        if sentence_found:
+            # Get the list of images on the page
+            images_on_page = page.get_images()
 
-        # Save the data to Excel
-        save_to_excel(pdf_path, event_data_parts)
+            # Check if the content of the exclude_image matches any image on the page
+            for img_ref in images_on_page:
+                img = pdf_document.extract_image(img_ref)
+                img_bytes = img["image"]
+
+                if img_bytes != exclude_image_content:
+                    image_count += 1
+
+    # Close the PDF document
+    pdf_document.close()
+
+    return image_count
+
+# Example usage
+pdf_path = 'your_pdf_file.pdf'
+target_sentence = 'ha ha ha hmm'
+exclude_image_path = 'your_exclude_image.png'  # Replace with the path to your image file
+result = count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path)
+print(f"Number of images after the occurrence of '{target_sentence}' excluding the specified image: {result}")
