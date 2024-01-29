@@ -13,6 +13,7 @@ def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude
     # Initialize variables
     sentence_found = False
     image_count = 0
+    total_image_count = 0
 
     # Iterate through each page
     for page_number in range(pdf_document.page_count):
@@ -31,6 +32,9 @@ def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude
             # Get the list of images on the page
             images_on_page = page.get_images()
 
+            # Count all images on the page
+            total_image_count += len(images_on_page)
+
             # Check if the content of the exclude_image matches any image on the page
             for img_ref in images_on_page:
                 img = pdf_document.extract_image(img_ref)
@@ -42,11 +46,12 @@ def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude
     # Close the PDF document
     pdf_document.close()
 
-    return image_count
+    return total_image_count, image_count
 
 # Example usage
 pdf_path = 'your_pdf_file.pdf'
 target_sentence = 'ha ha ha hmm'
 exclude_image_path = 'your_exclude_image.jpeg'  # Replace with the path to your JPEG image file
-result = count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path)
-print(f"Number of images after the occurrence of '{target_sentence}' excluding the specified image: {result}")
+total_count, count_after_exclusion = count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path)
+print(f"Total number of images after the occurrence of '{target_sentence}': {total_count}")
+print(f"Number of images after the occurrence of '{target_sentence}' excluding the specified image: {count_after_exclusion}")
