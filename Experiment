@@ -30,39 +30,6 @@ def save_to_excel(pdf_path, event_data):
         
         # Add new data to the next available row
         new_row = {'PDF Name': pdf_path, 'Event Data': event_data}
-        df = df.append(new_row, ignore_index=True)
-    else:
-        # Create a new Excel file and add headers
-        df = pd.DataFrame({'PDF Name': [pdf_path], 'Event Data': [event_data]})
-    
-    # Save the DataFrame to Excel
-    df.to_excel(excel_file, index=False)
-
-# Replace 'your_pdf_file.pdf' with the actual PDF file path
-pdf_path = 'your_pdf_file.pdf'
-
-# Extract event data from the PDF
-event_data = extract_event_data(pdf_path)
-
-# Save the data to Excel
-save_to_excel(pdf_path, event_data)
-
-
-
-
-
-
-
-
-def save_to_excel(pdf_path, event_data):
-    # Check if the Excel file already exists
-    excel_file = 'event_data.xlsx'
-    if os.path.exists(excel_file):
-        # Load existing Excel file
-        df = pd.read_excel(excel_file)
-        
-        # Add new data to the next available row
-        new_row = {'PDF Name': pdf_path, 'Event Data': event_data}
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
     else:
         # Create a new Excel file and add headers
@@ -71,9 +38,16 @@ def save_to_excel(pdf_path, event_data):
     # Save the DataFrame to Excel
     df.to_excel(excel_file, index=False)
 
-import pandas as pd
+# Replace 'your_directory_path' with the actual path to your directory containing PDFs
+pdf_directory = 'your_directory_path'
 
-# Assuming df is your DataFrame and 'Entries' is the column with entries like 'F 1 for 1'
-df['Entries'].str.split(' ', expand=True)
+# Iterate over all PDF files in the directory
+for pdf_file in os.listdir(pdf_directory):
+    if pdf_file.endswith(".pdf"):
+        pdf_path = os.path.join(pdf_directory, pdf_file)
 
-df[['Column1', 'Column2', 'Column3', 'Column4']] = df['Entries'].str.split(' ', expand=True)
+        # Extract event data from the PDF
+        event_data = extract_event_data(pdf_path)
+
+        # Save the data to Excel
+        save_to_excel(pdf_path, event_data)
