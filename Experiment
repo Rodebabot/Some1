@@ -1,28 +1,20 @@
+import os
 import PyPDF2
 
 def strip_pdf(input_path, output_path, start_sentence):
-    with open(input_path, 'rb') as file:
-        pdf_reader = PyPDF2.PdfFileReader(file)
-        pdf_writer = PyPDF2.PdfFileWriter()
+    # Your existing strip_pdf function remains unchanged
 
-        found_start_sentence = False
+# Your existing code here
 
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            text = page.extractText()
+# Specify the directory containing your PDFs
+pdf_directory = '/path/to/your/pdf/directory'
 
-            if start_sentence in text:
-                found_start_sentence = True
-
-            if found_start_sentence:
-                pdf_writer.addPage(page)
-
-        with open(output_path, 'wb') as output_file:
-            pdf_writer.write(output_file)
-
-# Example usage:
-input_pdf_path = 'input.pdf'
-output_pdf_path = 'output.pdf'
+# Specify the sentence to start from
 start_sentence = "The sentence to start from"
 
-strip_pdf(input_pdf_path, output_pdf_path, start_sentence)
+# Iterate through all PDF files in the directory
+for filename in os.listdir(pdf_directory):
+    if filename.endswith(".pdf"):
+        input_pdf_path = os.path.join(pdf_directory, filename)
+        output_pdf_path = os.path.join(pdf_directory, f"stripped_{filename}")
+        strip_pdf(input_pdf_path, output_pdf_path, start_sentence)
