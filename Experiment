@@ -1,21 +1,28 @@
-import fitz  # PyMuPDF
+import PyPDF2
 
-def extract_after_keyword(pdf_path, keyword):
-    doc = fitz.open(pdf_path)
-    
-    for page_num in range(doc.page_count):
-        page = doc[page_num]
-        text = page.get_text()
-        
-        if keyword in text:
-            # Find the index of the keyword and extract content after it
-            index = text.find(keyword)
-            content_after_keyword = text[index + len(keyword):]
-            
-            # Now pass the content to your image function
-            image(content_after_keyword)
+def strip_pdf(input_path, output_path, start_sentence):
+    with open(input_path, 'rb') as file:
+        pdf_reader = PyPDF2.PdfFileReader(file)
+        pdf_writer = PyPDF2.PdfFileWriter()
 
-    doc.close()
+        found_start_sentence = False
 
-# Replace 'your_pdf_file.pdf' with your actual PDF file path
-extract_after_keyword('your_pdf_file.pdf', 'that bro')
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            text = page.extractText()
+
+            if start_sentence in text:
+                found_start_sentence = True
+
+            if found_start_sentence:
+                pdf_writer.addPage(page)
+
+        with open(output_path, 'wb') as output_file:
+            pdf_writer.write(output_file)
+
+# Example usage:
+input_pdf_path = 'input.pdf'
+output_pdf_path = 'output.pdf'
+start_sentence = "The sentence to start from"
+
+strip_pdf(input_pdf_path, output_pdf_path, start_sentence)
