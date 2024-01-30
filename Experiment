@@ -1,20 +1,21 @@
 import fitz  # PyMuPDF
 
-total_images = 0
-found_sentence = False
-
-# Assuming pdf_path is the path to your PDF file
-with fitz.open(pdf_path) as pdf_document:
-    for page_number in range(pdf_document.page_count):
-        page = pdf_document[page_number]
+def extract_after_keyword(pdf_path, keyword):
+    doc = fitz.open(pdf_path)
+    
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
         text = page.get_text()
+        
+        if keyword in text:
+            # Find the index of the keyword and extract content after it
+            index = text.find(keyword)
+            content_after_keyword = text[index + len(keyword):]
+            
+            # Now pass the content to your image function
+            image(content_after_keyword)
 
-        # Check if the sentence "it is that" is in the text
-        if "it is that" in text:
-            found_sentence = True  # Set the flag to start processing images
-            # Process the text or images on this page
-            # Your existing code here...
-            total_images += 1  # Increment the counter
+    doc.close()
 
-# Now print the total number of images found after the first occurrence of 'it is that'
-print("Total number of images found after the first occurrence of 'it is that':", total_images)
+# Replace 'your_pdf_file.pdf' with your actual PDF file path
+extract_after_keyword('your_pdf_file.pdf', 'that bro')
