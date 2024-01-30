@@ -1,57 +1,20 @@
 import fitz  # PyMuPDF
-from PIL import Image
-import io
 
-def count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path):
-    # Open the PDF file
-    pdf_document = fitz.open(pdf_path)
+total_images = 0
+found_sentence = False
 
-    # Read the content of the image to exclude
-    exclude_image = Image.open(exclude_image_path)
-    exclude_image_content = exclude_image.tobytes()
-
-    # Initialize variables
-    sentence_found = False
-    image_count = 0
-    total_image_count = 0
-
-    # Iterate through each page
+# Assuming pdf_path is the path to your PDF file
+with fitz.open(pdf_path) as pdf_document:
     for page_number in range(pdf_document.page_count):
         page = pdf_document[page_number]
+        text = page.get_text()
 
-        # Extract text from the page
-        page_text = page.get_text()
+        # Check if the sentence "it is that" is in the text
+        if "it is that" in text:
+            found_sentence = True  # Set the flag to start processing images
+            # Process the text or images on this page
+            # Your existing code here...
+            total_images += 1  # Increment the counter
 
-        # Check if the target sentence is present on the page
-        if target_sentence in page_text:
-            sentence_found = True
-            continue  # Skip counting images on pages before the sentence
-
-        # Count images if the target sentence has been found
-        if sentence_found:
-            # Get the list of images on the page
-            images_on_page = page.get_images()
-
-            # Count all images on the page
-            total_image_count += len(images_on_page)
-
-            # Check if the content of the exclude_image matches any image on the page
-            for img_ref in images_on_page:
-                img = pdf_document.extract_image(img_ref)
-                img_bytes = img["image"]
-
-                if img_bytes != exclude_image_content:
-                    image_count += 1
-
-    # Close the PDF document
-    pdf_document.close()
-
-    return total_image_count, image_count
-
-# Example usage
-pdf_path = 'your_pdf_file.pdf'
-target_sentence = 'ha ha ha hmm'
-exclude_image_path = 'your_exclude_image.jpeg'  # Replace with the path to your JPEG image file
-total_count, count_after_exclusion = count_images_after_sentence_exclude_image(pdf_path, target_sentence, exclude_image_path)
-print(f"Total number of images after the occurrence of '{target_sentence}': {total_count}")
-print(f"Number of images after the occurrence of '{target_sentence}' excluding the specified image: {count_after_exclusion}")
+# Now print the total number of images found after the first occurrence of 'it is that'
+print("Total number of images found after the first occurrence of 'it is that':", total_images)
