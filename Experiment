@@ -1,20 +1,19 @@
 import os
-import PyPDF2
+import fitz  # PyMuPDF library for working with PDFs
 
-def strip_pdf(input_path, output_path, start_sentence):
-    # Your existing strip_pdf function remains unchanged
+def process_pdf(file_path):
+    # Your function to process each PDF
+    # Replace this with your actual logic
+    print(f"Processing PDF: {file_path}")
 
-# Your existing code here
+# Directory containing your PDF files
+pdf_directory = "/path/to/your/pdf/directory"
 
-# Specify the directory containing your PDFs
-pdf_directory = '/path/to/your/pdf/directory'
-
-# Specify the sentence to start from
-start_sentence = "The sentence to start from"
-
-# Iterate through all PDF files in the directory
+# Iterate through all files in the directory
 for filename in os.listdir(pdf_directory):
     if filename.endswith(".pdf"):
-        input_pdf_path = os.path.join(pdf_directory, filename)
-        output_pdf_path = os.path.join(pdf_directory, f"stripped_{filename}")
-        strip_pdf(input_pdf_path, output_pdf_path, start_sentence)
+        # Full path to the PDF file
+        pdf_path = os.path.join(pdf_directory, filename)
+        
+        # Call your processing function for each PDF
+        process_pdf(pdf_path)
