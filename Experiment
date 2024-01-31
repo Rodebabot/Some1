@@ -1,28 +1,24 @@
-import os
 import pandas as pd
 
-# Set the directory path where your CSV files are located
-directory_path = '/path/to/your/csv/files'
+# Read the first dataset from CSV
+df1 = pd.read_csv('/path/to/your/first_dataset.csv')
 
-# Initialize an empty list to store DataFrames
-dfs = []
+# Read the second dataset from CSV
+df2 = pd.read_csv('/path/to/your/second_dataset.csv')
 
-# Loop through each file in the directory
-for filename in os.listdir(directory_path):
-    if filename.endswith(".csv"):
-        file_path = os.path.join(directory_path, filename)
+# Ensure the shapes match for element-wise multiplication
+if df1.shape[1] != df2.shape[0]:
+    raise ValueError("Shapes of the two datasets do not match for element-wise multiplication.")
 
-        # Read each CSV file into a DataFrame
-        data = pd.read_csv(file_path)
+# Multiply the values element-wise
+result = df1.iloc[:, 1:].values * df2.iloc[:, 1:].values
 
-        # Add a new column with the file name (without extension)
-        data['FileName'] = os.path.splitext(filename)[0]
+# Create the final DataFrame with the desired format
+final_df = pd.DataFrame({
+    'Column1': df1.iloc[:, 0],
+    'Column2': result.sum(axis=1),
+    'Column3': result.prod(axis=1)
+})
 
-        # Append the DataFrame to the list
-        dfs.append(data)
-
-# Concatenate all DataFrames in the list
-appended_data = pd.concat(dfs, ignore_index=True)
-
-# Write the final appended DataFrame to a new CSV file
-appended_data.to_csv('/path/to/your/output/appended_data.csv', index=False)
+# Display the final DataFrame
+print(final_df)
