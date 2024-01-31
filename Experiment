@@ -1,25 +1,36 @@
 import fitz  # PyMuPDF
+import cv2
+import numpy as np
 
-def count_red_areas(pdf_path):
+def count_red_annotations(pdf_path):
     doc = fitz.open(pdf_path)
-    total_red_areas = 0
+    total_red_annotations = 0
 
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
         pix = page.get_pixmap()
-        width, height = pix.width, pix.height
 
-        # Iterate through pixels and check for red color
-        for y in range(height):
-            for x in range(width):
-                r, _, _, _ = pix.pixel(x, y)
-                if r > 200:  # You may need to adjust this threshold based on your case
-                    total_red_areas += 1
+        # Convert to numpy array
+        img_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+
+        # Convert RGB to BGR (OpenCV uses BGR)
+        img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+
+        # Define lower and upper bounds for red color in BGR
+        lower_red = np.array([0, 0, 200])
+        upper_red = np.array([50, 50, 255])
+
+        # Create a mask for red color
+        mask = cv2.inRange(img_bgr, lower_red, upper_red)
+
+        # Count non-zero pixels in the mask
+        red_pixel_count = np.count_nonzero(mask)
+        total_red_annotations += red_pixel_count
 
     doc.close()
-    return total_red_areas
+    return total_red_annotations
 
 # Example usage
 pdf_path = "path/to/your/pdf/document.pdf"
-result = count_red_areas(pdf_path)
-print(f"Total red areas or particles: {result}")
+result = count_red_annotations(pdf_path)
+print(f"Total red annotations: {result}")
