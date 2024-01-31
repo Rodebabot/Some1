@@ -1,21 +1,21 @@
 import fitz  # PyMuPDF
 
-def detect_unique_elements(pdf_path):
+def count_unique_colors(pdf_path):
     doc = fitz.open(pdf_path)
 
-    unique_elements = set()
+    unique_colors = set()
 
     for page_num in range(doc.page_count):
         page = doc[page_num]
-        elements = page.get_text("blocks")  # Extract text blocks, adjust as needed
+        img = page.get_pixmap()
 
-        for element in elements:
-            unique_elements.add(element[4])  # Using the text content as an example, adjust based on your needs
+        for color in img.samples:
+            unique_colors.add(color)
 
     doc.close()
 
-    return len(unique_elements)
+    return len(unique_colors)
 
 pdf_path = 'your_pdf_file.pdf'
-num_unique_elements = detect_unique_elements(pdf_path)
-print(f'Total number of unique elements in the PDF: {num_unique_elements}')
+num_unique_colors = count_unique_colors(pdf_path)
+print(f'Total number of unique colors in the PDF: {num_unique_colors}')
