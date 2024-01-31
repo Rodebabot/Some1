@@ -1,6 +1,8 @@
 import fitz  # PyMuPDF
 import cv2
 import numpy as np
+import pandas as pd
+import os
 
 def count_red_annotations(pdf_path):
     doc = fitz.open(pdf_path)
@@ -30,7 +32,22 @@ def count_red_annotations(pdf_path):
     doc.close()
     return total_red_annotations
 
+def process_pdfs_in_directory(directory_path, output_excel_path):
+    pdf_data = {'PDF Name': [], 'Number of Annotations': []}
+
+    for pdf_file in os.listdir(directory_path):
+        if pdf_file.endswith('.pdf'):
+            pdf_path = os.path.join(directory_path, pdf_file)
+            annotations_count = count_red_annotations(pdf_path)
+
+            pdf_data['PDF Name'].append(pdf_file)
+            pdf_data['Number of Annotations'].append(annotations_count)
+
+    df = pd.DataFrame(pdf_data)
+    df.to_excel(output_excel_path, index=False)
+    print(f"Excel file '{output_excel_path}' created successfully.")
+
 # Example usage
-pdf_path = "path/to/your/pdf/document.pdf"
-result = count_red_annotations(pdf_path)
-print(f"Total red annotations: {result}")
+pdf_directory_path = "path/to/pdf/directory"
+output_excel_path = "output_annotations.xlsx"
+process_pdfs_in_directory(pdf_directory_path, output_excel_path)
