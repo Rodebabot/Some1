@@ -1,29 +1,21 @@
-import pandas as pd
+import fitz  # PyMuPDF
 
-# Read the first dataset from CSV
-df1 = pd.read_csv('/path/to/your/first_dataset.csv')
+def detect_unique_elements(pdf_path):
+    doc = fitz.open(pdf_path)
 
-# Read the second dataset from CSV
-df2 = pd.read_csv('/path/to/your/second_dataset.csv')
+    unique_elements = set()
 
-# Identify common columns dynamically
-common_columns = list(set(df1.columns) & set(df2['Col1'].unique()))
+    for page_num in range(doc.page_count):
+        page = doc[page_num]
+        elements = page.get_text("blocks")  # Extract text blocks, adjust as needed
 
-# Filter df1 to include only the common columns
-filtered_df1 = df1[common_columns]
+        for element in elements:
+            unique_elements.add(element[4])  # Using the text content as an example, adjust based on your needs
 
-# Perform element-wise multiplication
-result = filtered_df1 * df2.set_index('Col1').loc[common_columns, 'Col2']
+    doc.close()
 
-# Create the final DataFrame with the desired format
-final_df = pd.DataFrame({
-    'Column1': [df1.iloc[0, 0]],  # Assuming the first value of the first column as the header
-    'Column2': [result.sum().sum()],
-    'Column3': [result.product().product()]
-})
+    return len(unique_elements)
 
-# Display the final DataFrame
-print(final_df)
-
-
-final_df1 = pd.concat([df1.drop(columns=common_columns), result], axis=1
+pdf_path = 'your_pdf_file.pdf'
+num_unique_elements = detect_unique_elements(pdf_path)
+print(f'Total number of unique elements in the PDF: {num_unique_elements}')
