@@ -1,21 +1,25 @@
 import fitz  # PyMuPDF
 
-def count_unique_colors(pdf_path):
+def count_red_areas(pdf_path):
     doc = fitz.open(pdf_path)
-
-    unique_colors = set()
+    total_red_areas = 0
 
     for page_num in range(doc.page_count):
-        page = doc[page_num]
-        img = page.get_pixmap()
+        page = doc.load_page(page_num)
+        pix = page.get_pixmap()
+        width, height = pix.width, pix.height
 
-        for color in img.samples:
-            unique_colors.add(color)
+        # Iterate through pixels and check for red color
+        for y in range(height):
+            for x in range(width):
+                r, _, _, _ = pix.pixel(x, y)
+                if r > 200:  # You may need to adjust this threshold based on your case
+                    total_red_areas += 1
 
     doc.close()
+    return total_red_areas
 
-    return len(unique_colors)
-
-pdf_path = 'your_pdf_file.pdf'
-num_unique_colors = count_unique_colors(pdf_path)
-print(f'Total number of unique colors in the PDF: {num_unique_colors}')
+# Example usage
+pdf_path = "path/to/your/pdf/document.pdf"
+result = count_red_areas(pdf_path)
+print(f"Total red areas or particles: {result}")
