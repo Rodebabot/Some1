@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 import os
 
-def count_red_annotations(pdf_path):
+def get_unique_colors(pdf_path):
     doc = fitz.open(pdf_path)
-    total_red_annotations = 0
+    unique_colors = set()
 
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
@@ -18,36 +18,26 @@ def count_red_annotations(pdf_path):
         # Convert RGB to BGR (OpenCV uses BGR)
         img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
 
-        # Define lower and upper bounds for red color in BGR
-        lower_red = np.array([0, 0, 200])
-        upper_red = np.array([50, 50, 255])
+        # Reshape to a list of pixels
+        pixels = img_bgr.reshape((-1, 3))
 
-        # Create a mask for red color
-        mask = cv2.inRange(img_bgr, lower_red, upper_red)
-
-        # Count non-zero pixels in the mask
-        red_pixel_count = np.count_nonzero(mask)
-        total_red_annotations += red_pixel_count
+        # Add unique colors to the set
+        unique_colors.update(tuple(pixel) for pixel in pixels)
 
     doc.close()
-    return total_red_annotations
+    return unique_colors
 
-def process_pdfs_in_directory(directory_path, output_excel_path):
-    pdf_data = {'PDF Name': [], 'Number of Annotations': []}
+def process_pdfs_for_unique_colors(directory_path):
+    unique_colors_set = set()
 
     for pdf_file in os.listdir(directory_path):
         if pdf_file.endswith('.pdf'):
             pdf_path = os.path.join(directory_path, pdf_file)
-            annotations_count = count_red_annotations(pdf_path)
+            unique_colors = get_unique_colors(pdf_path)
+            unique_colors_set.update(unique_colors)
 
-            pdf_data['PDF Name'].append(pdf_file)
-            pdf_data['Number of Annotations'].append(annotations_count)
-
-    df = pd.DataFrame(pdf_data)
-    df.to_excel(output_excel_path, index=False)
-    print(f"Excel file '{output_excel_path}' created successfully.")
+    print(f"Number of unique colors present in the PDFs: {len(unique_colors_set)}")
 
 # Example usage
 pdf_directory_path = "path/to/pdf/directory"
-output_excel_path = "output_annotations.xlsx"
-process_pdfs_in_directory(pdf_directory_path, output_excel_path)
+process_pdfs_for_unique_colors(pdf_directory_path)
