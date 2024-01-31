@@ -4,8 +4,8 @@ import pandas as pd
 # Set the directory path where your CSV files are located
 directory_path = '/path/to/your/csv/files'
 
-# Initialize an empty DataFrame to store the appended data
-appended_data = pd.DataFrame()
+# Initialize an empty list to store DataFrames
+dfs = []
 
 # Loop through each file in the directory
 for filename in os.listdir(directory_path):
@@ -18,8 +18,11 @@ for filename in os.listdir(directory_path):
         # Add a new column with the file name (without extension)
         data['FileName'] = os.path.splitext(filename)[0]
 
-        # Append the data to the main DataFrame
-        appended_data = appended_data.append(data, ignore_index=True)
+        # Append the DataFrame to the list
+        dfs.append(data)
+
+# Concatenate all DataFrames in the list
+appended_data = pd.concat(dfs, ignore_index=True)
 
 # Write the final appended DataFrame to a new CSV file
 appended_data.to_csv('/path/to/your/output/appended_data.csv', index=False)
