@@ -24,3 +24,6 @@ final_df = pd.DataFrame({
 
 # Display the final DataFrame
 print(final_df)
+
+
+final_df1 = pd.concat([df1.drop(columns=common_columns), result], axis=1
