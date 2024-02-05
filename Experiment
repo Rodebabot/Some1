@@ -1,43 +1,10 @@
-import fitz  # PyMuPDF
-import cv2
-import numpy as np
 import pandas as pd
-import os
 
-def get_unique_colors(pdf_path):
-    doc = fitz.open(pdf_path)
-    unique_colors = set()
+# Assuming your DataFrame is named df
+df['Asset Class'] = ''
+df['Electronic/Paper/Inter Entity'] = ''
 
-    for page_num in range(doc.page_count):
-        page = doc.load_page(page_num)
-        pix = page.get_pixmap()
-
-        # Convert to numpy array
-        img_array = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
-
-        # Convert RGB to BGR (OpenCV uses BGR)
-        img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-
-        # Reshape to a list of pixels
-        pixels = img_bgr.reshape((-1, 3))
-
-        # Add unique colors to the set
-        unique_colors.update(tuple(pixel) for pixel in pixels)
-
-    doc.close()
-    return unique_colors
-
-def process_pdfs_for_unique_colors(directory_path):
-    unique_colors_set = set()
-
-    for pdf_file in os.listdir(directory_path):
-        if pdf_file.endswith('.pdf'):
-            pdf_path = os.path.join(directory_path, pdf_file)
-            unique_colors = get_unique_colors(pdf_path)
-            unique_colors_set.update(unique_colors)
-
-    print(f"Number of unique colors present in the PDFs: {len(unique_colors_set)}")
-
-# Example usage
-pdf_directory_path = "path/to/pdf/directory"
-process_pdfs_for_unique_colors(pdf_directory_path)
+# If you want to insert the columns at a specific position, you can use the insert method
+# For example, to insert at the 3rd and 4th position (index 2 and 3)
+df.insert(2, 'Asset Class', '')
+df.insert(3, 'Electronic/Paper/Inter Entity', '')
