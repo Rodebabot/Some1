@@ -1,10 +1,5 @@
 import pandas as pd
 
 # Assuming your DataFrame is named df
-df['Asset Class'] = ''
-df['Electronic/Paper/Inter Entity'] = ''
-
-# If you want to insert the columns at a specific position, you can use the insert method
-# For example, to insert at the 3rd and 4th position (index 2 and 3)
-df.insert(2, 'Asset Class', '')
-df.insert(3, 'Electronic/Paper/Inter Entity', '')
+# If 'Confirmation Method' is equal to 'DTCC', set 'Electronic/Paper/Inter Entity' to 'Electronic'
+df.loc[df['Confirmation Method'] == 'DTCC', 'Electronic/Paper/Inter Entity'] = 'Electronic'
