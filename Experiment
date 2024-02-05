@@ -10,3 +10,11 @@ import pandas as pd
 # Assuming your DataFrame is named df
 # Keep rows where 'Confirmation Status' is 'Expired' or 'Executed TLM reconciled'
 df_filtered = df[df['Confirmation Status'].isin(['Expired', 'Executed TLM reconciled'])]
+
+
+
+import pandas as pd
+
+# Assuming your DataFrame is named df
+# If 'Counterparty Name' contains 'Nomura. Secs' and 'Confirmation Method' is 'DTCC', set 'Electronic/Paper/Inter Entity' to 'Intolu'
+df.loc[(df['Counterparty Name'].str.contains('Nomura. Secs', case=False)) & (df['Confirmation Method'] == 'DTCC'), 'Electronic/Paper/Inter Entity'] = 'Intolu'
