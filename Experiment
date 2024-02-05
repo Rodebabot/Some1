@@ -3,3 +3,10 @@ import pandas as pd
 # Assuming your DataFrame is named df
 # If 'Confirmation Method' is equal to 'DTCC', set 'Electronic/Paper/Inter Entity' to 'Electronic'
 df.loc[df['Confirmation Method'] == 'DTCC', 'Electronic/Paper/Inter Entity'] = 'Electronic'
+
+
+import pandas as pd
+
+# Assuming your DataFrame is named df
+# Keep rows where 'Confirmation Status' is 'Expired' or 'Executed TLM reconciled'
+df_filtered = df[df['Confirmation Status'].isin(['Expired', 'Executed TLM reconciled'])]
