@@ -8,3 +8,29 @@ df['PDF'] = df['PDF'].str.replace('stripped_', '')
 
 # Save the modified DataFrame back to the Excel file
 df.to_excel('modified_excel_file.xlsx', index=False)
+
+
+
+
+import pandas as pd
+import glob
+
+# Directory containing all the Excel files
+directory = 'your_directory_path/*.xlsx'
+
+# Get a list of all Excel files in the directory
+excel_files = glob.glob(directory)
+
+# Initialize an empty DataFrame to store merged data
+merged_data = pd.DataFrame()
+
+# Iterate over each Excel file
+for file in excel_files:
+    # Read the Excel file into a DataFrame
+    df = pd.read_excel(file)
+    
+    # Append the 'PDF' column and the next column to the merged DataFrame
+    merged_data = pd.concat([merged_data, df[['PDF', df.columns[1]]]], axis=1)
+
+# Save the merged DataFrame to a new Excel file
+merged_data.to_excel('consolidated_file.xlsx', index=False)
