@@ -1,7 +1,19 @@
-import pandas as pd
+import PyPDF2
 
-# Assuming df is your DataFrame with columns 'Unique Eventid' and 'Event id total number'
-sorted_df = df.sort_values(by=['Unique Eventid', 'Event id total number'])
+def extract_text_next_to_keyword(pdf_file):
+    with open(pdf_file, 'rb') as f:
+        reader = PyPDF2.PdfFileReader(f)
+        for page_num in range(reader.numPages):
+            page = reader.getPage(page_num)
+            text = page.extractText()
+            # Find the index of the first occurrence of the word 'Date'
+            index = text.find('Date')
+            if index != -1:
+                # Extract the text next to 'Date' until the end of the line
+                date_text = text[index+len('Date'):].split('\n')[0].strip()
+                return date_text
 
-# Print the sorted DataFrame
-print(sorted_df)
+# Replace 'your_pdf_file.pdf' with the path to your PDF file
+pdf_file = 'your_pdf_file.pdf'
+date_text = extract_text_next_to_keyword(pdf_file)
+print("Text next to the first occurrence of 'Date':", date_text)
