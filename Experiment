@@ -1,35 +1,10 @@
-import PyPDF2
 import pandas as pd
-import os
 
-def extract_text_next_to_keyword(pdf_file):
-    with open(pdf_file, 'rb') as f:
-        reader = PyPDF2.PdfFileReader(f)
-        for page_num in range(reader.numPages):
-            page = reader.getPage(page_num)
-            text = page.extractText()
-            # Find the index of the first occurrence of the word 'Date'
-            index = text.find('Date')
-            if index != -1:
-                # Extract the text next to 'Date' until the end of the line
-                date_text = text[index+len('Date'):].split('\n')[0].strip()
-                return date_text
+# Read the Excel file into a pandas DataFrame
+df = pd.read_excel('your_excel_file.xlsx')
 
-def process_pdfs_in_directory(directory):
-    data = []
-    for filename in os.listdir(directory):
-        if filename.endswith(".pdf"):
-            pdf_file = os.path.join(directory, filename)
-            date_text = extract_text_next_to_keyword(pdf_file)
-            data.append((filename, date_text))
-    return data
+# Remove 'stripped_' from values in the 'PDF' column
+df['PDF'] = df['PDF'].str.replace('stripped_', '')
 
-# Replace 'your_directory_path' with the path to the directory containing PDF files
-directory_path = 'your_directory_path'
-output_file = 'extracted_data.xlsx'
-
-data = process_pdfs_in_directory(directory_path)
-df = pd.DataFrame(data, columns=['PDF Name', 'Extracted Text'])
-
-df.to_excel(output_file, index=False)
-print("Data saved to", output_file)
+# Save the modified DataFrame back to the Excel file
+df.to_excel('modified_excel_file.xlsx', index=False)
