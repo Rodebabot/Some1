@@ -34,3 +34,27 @@ for file in excel_files:
 
 # Save the merged DataFrame to a new Excel file
 merged_data.to_excel('consolidated_file.xlsx', index=False)
+
+
+
+import PyPDF2
+
+def is_searchable_pdf(pdf_path):
+    with open(pdf_path, 'rb') as f:
+        reader = PyPDF2.PdfFileReader(f)
+        text = ''
+        for page_num in range(reader.numPages):
+            page = reader.getPage(page_num)
+            text += page.extractText()
+        return len(text.strip()) > 0
+
+def detect_pdf_type(pdf_path):
+    if is_searchable_pdf(pdf_path):
+        return "Searchable PDF"
+    else:
+        return "Scanned PDF"
+
+# Example usage:
+pdf_file = 'example.pdf'  # Replace 'example.pdf' with the path to your PDF file
+pdf_type = detect_pdf_type(pdf_file)
+print(f"The PDF type is: {pdf_type}")
