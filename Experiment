@@ -44,11 +44,12 @@ if matching_directories:
         
         # Check if there is at least one Excel file
         if len(excel_files) > 0:
-            # Assuming you want to store the first Excel file name found
-            excel_file_name = excel_files[0]
+            # Assuming you want to store the first Excel file name found without extension
+            excel_file_name_with_extension = excel_files[0]
+            excel_file_name = os.path.splitext(excel_file_name_with_extension)[0]
             
             # Assuming you want to read the first Excel file found
-            excel_file_path = os.path.join(today_directory, excel_file_name)
+            excel_file_path = os.path.join(today_directory, excel_file_name_with_extension)
             try:
                 # Read all sheets from the Excel file
                 all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
@@ -72,5 +73,5 @@ if matching_directories:
 else:
     print("No directory found for the current month and year.")
 
-# Now excel_file_name variable contains the name of the Excel file, you can use it as needed
-print("Excel file name:", excel_file_name)
+# Now excel_file_name variable contains the name of the Excel file without extension, you can use it as needed
+print("Excel file name without extension:", excel_file_name)
