@@ -1,51 +1,47 @@
 import win32com.client
-import pandas as pd
-import datetime
-import io
+import os
 
 # Connect to Outlook
 outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-# Specify the mailbox, subfolders, and the folder where the email is located
+# Specify the mailbox, inbox, and subfolder names
 mailbox_name = "Mailbox Name"
-subfolder1_name = "Subfolder 1"
-subfolder2_name = "Subfolder 2"
-subfolder3_name = "Subfolder 3"
-target_folder_name = "Target Folder"
+inbox_folder_name = "Inbox"
+subfolder_name = "Subfolder"
 
 # Get the mailbox
 mailbox = outlook.Folders.Item(mailbox_name)
 
-# Navigate to the subfolders
-subfolder1 = mailbox.Folders.Item(subfolder1_name)
-subfolder2 = subfolder1.Folders.Item(subfolder2_name)
-subfolder3 = subfolder2.Folders.Item(subfolder3_name)
-target_folder = subfolder3.Folders.Item(target_folder_name)
+# Navigate to the Inbox folder
+inbox = mailbox.Folders.Item(inbox_folder_name)
 
-# Get today's date
-today_date = datetime.datetime.now().date()
+# Navigate to the subfolder
+subfolder = inbox.Folders.Item(subfolder_name)
 
-# Initialize DataFrame to store attachment content
-attachment_df = pd.DataFrame()
+# Find the email with the attachment
+email_subject_contains = "Your Email Subject"  # Modify this to match your email subject
+attachment_file_name_contains = "Attachment File Name"  # Modify this to match your attachment file name
 
-# Iterate through the items in the target folder
-for item in target_folder.Items:
+found_email = None
+for item in subfolder.Items:
     if item.Class == 43:  # Mail item
-        # Check if the email was received today
-        if item.ReceivedTime.date() == today_date:
-            # Get the attachments from the email
+        if email_subject_contains in item.Subject:
             attachments = item.Attachments
-            if attachments.Count > 0:
-                # Assuming you want to read the first attachment
-                attachment = attachments.Item(1)
-                
-                # Read attachment content into a DataFrame
-                attachment_content = io.BytesIO(attachment.Content)
-                # Assuming the attachment is a fixed-width text file (adjust parameters accordingly)
-                attachment_df = pd.read_fwf(attachment_content)
-                
-                # Print DataFrame (you can remove this if not needed)
-                print(attachment_df.head())
-                break  # Stop iterating after processing the first email
+            for attachment in attachments:
+                if attachment_file_name_contains in attachment.FileName:
+                    found_email = item
+                    break
+
+# Save the attachment
+if found_email:
+    save_folder_path = r"C:\path\to\save\attachments"
+    os.makedirs(save_folder_path, exist_ok=True)
+    
+    attachments = found_email.Attachments
+    for attachment in attachments:
+        if attachment_file_name_contains in attachment.FileName:
+            attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
+            print("Attachment saved successfully.")
+            break
 else:
-    print("No email with attachment found today.")
+    print("Email with the specified subject and attachment not found.")
