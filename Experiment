@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import datetime
 
 # Get current month and year
@@ -19,20 +20,29 @@ if matching_directories:
     matching_directory = os.path.join(parent_directory_path, matching_directories[0])
     print("Found directory:", matching_directory)
     
-    # List directories inside the matching directory
-    subdirectories = [d for d in os.listdir(matching_directory) if os.path.isdir(os.path.join(matching_directory, d))]
+    # List files inside the matching directory
+    files = [f for f in os.listdir(matching_directory) if os.path.isfile(os.path.join(matching_directory, f))]
     
-    # Sort subdirectories by name to get the latest one
-    sorted_subdirectories = sorted(subdirectories, key=lambda x: datetime.datetime.strptime(x, '%d %b'), reverse=True)
+    # Filter Excel files
+    excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
     
-    # Filter subdirectories based on current day and month
-    latest_subdirectory = [d for d in sorted_subdirectories if current_day_month in d]
+    # Check if there is exactly one Excel file
+    if len(excel_files) != 1:
+        raise ValueError("There should be exactly one Excel file in the directory.")
     
-    # If there's a latest subdirectory, you can use it
-    if latest_subdirectory:
-        latest_subdirectory_path = os.path.join(matching_directory, latest_subdirectory[0])
-        print("Found latest subdirectory:", latest_subdirectory_path)
-    else:
-        print("No subdirectory found for the current day and month.")
+    # Read all sheets from the Excel file
+    file_path = os.path.join(matching_directory, excel_files[0])
+    all_dfs = pd.read_excel(file_path, sheet_name=None)
+    
+    # Access each DataFrame individually
+    df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
+    df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
+    df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
+    
+    # Example usage of the DataFrames
+    print(df1.head())
+    print(df2.head())
+    print(df3.head())
+    
 else:
     print("No directory found for the current month and year.")
