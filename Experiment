@@ -19,29 +19,32 @@ inbox = mailbox.Folders.Item(inbox_folder_name)
 # Navigate to the subfolder
 subfolder = inbox.Folders.Item(subfolder_name)
 
-# Get yesterday's date
-yesterday_date = datetime.datetime.now().date() - datetime.timedelta(days=1)
+# Get today's date
+today_date = datetime.datetime.now().date()
 
-# Find the first email received yesterday
-first_email = None
+# Find the oldest email received today
+oldest_email = None
+oldest_received_time = datetime.datetime.now()  # Initialize with current time
 for item in subfolder.Items:
     if item.Class == 43:  # Mail item
-        if item.ReceivedTime.date() == yesterday_date:
-            first_email = item
-            break
+        received_time = item.ReceivedTime
+        if received_time.date() == today_date and received_time < oldest_received_time:
+            oldest_email = item
+            oldest_received_time = received_time
 
-# Save the attachment from the first email of yesterday
-if first_email:
+# Save the attachment from the oldest email of the day
+if oldest_email:
     save_folder_path = r"C:\path\to\save\attachments"
     os.makedirs(save_folder_path, exist_ok=True)
     
-    attachments = first_email.Attachments
+    attachments = oldest_email.Attachments
     if attachments.Count > 0:
         # Assuming you want to save the first attachment
         attachment = attachments.Item(1)
-        attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
-        print("Attachment saved successfully.")
+        attachment_name = datetime.datetime.now().strftime("%Y-%m-%d") + os.path.splitext(attachment.FileName)[1]
+        attachment.SaveAsFile(os.path.join(save_folder_path, attachment_name))
+        print("Attachment saved successfully as:", attachment_name)
     else:
-        print("No attachments found in the first email of yesterday.")
+        print("No attachments found in the oldest email of the day.")
 else:
-    print("No email received yesterday in the specified folder.")
+    print("No email received today in the specified folder.")
