@@ -19,18 +19,18 @@ inbox = mailbox.Folders.Item(inbox_folder_name)
 # Navigate to the subfolder
 subfolder = inbox.Folders.Item(subfolder_name)
 
-# Get today's date
-today_date = datetime.datetime.now().date()
+# Get yesterday's date
+yesterday_date = datetime.datetime.now().date() - datetime.timedelta(days=1)
 
-# Find the first email received today
+# Find the first email received yesterday
 first_email = None
 for item in subfolder.Items:
     if item.Class == 43:  # Mail item
-        if item.ReceivedTime.date() == today_date:
+        if item.ReceivedTime.date() == yesterday_date:
             first_email = item
             break
 
-# Save the attachment from the first email of the day
+# Save the attachment from the first email of yesterday
 if first_email:
     save_folder_path = r"C:\path\to\save\attachments"
     os.makedirs(save_folder_path, exist_ok=True)
@@ -42,6 +42,6 @@ if first_email:
         attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
         print("Attachment saved successfully.")
     else:
-        print("No attachments found in the first email of the day.")
+        print("No attachments found in the first email of yesterday.")
 else:
-    print("No email received today in the specified folder.")
+    print("No email received yesterday in the specified folder.")
