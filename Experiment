@@ -58,3 +58,23 @@ def detect_pdf_type(pdf_path):
 pdf_file = 'example.pdf'  # Replace 'example.pdf' with the path to your PDF file
 pdf_type = detect_pdf_type(pdf_file)
 print(f"The PDF type is: {pdf_type}")
+
+
+
+
+import pandas as pd
+
+# Assuming df is your DataFrame containing the data
+# and 'unique_id' is the name of the column with unique identifiers, and 'ef' is the column you want to perform the subtraction on.
+
+# Sort the DataFrame by the unique_id column
+df = df.sort_values(by='unique_id')
+
+# Calculate the difference only when the unique_id changes
+df['difference'] = df.groupby('unique_id')['ef'].diff()
+
+# Fill NaN values (resulting from the diff operation) with 0
+df['difference'].fillna(0, inplace=True)
+
+# Display the DataFrame with the new column
+print(df)
