@@ -22,29 +22,26 @@ subfolder = inbox.Folders.Item(subfolder_name)
 # Get today's date
 today_date = datetime.datetime.now().date()
 
-# Find the oldest email received today
-oldest_email = None
-oldest_received_time = datetime.datetime.now()  # Initialize with current time
-for item in subfolder.Items:
+# Find the last email received today
+last_email = None
+for item in reversed(subfolder.Items):  # Iterate in reverse order
     if item.Class == 43:  # Mail item
-        received_time = item.ReceivedTime
-        if received_time.date() == today_date and received_time < oldest_received_time:
-            oldest_email = item
-            oldest_received_time = received_time
+        if item.ReceivedTime.date() == today_date:
+            last_email = item
+            break
 
-# Save the attachment from the oldest email of the day
-if oldest_email:
+# Save the attachment from the last email of the day
+if last_email:
     save_folder_path = r"C:\path\to\save\attachments"
     os.makedirs(save_folder_path, exist_ok=True)
     
-    attachments = oldest_email.Attachments
+    attachments = last_email.Attachments
     if attachments.Count > 0:
         # Assuming you want to save the first attachment
         attachment = attachments.Item(1)
-        attachment_name = datetime.datetime.now().strftime("%Y-%m-%d") + os.path.splitext(attachment.FileName)[1]
-        attachment.SaveAsFile(os.path.join(save_folder_path, attachment_name))
-        print("Attachment saved successfully as:", attachment_name)
+        attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
+        print("Attachment saved successfully.")
     else:
-        print("No attachments found in the oldest email of the day.")
+        print("No attachments found in the last email of the day.")
 else:
     print("No email received today in the specified folder.")
