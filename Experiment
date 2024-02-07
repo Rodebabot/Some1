@@ -15,38 +15,51 @@ directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.
 # Filter directories based on current month and year
 matching_directories = [d for d in directories if current_month_year in d]
 
-# If there's a matching directory, navigate into it
+# If there's a matching directory for February 2024, navigate into it
 if matching_directories:
-    matching_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found directory:", matching_directory)
+    feb_2024_directory = os.path.join(parent_directory_path, matching_directories[0])
+    print("Found February 2024 directory:", feb_2024_directory)
     
-    # List files inside the matching directory
-    files = [f for f in os.listdir(matching_directory) if os.path.isfile(os.path.join(matching_directory, f))]
-    
-    # Filter Excel files
-    excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
-    
-    # Check if there is at least one Excel file
-    if len(excel_files) > 0:
-        # Assuming you want to read the first Excel file found
-        excel_file_path = os.path.join(matching_directory, excel_files[0])
-        try:
-            # Read all sheets from the Excel file
-            all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
-        except Exception as e:
-            print("Error reading Excel file:", e)
-            raise
+    # List directories inside the February 2024 directory
+    feb_directories = [d for d in os.listdir(feb_2024_directory) if os.path.isdir(os.path.join(feb_2024_directory, d))]
 
-        # Access each DataFrame individually
-        df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
-        df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
-        df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
+    # Filter directories based on "07 Feb"
+    matching_feb_directories = [d for d in feb_directories if "07 Feb" in d]
+    
+    # If there's a matching directory for "07 Feb", navigate into it
+    if matching_feb_directories:
+        feb_07_directory = os.path.join(feb_2024_directory, matching_feb_directories[0])
+        print("Found 07 Feb directory:", feb_07_directory)
+        
+        # List files inside the "07 Feb" directory
+        files = [f for f in os.listdir(feb_07_directory) if os.path.isfile(os.path.join(feb_07_directory, f))]
+        
+        # Filter Excel files
+        excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
+        
+        # Check if there is at least one Excel file
+        if len(excel_files) > 0:
+            # Assuming you want to read the first Excel file found
+            excel_file_path = os.path.join(feb_07_directory, excel_files[0])
+            try:
+                # Read all sheets from the Excel file
+                all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
+            except Exception as e:
+                print("Error reading Excel file:", e)
+                raise
 
-        # Example usage of the DataFrames
-        print(df1.head())
-        print(df2.head())
-        print(df3.head())
+            # Access each DataFrame individually
+            df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
+            df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
+            df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
+
+            # Example usage of the DataFrames
+            print(df1.head())
+            print(df2.head())
+            print(df3.head())
+        else:
+            print("No Excel files found in the '07 Feb' directory.")
     else:
-        print("No Excel files found in the directory.")
+        print("No directory found for '07 Feb' inside the February 2024 directory.")
 else:
-    print("No directory found for the current month and year.")
+    print("No directory found for February 2024.")
