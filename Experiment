@@ -1,5 +1,6 @@
 import win32com.client
 import os
+import datetime
 
 # Connect to Outlook
 outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
@@ -18,30 +19,29 @@ inbox = mailbox.Folders.Item(inbox_folder_name)
 # Navigate to the subfolder
 subfolder = inbox.Folders.Item(subfolder_name)
 
-# Find the email with the attachment
-email_subject_contains = "Your Email Subject"  # Modify this to match your email subject
-attachment_file_name_contains = "Attachment File Name"  # Modify this to match your attachment file name
+# Get today's date
+today_date = datetime.datetime.now().date()
 
-found_email = None
+# Find the first email received today
+first_email = None
 for item in subfolder.Items:
     if item.Class == 43:  # Mail item
-        if email_subject_contains in item.Subject:
-            attachments = item.Attachments
-            for attachment in attachments:
-                if attachment_file_name_contains in attachment.FileName:
-                    found_email = item
-                    break
+        if item.ReceivedTime.date() == today_date:
+            first_email = item
+            break
 
-# Save the attachment
-if found_email:
+# Save the attachment from the first email of the day
+if first_email:
     save_folder_path = r"C:\path\to\save\attachments"
     os.makedirs(save_folder_path, exist_ok=True)
     
-    attachments = found_email.Attachments
-    for attachment in attachments:
-        if attachment_file_name_contains in attachment.FileName:
-            attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
-            print("Attachment saved successfully.")
-            break
+    attachments = first_email.Attachments
+    if attachments.Count > 0:
+        # Assuming you want to save the first attachment
+        attachment = attachments.Item(1)
+        attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
+        print("Attachment saved successfully.")
+    else:
+        print("No attachments found in the first email of the day.")
 else:
-    print("Email with the specified subject and attachment not found.")
+    print("No email received today in the specified folder.")
