@@ -3,19 +3,36 @@ import datetime
 
 # Get current month and year
 current_month_year = datetime.datetime.now().strftime("%b %Y")
+current_day_month = datetime.datetime.now().strftime("%d %b")
 
-# Specify the directory to search
-directory_path = "/path/to/your/directory"
+# Specify the parent directory to search
+parent_directory_path = "/path/to/parent/directory"
 
-# List directories in the specified directory
-directories = [d for d in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, d))]
+# List directories in the parent directory
+directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
 
 # Filter directories based on current month and year
 matching_directories = [d for d in directories if current_month_year in d]
 
-# If there's a matching directory, you can use it
+# If there's a matching directory, navigate into it
 if matching_directories:
-    matching_directory = matching_directories[0]
+    matching_directory = os.path.join(parent_directory_path, matching_directories[0])
     print("Found directory:", matching_directory)
+    
+    # List directories inside the matching directory
+    subdirectories = [d for d in os.listdir(matching_directory) if os.path.isdir(os.path.join(matching_directory, d))]
+    
+    # Sort subdirectories by name to get the latest one
+    sorted_subdirectories = sorted(subdirectories, key=lambda x: datetime.datetime.strptime(x, '%d %b'), reverse=True)
+    
+    # Filter subdirectories based on current day and month
+    latest_subdirectory = [d for d in sorted_subdirectories if current_day_month in d]
+    
+    # If there's a latest subdirectory, you can use it
+    if latest_subdirectory:
+        latest_subdirectory_path = os.path.join(matching_directory, latest_subdirectory[0])
+        print("Found latest subdirectory:", latest_subdirectory_path)
+    else:
+        print("No subdirectory found for the current day and month.")
 else:
     print("No directory found for the current month and year.")
