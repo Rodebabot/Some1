@@ -1,9 +1,21 @@
-# Assuming df is your DataFrame
-# And you have installed the openpyxl library which is required for writing XLSB files
+import os
+import datetime
 
-# Specify the file path for the XLSB file
-file_path = "output.xlsb"
+# Get current month and year
+current_month_year = datetime.datetime.now().strftime("%b %Y")
 
-# Write the DataFrame to the XLSB file with sheet name "breaks"
-with pd.ExcelWriter(file_path, engine='pyxlsb') as writer:
-    df.to_excel(writer, sheet_name='breaks', index=False)
+# Specify the directory to search
+directory_path = "/path/to/your/directory"
+
+# List directories in the specified directory
+directories = [d for d in os.listdir(directory_path) if os.path.isdir(os.path.join(directory_path, d))]
+
+# Filter directories based on current month and year
+matching_directories = [d for d in directories if current_month_year in d]
+
+# If there's a matching directory, you can use it
+if matching_directories:
+    matching_directory = matching_directories[0]
+    print("Found directory:", matching_directory)
+else:
+    print("No directory found for the current month and year.")
