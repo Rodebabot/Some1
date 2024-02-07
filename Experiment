@@ -1,80 +1,24 @@
+import os
 import pandas as pd
 
-# Read the Excel file into a pandas DataFrame
-df = pd.read_excel('your_excel_file.xlsx')
-
-# Remove 'stripped_' from values in the 'PDF' column
-df['PDF'] = df['PDF'].str.replace('stripped_', '')
-
-# Save the modified DataFrame back to the Excel file
-df.to_excel('modified_excel_file.xlsx', index=False)
-
-
-
-
-import pandas as pd
-import glob
-
-# Directory containing all the Excel files
-directory = 'your_directory_path/*.xlsx'
-
-# Get a list of all Excel files in the directory
-excel_files = glob.glob(directory)
-
-# Initialize an empty DataFrame to store merged data
-merged_data = pd.DataFrame()
-
-# Iterate over each Excel file
-for file in excel_files:
-    # Read the Excel file into a DataFrame
-    df = pd.read_excel(file)
+# Function to read Excel file from a directory
+def read_excel_from_folder(folder_path):
+    # Get list of files in the directory
+    files = os.listdir(folder_path)
     
-    # Append the 'PDF' column and the next column to the merged DataFrame
-    merged_data = pd.concat([merged_data, df[['PDF', df.columns[1]]]], axis=1)
-
-# Save the merged DataFrame to a new Excel file
-merged_data.to_excel('consolidated_file.xlsx', index=False)
-
-
-
-import PyPDF2
-
-def is_searchable_pdf(pdf_path):
-    with open(pdf_path, 'rb') as f:
-        reader = PyPDF2.PdfFileReader(f)
-        text = ''
-        for page_num in range(reader.numPages):
-            page = reader.getPage(page_num)
-            text += page.extractText()
-        return len(text.strip()) > 0
-
-def detect_pdf_type(pdf_path):
-    if is_searchable_pdf(pdf_path):
-        return "Searchable PDF"
-    else:
-        return "Scanned PDF"
+    # Filter Excel files
+    excel_files = [file for file in files if file.endswith('.xlsx') or file.endswith('.xls')]
+    
+    # Check if there is more than one Excel file
+    if len(excel_files) != 1:
+        raise ValueError("There should be exactly one Excel file in the directory.")
+    
+    # Read the Excel file as DataFrame
+    file_path = os.path.join(folder_path, excel_files[0])
+    df = pd.read_excel(file_path)
+    
+    return df
 
 # Example usage:
-pdf_file = 'example.pdf'  # Replace 'example.pdf' with the path to your PDF file
-pdf_type = detect_pdf_type(pdf_file)
-print(f"The PDF type is: {pdf_type}")
-
-
-
-
-import pandas as pd
-
-# Assuming df is your DataFrame containing the data
-# and 'unique_id' is the name of the column with unique identifiers, and 'ef' is the column you want to perform the subtraction on.
-
-# Sort the DataFrame by the unique_id column
-df = df.sort_values(by='unique_id')
-
-# Calculate the difference only when the unique_id changes
-df['difference'] = df.groupby('unique_id')['ef'].diff()
-
-# Fill NaN values (resulting from the diff operation) with 0
-df['difference'].fillna(0, inplace=True)
-
-# Display the DataFrame with the new column
-print(df)
+folder_path = input("Enter the folder path: ")
+df = read_excel_from_folder(folder_path)
