@@ -1,5 +1,7 @@
 import win32com.client
+import pandas as pd
 import datetime
+import io
 
 # Connect to Outlook
 outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
@@ -23,6 +25,9 @@ target_folder = subfolder3.Folders.Item(target_folder_name)
 # Get today's date
 today_date = datetime.datetime.now().date()
 
+# Initialize DataFrame to store attachment content
+attachment_df = pd.DataFrame()
+
 # Iterate through the items in the target folder
 for item in target_folder.Items:
     if item.Class == 43:  # Mail item
@@ -31,10 +36,17 @@ for item in target_folder.Items:
             # Get the attachments from the email
             attachments = item.Attachments
             if attachments.Count > 0:
-                # Assuming you want to save the first attachment
+                # Assuming you want to read the first attachment
                 attachment = attachments.Item(1)
-                attachment.SaveAsFile(r"C:\path\to\save\attachment")
-                print("Attachment saved successfully.")
+                
+                # Read attachment content into a DataFrame
+                attachment_content = io.BytesIO(attachment.Content)
+                attachment_df = pd.read_excel(attachment_content, sheet_name=None)
+                
+                # Print DataFrame (you can remove this if not needed)
+                for sheet_name, df in attachment_df.items():
+                    print("Sheet:", sheet_name)
+                    print(df.head())  # Display DataFrame content
                 break  # Stop iterating after processing the first email
 else:
     print("No email with attachment found today.")
