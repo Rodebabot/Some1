@@ -1,49 +1,20 @@
-import win32com.client
+import pandas as pd
 import os
-import datetime
 
-# Connect to Outlook
-outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+# Specify the directory containing the .dat files
+folder_path = "/path/to/dat/files"
 
-# Specify the mailbox, inbox, and subfolder names
-mailbox_name = "Mailbox Name"
-inbox_folder_name = "Inbox"
-subfolder_name = "Subfolder"
+# List all files in the directory
+files = os.listdir(folder_path)
 
-# Get the mailbox
-mailbox = outlook.Folders.Item(mailbox_name)
+# Filter out files where the filename does not contain 'Today'
+filtered_files = [file for file in files if 'Today' not in file]
 
-# Navigate to the Inbox folder
-inbox = mailbox.Folders.Item(inbox_folder_name)
-
-# Navigate to the subfolder
-subfolder = inbox.Folders.Item(subfolder_name)
-
-# Get today's date
-today_date = datetime.datetime.now().date()
-
-# Find the last email received today
-last_email = None
-for item in reversed(subfolder.Items):  # Iterate in reverse order
-    if item.Class == 43:  # Mail item
-        if item.ReceivedTime.date() == today_date:
-            last_email = item
-            break
-
-# Save the attachment from the last email of the day
-if last_email:
-    save_folder_path = r"C:\path\to\save\attachments"
-    os.makedirs(save_folder_path, exist_ok=True)
-    
-    attachments = last_email.Attachments
-    if attachments.Count > 0:
-        # Assuming you want to save the first attachment
-        attachment = attachments.Item(1)
-        attachment_extension = os.path.splitext(attachment.FileName)[1]
-        save_file_name = os.path.join(save_folder_path, f"TS{attachment_extension}")
-        attachment.SaveAsFile(save_file_name)
-        print("Attachment saved successfully.")
-    else:
-        print("No attachments found in the last email of the day.")
+# Read the first .dat file into a DataFrame
+if filtered_files:
+    dat_file_path = os.path.join(folder_path, filtered_files[0])
+    df = pd.read_csv(dat_file_path, delimiter='\t')  # Assuming tab-separated data
+    # Process the DataFrame as needed
+    print(df.head())
 else:
-    print("No email received today in the specified folder.")
+    print("No .dat files found in the directory that don't contain 'Today' in the filename.")
