@@ -32,7 +32,11 @@ if matching_directories:
     
     # Read all sheets from the Excel file
     file_path = os.path.join(matching_directory, excel_files[0])
-    all_dfs = pd.read_excel(file_path, sheet_name=None)
+    try:
+        all_dfs = pd.read_excel(file_path, sheet_name=None)
+    except Exception as e:
+        print("Error reading Excel file:", e)
+        raise
     
     # Access each DataFrame individually
     df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
