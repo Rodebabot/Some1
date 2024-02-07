@@ -39,7 +39,9 @@ if last_email:
     if attachments.Count > 0:
         # Assuming you want to save the first attachment
         attachment = attachments.Item(1)
-        attachment.SaveAsFile(os.path.join(save_folder_path, attachment.FileName))
+        attachment_extension = os.path.splitext(attachment.FileName)[1]
+        save_file_name = os.path.join(save_folder_path, f"TS{attachment_extension}")
+        attachment.SaveAsFile(save_file_name)
         print("Attachment saved successfully.")
     else:
         print("No attachments found in the last email of the day.")
