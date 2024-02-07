@@ -4,7 +4,6 @@ import datetime
 
 # Get current month and year
 current_month_year = datetime.datetime.now().strftime("%b %Y")
-current_day_month = datetime.datetime.now().strftime("%d %b")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -15,24 +14,27 @@ directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.
 # Filter directories based on current month and year
 matching_directories = [d for d in directories if current_month_year in d]
 
-# If there's a matching directory for February 2024, navigate into it
+# If there's a matching directory for the current month and year, navigate into it
 if matching_directories:
-    feb_2024_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found February 2024 directory:", feb_2024_directory)
+    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
+    print("Found directory for current month and year:", current_month_directory)
     
-    # List directories inside the February 2024 directory
-    feb_directories = [d for d in os.listdir(feb_2024_directory) if os.path.isdir(os.path.join(feb_2024_directory, d))]
+    # Get today's date in the format "05 Feb"
+    current_day_month = datetime.datetime.now().strftime("%d %b")
+    
+    # List directories inside the current month directory
+    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
 
-    # Filter directories based on "07 Feb"
-    matching_feb_directories = [d for d in feb_directories if "07 Feb" in d]
+    # Filter directories based on today's date
+    matching_day_directories = [d for d in month_directories if current_day_month in d]
     
-    # If there's a matching directory for "07 Feb", navigate into it
-    if matching_feb_directories:
-        feb_07_directory = os.path.join(feb_2024_directory, matching_feb_directories[0])
-        print("Found 07 Feb directory:", feb_07_directory)
+    # If there's a matching directory for today's date, navigate into it
+    if matching_day_directories:
+        today_directory = os.path.join(current_month_directory, matching_day_directories[0])
+        print("Found today's directory:", today_directory)
         
-        # List files inside the "07 Feb" directory
-        files = [f for f in os.listdir(feb_07_directory) if os.path.isfile(os.path.join(feb_07_directory, f))]
+        # List files inside today's directory
+        files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
         
         # Filter Excel files
         excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
@@ -40,7 +42,7 @@ if matching_directories:
         # Check if there is at least one Excel file
         if len(excel_files) > 0:
             # Assuming you want to read the first Excel file found
-            excel_file_path = os.path.join(feb_07_directory, excel_files[0])
+            excel_file_path = os.path.join(today_directory, excel_files[0])
             try:
                 # Read all sheets from the Excel file
                 all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
@@ -58,8 +60,8 @@ if matching_directories:
             print(df2.head())
             print(df3.head())
         else:
-            print("No Excel files found in the '07 Feb' directory.")
+            print("No Excel files found in today's directory.")
     else:
-        print("No directory found for '07 Feb' inside the February 2024 directory.")
+        print("No directory found for today's date inside the current month and year directory.")
 else:
-    print("No directory found for February 2024.")
+    print("No directory found for the current month and year.")
