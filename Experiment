@@ -1,5 +1,9 @@
-# Assuming df1, df2, and df3 are your DataFrames
-import pandas as pd
+# Assuming df is your DataFrame
+# And you have installed the openpyxl library which is required for writing XLSB files
 
-# Concatenate df1, df2, and df3
-df_combined = pd.concat([df1, df2, df3], ignore_index=True)
+# Specify the file path for the XLSB file
+file_path = "output.xlsb"
+
+# Write the DataFrame to the XLSB file with sheet name "breaks"
+with pd.ExcelWriter(file_path, engine='pyxlsb') as writer:
+    df.to_excel(writer, sheet_name='breaks', index=False)
