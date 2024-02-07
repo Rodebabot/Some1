@@ -1,7 +1,5 @@
 # Assuming df1, df2, and df3 are your DataFrames
+import pandas as pd
 
-# Append df2 to df1
-df_combined = df1.append(df2, ignore_index=True)
-
-# Append df3 to the combined DataFrame
-df_combined = df_combined.append(df3, ignore_index=True)
+# Concatenate df1, df2, and df3
+df_combined = pd.concat([df1, df2, df3], ignore_index=True)
