@@ -1,34 +1,8 @@
-import os
-import pandas as pd
+# Assuming df is your DataFrame
+# Get the index of the 'ITEM REFERENCE 2' column
+idx = df.columns.get_loc('ITEM REFERENCE 2')
 
-# Function to read all sheets from an Excel file
-def read_all_sheets(file_path):
-    # Read all sheets into a dictionary of DataFrames
-    all_dfs = pd.read_excel(file_path, sheet_name=None)
-    
-    # Return a list of DataFrames
-    return list(all_dfs.values())
-
-# Example usage:
-folder_path = input("Enter the folder path: ")
-files = os.listdir(folder_path)
-
-# Filter Excel files
-excel_files = [file for file in files if file.endswith('.xlsx') or file.endswith('.xls')]
-
-# Check if there is exactly one Excel file
-if len(excel_files) != 1:
-    raise ValueError("There should be exactly one Excel file in the directory.")
-
-# Read all sheets from the Excel file
-file_path = os.path.join(folder_path, excel_files[0])
-dfs = read_all_sheets(file_path)
-
-# Access each DataFrame individually
-df1 = dfs[0]
-df2 = dfs[1]
-df3 = dfs[2]
-
-# Or you can access them dynamically if you have more than 3 sheets:
-# for i, df in enumerate(dfs):
-#     globals()[f"df{i+1}"] = df
+# Insert three new columns after the 'ITEM REFERENCE 2' column
+df.insert(idx + 1, 'col1', '')
+df.insert(idx + 2, 'colt', '')
+df.insert(idx + 3, 'coly', '')
