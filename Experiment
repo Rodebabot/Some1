@@ -26,27 +26,27 @@ if matching_directories:
     # Filter Excel files
     excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
     
-    # Check if there is exactly one Excel file
-    if len(excel_files) != 1:
-        raise ValueError("There should be exactly one Excel file in the directory.")
-    
-    # Read all sheets from the Excel file
-    file_path = os.path.join(matching_directory, excel_files[0])
-    try:
-        all_dfs = pd.read_excel(file_path, sheet_name=None)
-    except Exception as e:
-        print("Error reading Excel file:", e)
-        raise
-    
-    # Access each DataFrame individually
-    df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
-    df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
-    df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
-    
-    # Example usage of the DataFrames
-    print(df1.head())
-    print(df2.head())
-    print(df3.head())
-    
+    # Check if there is at least one Excel file
+    if len(excel_files) > 0:
+        # Assuming you want to read the first Excel file found
+        excel_file_path = os.path.join(matching_directory, excel_files[0])
+        try:
+            # Read all sheets from the Excel file
+            all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
+        except Exception as e:
+            print("Error reading Excel file:", e)
+            raise
+
+        # Access each DataFrame individually
+        df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
+        df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
+        df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
+
+        # Example usage of the DataFrames
+        print(df1.head())
+        print(df2.head())
+        print(df3.head())
+    else:
+        print("No Excel files found in the directory.")
 else:
     print("No directory found for the current month and year.")
