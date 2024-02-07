@@ -1,8 +1,7 @@
-# Assuming df is your DataFrame
-# Get the index of the 'ITEM REFERENCE 2' column
-idx = df.columns.get_loc('ITEM REFERENCE 2')
+# Assuming df1, df2, and df3 are your DataFrames
 
-# Insert three new columns after the 'ITEM REFERENCE 2' column
-df.insert(idx + 1, 'col1', '')
-df.insert(idx + 2, 'colt', '')
-df.insert(idx + 3, 'coly', '')
+# Append df2 to df1
+df_combined = df1.append(df2, ignore_index=True)
+
+# Append df3 to the combined DataFrame
+df_combined = df_combined.append(df3, ignore_index=True)
