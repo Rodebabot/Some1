@@ -1,27 +1,11 @@
 import pandas as pd
-import os
 
-# Specify the directory containing the .dat files
-folder_path = "/path/to/dat/files"
+# Example DataFrame
+data = {'A': ['apple', 'banana', 'orange'],
+        'B': ['red', 'yellow', 'orange']}
+df = pd.DataFrame(data)
 
-# List all files in the directory
-files = os.listdir(folder_path)
+# Concatenate values from columns A and B and store the result in column C
+df['C'] = df['A'].str.cat(df['B'], sep='')
 
-# Filter out files where the filename does not contain 'Today'
-filtered_files = [file for file in files if 'Today' not in file]
-
-# Read the first .dat file into a DataFrame
-if filtered_files:
-    dat_file_path = os.path.join(folder_path, filtered_files[0])
-    df = pd.read_csv(dat_file_path, delimiter='\t')  # Assuming tab-separated data
-    
-    # Add the new columns after 'Instrument Long Name'
-    new_columns = ['Book +Instr', 'Comments']
-    index_to_insert = df.columns.get_loc('Instrument Long Name') + 1
-    for column_name in reversed(new_columns):
-        df.insert(index_to_insert, column_name, '')
-    
-    # Process the DataFrame as needed
-    print(df.head())
-else:
-    print("No .dat files found in the directory that don't contain 'Today' in the filename.")
+print(df)
