@@ -14,6 +14,13 @@ filtered_files = [file for file in files if 'Today' not in file]
 if filtered_files:
     dat_file_path = os.path.join(folder_path, filtered_files[0])
     df = pd.read_csv(dat_file_path, delimiter='\t')  # Assuming tab-separated data
+    
+    # Add the new columns after 'Instrument Long Name'
+    new_columns = ['Book +Instr', 'Comments']
+    index_to_insert = df.columns.get_loc('Instrument Long Name') + 1
+    for column_name in reversed(new_columns):
+        df.insert(index_to_insert, column_name, '')
+    
     # Process the DataFrame as needed
     print(df.head())
 else:
