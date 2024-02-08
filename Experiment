@@ -3,8 +3,8 @@ from pyxlsb import open_workbook
 import pandas as pd
 import datetime
 
-# Get current month and year
-current_month_year = datetime.datetime.now().strftime("%b %Y")
+# Get today's date in the format "ddmmyyyy"
+current_date = datetime.datetime.now().strftime("%d%m%Y")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -38,7 +38,7 @@ if matching_directories:
         files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
         
         # Filter XLSB files with today's date in the filename
-        xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_day_month.replace(" ", "").lower() in f.lower()]
+        xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_date in f]
 
         # If there's an XLSB file with today's date in the filename, read it
         if xlsb_files_today:
