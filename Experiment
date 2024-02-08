@@ -1,10 +1,65 @@
+import os
+import pandas as pd
 import datetime
 
-# Get today's date in the desired format
-today_date = datetime.datetime.now().strftime('%d -%m-%Y')
-today_suffix = datetime.datetime.now().strftime('%d%m')
+# Get current date in the format "ddmm"
+current_date_ddmm = datetime.datetime.now().strftime("%d%m")
 
-# Concatenate today's date with the rest of the string
-result = f"{today_date} Trade Splitting -{today_suffix}"
+# Specify the parent directory to search
+parent_directory_path = "/path/to/parent/directory"
 
-print(result)
+# List directories in the parent directory
+directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
+
+# Filter directories based on current month and year
+matching_directories = [d for d in directories if current_month_year in d]
+
+# Initialize the variable to store the Excel file name
+excel_file_name = None
+
+# If there's a matching directory for the current month and year, navigate into it
+if matching_directories:
+    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
+    print("Found directory for current month and year:", current_month_directory)
+    
+    # List directories inside the current month directory
+    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
+
+    # Filter directories based on yesterday's date
+    matching_yesterday_directories = [d for d in month_directories if yesterday_day_month in d]
+    
+    # If there's a matching directory for yesterday's date, navigate into it
+    if matching_yesterday_directories:
+        yesterday_directory = os.path.join(current_month_directory, matching_yesterday_directories[0])
+        print("Found yesterday's directory:", yesterday_directory)
+        
+        # List files inside yesterday's directory
+        files = [f for f in os.listdir(yesterday_directory) if os.path.isfile(os.path.join(yesterday_directory, f))]
+        
+        # Filter XLSB files based on today's date in the filename
+        matching_files = [f for f in files if current_date_ddmm in f and f.endswith('.xlsb')]
+        
+        # If there's a matching XLSB file, read it
+        if matching_files:
+            xlsb_file_name = matching_files[0]
+            xlsb_file_path = os.path.join(yesterday_directory, xlsb_file_name)
+            try:
+                # Read all sheets from the XLSB file
+                all_dfs = pd.read_excel(xlsb_file_path, sheet_name=None, engine='pyxlsb')
+            except Exception as e:
+                print("Error reading XLSB file:", e)
+                raise
+
+            # Access each DataFrame individually
+            for sheet_name, df in all_dfs.items():
+                print("Sheet:", sheet_name)
+                print(df.head())
+        else:
+            print("No XLSB file found with today's date in the filename.")
+    else:
+        print("No directory found for yesterday's date inside the current month and year directory.")
+else:
+    print("No directory found for the current month and year.")
+
+# Now excel_file_name variable contains the name of the XLSB file without extension, you can use it as needed
+print("Excel file name without extension:", excel_file_name)
