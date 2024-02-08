@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 import datetime
-from pyxlsb2 import open_workbook
 
 # Get current month and year
 current_month_year = datetime.datetime.now().strftime("%b %Y")
@@ -51,36 +50,36 @@ if matching_directories:
             # Assuming you want to read the first XLSB file found
             xlsb_file_path = os.path.join(today_directory, xlsb_files[0])
             try:
-                # Load the workbook using pyxlsb2 to handle password-protected files
-                with open_workbook(xlsb_file_path, password='core') as wb:
-                    # Access each sheet and create DataFrame
-                    for sheet_name in wb.sheets:
-                        df = pd.DataFrame(wb[sheet_name].rows())
-                        if sheet_name == 'Sheet1':
-                            df1 = df
-                        elif sheet_name == 'Sheet2':
-                            df2 = df
-                        elif sheet_name == 'Sheet3':
-                            df3 = df
-                        elif sheet_name == 'Sheet4':
-                            df4 = df
-
-                    # Example usage of the DataFrames
-                    if df1 is not None:
-                        print("DataFrame 1:")
-                        print(df1.head())
-                    if df2 is not None:
-                        print("DataFrame 2:")
-                        print(df2.head())
-                    if df3 is not None:
-                        print("DataFrame 3:")
-                        print(df3.head())
-                    if df4 is not None:
-                        print("DataFrame 4:")
-                        print(df4.head())
+                # Read each sheet from the XLSB file into a separate DataFrame
+                df_dict = pd.read_excel(xlsb_file_path, sheet_name=None, engine='xlrd', password='core')
             except Exception as e:
-                print("Error loading XLSB file:", e)
+                print("Error reading XLSB file:", e)
                 raise
+
+            # Access each DataFrame individually
+            for sheet_name, df in df_dict.items():
+                if sheet_name == 'Sheet1':
+                    df1 = df
+                elif sheet_name == 'Sheet2':
+                    df2 = df
+                elif sheet_name == 'Sheet3':
+                    df3 = df
+                elif sheet_name == 'Sheet4':
+                    df4 = df
+
+            # Example usage of the DataFrames
+            if df1 is not None:
+                print("DataFrame 1:")
+                print(df1.head())
+            if df2 is not None:
+                print("DataFrame 2:")
+                print(df2.head())
+            if df3 is not None:
+                print("DataFrame 3:")
+                print(df3.head())
+            if df4 is not None:
+                print("DataFrame 4:")
+                print(df4.head())
         else:
             print("No XLSB files found in today's directory.")
     else:
