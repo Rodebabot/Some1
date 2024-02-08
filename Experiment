@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import datetime
+from openpyxl import load_workbook
 
 # Get current month and year
 current_month_year = datetime.datetime.now().strftime("%b %Y")
@@ -50,14 +51,18 @@ if matching_directories:
             # Assuming you want to read the first XLSB file found
             xlsb_file_path = os.path.join(today_directory, xlsb_files[0])
             try:
-                # Read each sheet from the XLSB file into a separate DataFrame
-                df_dict = pd.read_excel(xlsb_file_path, sheet_name=None, engine='pyxlsb', password='core')
+                # Load the workbook using openpyxl to handle password-protected files
+                wb = load_workbook(xlsb_file_path, read_only=True, keep_links=False, data_only=True, guess_types=False, keep_vba=False, password='core')
             except Exception as e:
-                print("Error reading XLSB file:", e)
+                print("Error loading XLSB file:", e)
                 raise
 
-            # Access each DataFrame individually
-            for sheet_name, df in df_dict.items():
+            # Access each sheet and create DataFrame
+            for sheet_name in wb.sheetnames:
+                ws = wb[sheet_name]
+                data = ws.values
+                cols = next(data)
+                df = pd.DataFrame(data, columns=cols)
                 if sheet_name == 'Sheet1':
                     df1 = df
                 elif sheet_name == 'Sheet2':
