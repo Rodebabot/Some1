@@ -52,7 +52,7 @@ if matching_directories:
             xlsb_file_path = os.path.join(today_directory, xlsb_files[0])
             try:
                 # Load the workbook using openpyxl to handle password-protected files
-                wb = load_workbook(xlsb_file_path, read_only=True, keep_links=False, data_only=True, guess_types=False, keep_vba=False, password='core')
+                wb = load_workbook(xlsb_file_path, read_only=True, keep_links=False, data_only=True, keep_vba=False, password='core')
             except Exception as e:
                 print("Error loading XLSB file:", e)
                 raise
