@@ -9,68 +9,35 @@ current_day_month = datetime.datetime.now().strftime("%d%m")
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
 
-# List directories in the parent directory
-directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
+# List files in the parent directory
+files = [f for f in os.listdir(parent_directory_path) if os.path.isfile(os.path.join(parent_directory_path, f))]
 
-# Filter directories based on current month and year
-matching_directories = [d for d in directories if current_month_year in d]
+# Filter XLSB files with today's date in the filename
+xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_day_month in f]
 
-# If there's a matching directory for the current month and year, navigate into it
-if matching_directories:
-    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found directory for current month and year:", current_month_directory)
-    
-    # Get today's date in the format "05 Feb"
-    current_day_month = datetime.datetime.now().strftime("%d %b")
-    
-    # List directories inside the current month directory
-    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
+# If there's an XLSB file with today's date in the filename, read it
+if xlsb_files_today:
+    xlsb_file_path = os.path.join(parent_directory_path, xlsb_files_today[0])
+    print("Found XLSB file for today:", xlsb_file_path)
 
-    # Filter directories based on today's date
-    matching_day_directories = [d for d in month_directories if current_day_month in d]
-    
-    # If there's a matching directory for today's date, navigate into it
-    if matching_day_directories:
-        today_directory = os.path.join(current_month_directory, matching_day_directories[0])
-        print("Found today's directory:", today_directory)
-        
-        # List files inside today's directory
-        files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
-        
-        # Filter XLSB files
-        xlsb_files = [f for f in files if f.endswith('.xlsb')]
-        
-        # Check if there is at least one XLSB file
-        if len(xlsb_files) > 0:
-            # Assuming you want to store the first XLSB file name found without extension
-            xlsb_file_name_with_extension = xlsb_files[0]
-            xlsb_file_name = os.path.splitext(xlsb_file_name_with_extension)[0]
-            
-            # Assuming you want to read the first XLSB file found
-            xlsb_file_path = os.path.join(today_directory, xlsb_file_name_with_extension)
-            
-            # Initialize a list to store DataFrames for each sheet
-            dfs = []
+    # Initialize a list to store DataFrames for each sheet
+    dfs = []
 
-            # Open the XLSB file
-            with open_workbook(xlsb_file_path) as wb:
-                # Iterate over sheets in the workbook
-                for sheetname in wb.sheets:
-                    # Read each sheet into a DataFrame
-                    with wb.get_sheet(sheetname) as sheet:
-                        data = []
-                        for row in sheet.rows():
-                            data.append([item.v for item in row])
-                        df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
-                        dfs.append(df)
+    # Open the XLSB file
+    with open_workbook(xlsb_file_path) as wb:
+        # Iterate over sheets in the workbook
+        for sheetname in wb.sheets:
+            # Read each sheet into a DataFrame
+            with wb.get_sheet(sheetname) as sheet:
+                data = []
+                for row in sheet.rows():
+                    data.append([item.v for item in row])
+                df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
+                dfs.append(df)
 
-            # Example usage of the DataFrames
-            for i, df in enumerate(dfs, start=1):
-                print(f"DataFrame {i}:")
-                print(df.head())  # Print the first few rows of each DataFrame
-        else:
-            print("No XLSB files found in today's directory.")
-    else:
-        print("No directory found for today's date inside the current month and year directory.")
+    # Example usage of the DataFrames
+    for i, df in enumerate(dfs, start=1):
+        print(f"DataFrame {i}:")
+        print(df.head())  # Print the first few rows of each DataFrame
 else:
-    print("No directory found for the current month and year.")
+    print("No XLSB file found for today.")
