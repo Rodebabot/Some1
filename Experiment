@@ -1,80 +1,32 @@
 import os
-from pyxlsb import open_workbook
-import pandas as pd
-import datetime
+import chardet
 
-# Get today's date in the format "ddmmyyyy"
-current_date = datetime.datetime.now().strftime("%d%m%Y")
+# Function to detect encoding of a file
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        rawdata = f.read()
+    result = chardet.detect(rawdata)
+    return result['encoding']
 
-# Specify the parent directory to search
-parent_directory_path = "/path/to/parent/directory"
+# Specify the directory to search
+directory_path = "/path/to/directory"
 
-# List directories in the parent directory
-directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
+# List files in the directory
+files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
 
-# Filter directories based on current month and year
-matching_directories = [d for d in directories if current_month_year in d]
+# Filter files containing 'today' in the filename
+files_today = [f for f in files if 'today' in f.lower()]
 
-# If there's a matching directory for the current month and year, navigate into it
-if matching_directories:
-    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found directory for current month and year:", current_month_directory)
-    
-    # Get today's date in the format "05 Feb"
-    current_day_month = datetime.datetime.now().strftime("%d %b")
-    
-    # List directories inside the current month directory
-    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-
-    # Filter directories based on today's date
-    matching_day_directories = [d for d in month_directories if current_day_month in d]
-    
-    # If there's a matching directory for today's date, navigate into it
-    if matching_day_directories:
-        today_directory = os.path.join(current_month_directory, matching_day_directories[0])
-        print("Found today's directory:", today_directory)
-        
-        # List files inside today's directory
-        files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
-        
-        # Filter XLSB files with today's date in the filename
-        xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_date in f]
-
-        # If there's an XLSB file with today's date in the filename, read it
-        if xlsb_files_today:
-            xlsb_file_path = os.path.join(today_directory, xlsb_files_today[0])
-            print("Found XLSB file for today:", xlsb_file_path)
-
-            # Initialize a list to store DataFrames for each sheet
-            dfs = []
-
-            # Open the XLSB file
-            with open_workbook(xlsb_file_path) as wb:
-                # Iterate over sheets in the workbook
-                for sheetname in wb.sheets:
-                    # Read each sheet into a DataFrame
-                    with wb.get_sheet(sheetname) as sheet:
-                        data = []
-                        for row in sheet.rows():
-                            data.append([item.v for item in row])
-                        df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
-                        dfs.append(df)
-
-            # Store each sheet in a separate DataFrame
-            df1, df2, df3, df4 = dfs
-
-            # Example usage of the DataFrames
-            print("DataFrame 1:")
-            print(df1.head())
-            print("DataFrame 2:")
-            print(df2.head())
-            print("DataFrame 3:")
-            print(df3.head())
-            print("DataFrame 4:")
-            print(df4.head())
-        else:
-            print("No XLSB file found for today.")
-    else:
-        print("No directory found for today's date inside the current month and year directory.")
+# Read the first matching file with encoding error handling
+if files_today:
+    file_path = os.path.join(directory_path, files_today[0])
+    encoding = detect_encoding(file_path)
+    try:
+        with open(file_path, 'r', encoding=encoding) as file:
+            content = file.read()
+        print("File content:")
+        print(content)
+    except Exception as e:
+        print("Error reading the file:", e)
 else:
-    print("No directory found for the current month and year.")
+    print("No file containing 'today' in the filename found in the directory.")
