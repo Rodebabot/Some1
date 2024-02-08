@@ -23,19 +23,11 @@ if files_today:
     file_path = os.path.join(directory_path, files_today[0])
     encoding = detect_encoding(file_path)
     try:
-        with open(file_path, 'r', encoding=encoding) as file:
-            # Read lines from the file
-            lines = file.readlines()
-        
-        # Create a DataFrame from the lines
-        df = pd.DataFrame([line.split() for line in lines], columns=['Column1', 'Column2', 'Column3', 'Column4', 'Column5'])
-        
-        # Save DataFrame to CSV
-        output_csv_path = '/path/to/output.csv'
-        df.to_csv(output_csv_path, index=False)
-        
-        print("File converted and saved successfully as:", output_csv_path)
+        # Read the .dat file into a DataFrame
+        df = pd.read_csv(file_path, sep='\t', encoding=encoding, header=None)
+        print("DataFrame from .dat file:")
+        print(df)
     except Exception as e:
-        print("Error converting the file:", e)
+        print("Error reading the file:", e)
 else:
     print("No file containing 'today' in the filename found in the directory.")
