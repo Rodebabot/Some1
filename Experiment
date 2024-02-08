@@ -1,11 +1,10 @@
-import pandas as pd
+import datetime
 
-# Example DataFrame
-data = {'A': ['apple', 'banana', 'orange'],
-        'B': ['red', 'yellow', 'orange']}
-df = pd.DataFrame(data)
+# Get today's date in the desired format
+today_date = datetime.datetime.now().strftime('%d -%m-%Y')
+today_suffix = datetime.datetime.now().strftime('%d%m')
 
-# Concatenate values from columns A and B and store the result in column C
-df['C'] = df['A'].str.cat(df['B'], sep='')
+# Concatenate today's date with the rest of the string
+result = f"{today_date} Trade Splitting -{today_suffix}"
 
-print(df)
+print(result)
