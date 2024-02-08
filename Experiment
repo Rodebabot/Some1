@@ -3,8 +3,8 @@ from pyxlsb import open_workbook
 import pandas as pd
 import datetime
 
-# Get today's date in the format "ddmmyyyy"
-current_date = datetime.datetime.now().strftime("%d%m%Y")
+# Get current month and year
+current_month_year = datetime.datetime.now().strftime("%b %Y")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -38,7 +38,7 @@ if matching_directories:
         files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
         
         # Filter XLSB files with today's date in the filename
-        xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_date in f]
+        xlsb_files_today = [f for f in files if f.endswith('.xlsb') and current_day_month.replace(" ", "").lower() in f.lower()]
 
         # If there's an XLSB file with today's date in the filename, read it
         if xlsb_files_today:
@@ -60,10 +60,18 @@ if matching_directories:
                         df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
                         dfs.append(df)
 
+            # Store each sheet in a separate DataFrame
+            df1, df2, df3, df4 = dfs
+
             # Example usage of the DataFrames
-            for i, df in enumerate(dfs, start=1):
-                print(f"DataFrame {i}:")
-                print(df.head())  # Print the first few rows of each DataFrame
+            print("DataFrame 1:")
+            print(df1.head())
+            print("DataFrame 2:")
+            print(df2.head())
+            print("DataFrame 3:")
+            print(df3.head())
+            print("DataFrame 4:")
+            print(df4.head())
         else:
             print("No XLSB file found for today.")
     else:
