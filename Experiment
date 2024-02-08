@@ -1,4 +1,5 @@
 import os
+from pyxlsb import open_workbook
 import pandas as pd
 import datetime
 
@@ -36,37 +37,39 @@ if matching_directories:
         # List files inside today's directory
         files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
         
-        # Filter Excel files
-        excel_files = [f for f in files if f.endswith('.xlsx') or f.endswith('.xls')]
+        # Filter XLSB files
+        xlsb_files = [f for f in files if f.endswith('.xlsb')]
         
-        # Check if there is at least one Excel file
-        if len(excel_files) > 0:
-            # Assuming you want to store the first Excel file name found without extension
-            excel_file_name_with_extension = excel_files[0]
-            excel_file_name = os.path.splitext(excel_file_name_with_extension)[0]
+        # Check if there is at least one XLSB file
+        if len(xlsb_files) > 0:
+            # Assuming you want to store the first XLSB file name found without extension
+            xlsb_file_name_with_extension = xlsb_files[0]
+            xlsb_file_name = os.path.splitext(xlsb_file_name_with_extension)[0]
             
-            # Assuming you want to read the first Excel file found
-            excel_file_path = os.path.join(today_directory, excel_file_name_with_extension)
-            try:
-                # Read all sheets from the Excel file
-                all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
-            except Exception as e:
-                print("Error reading Excel file:", e)
-                raise
+            # Assuming you want to read the first XLSB file found
+            xlsb_file_path = os.path.join(today_directory, xlsb_file_name_with_extension)
+            
+            # Initialize a list to store DataFrames for each sheet
+            dfs = []
 
-            # Access each DataFrame individually
-            df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
-            df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
-            df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
-            df4 = all_dfs['Sheet4']  # Change 'Sheet4' to the actual sheet name
+            # Open the XLSB file
+            with open_workbook(xlsb_file_path) as wb:
+                # Iterate over sheets in the workbook
+                for sheetname in wb.sheets:
+                    # Read each sheet into a DataFrame
+                    with wb.get_sheet(sheetname) as sheet:
+                        data = []
+                        for row in sheet.rows():
+                            data.append([item.v for item in row])
+                        df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
+                        dfs.append(df)
 
             # Example usage of the DataFrames
-            print(df1.head())
-            print(df2.head())
-            print(df3.head())
-            print(df4.head())
+            for i, df in enumerate(dfs, start=1):
+                print(f"DataFrame {i}:")
+                print(df.head())  # Print the first few rows of each DataFrame
         else:
-            print("No Excel files found in today's directory.")
+            print("No XLSB files found in today's directory.")
     else:
         print("No directory found for today's date inside the current month and year directory.")
 else:
