@@ -2,87 +2,43 @@ import os
 import pandas as pd
 import datetime
 
-# Get current month and year
-current_month_year = datetime.datetime.now().strftime("%b %Y")
-
-# Calculate today's date in the format "dd mm"
-today_date_dd_mm = datetime.datetime.now().strftime("%d %b")
+# Get today's date in the format "ddmm"
+current_day_month = datetime.datetime.now().strftime("%d%m")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
 
-# List directories in the parent directory
-directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
+# List files in the parent directory
+files = [f for f in os.listdir(parent_directory_path) if os.path.isfile(os.path.join(parent_directory_path, f))]
 
-# Filter directories based on current month and year
-matching_directories = [d for d in directories if current_month_year in d]
+# Filter Excel files with today's date in the filename
+excel_files_today = [f for f in files if f.endswith('.xlsx') and current_day_month in f]
 
-# Initialize the variables to store the DataFrames
-df1 = None
-df2 = None
-df3 = None
-df4 = None
+# If there's an Excel file with today's date in the filename, read it
+if excel_files_today:
+    excel_file_path = os.path.join(parent_directory_path, excel_files_today[0])
+    print("Found Excel file for today:", excel_file_path)
 
-# If there's a matching directory for the current month and year, navigate into it
-if matching_directories:
-    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found directory for current month and year:", current_month_directory)
-    
-    # List directories inside the current month directory
-    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
+    # Store the name of the Excel file without extension
+    excel_file_name = os.path.splitext(excel_files_today[0])[0]
 
-    # Filter directories based on today's date
-    matching_today_directories = [d for d in month_directories if today_date_dd_mm in d]
-    
-    # If there's a matching directory for today's date, navigate into it
-    if matching_today_directories:
-        today_directory = os.path.join(current_month_directory, matching_today_directories[0])
-        print("Found today's directory:", today_directory)
-        
-        # List files inside today's directory
-        files = [f for f in os.listdir(today_directory) if os.path.isfile(os.path.join(today_directory, f))]
-        
-        # Filter XLSB files
-        xlsb_files = [f for f in files if f.endswith('.xlsb')]
-        
-        # Check if there is at least one XLSB file
-        if len(xlsb_files) > 0:
-            # Assuming you want to read the first XLSB file found
-            xlsb_file_path = os.path.join(today_directory, xlsb_files[0])
-            try:
-                # Read each sheet from the XLSB file into a separate DataFrame
-                df_dict = pd.read_excel(xlsb_file_path, sheet_name=None, engine='xlrd', password='core')
-            except Exception as e:
-                print("Error reading XLSB file:", e)
-                raise
+    try:
+        # Read all sheets from the Excel file
+        all_dfs = pd.read_excel(excel_file_path, sheet_name=None)
+    except Exception as e:
+        print("Error reading Excel file:", e)
+        raise
 
-            # Access each DataFrame individually
-            for sheet_name, df in df_dict.items():
-                if sheet_name == 'Sheet1':
-                    df1 = df
-                elif sheet_name == 'Sheet2':
-                    df2 = df
-                elif sheet_name == 'Sheet3':
-                    df3 = df
-                elif sheet_name == 'Sheet4':
-                    df4 = df
+    # Access each DataFrame individually
+    df1 = all_dfs['Sheet1']  # Change 'Sheet1' to the actual sheet name
+    df2 = all_dfs['Sheet2']  # Change 'Sheet2' to the actual sheet name
+    df3 = all_dfs['Sheet3']  # Change 'Sheet3' to the actual sheet name
+    df4 = all_dfs['Sheet4']  # Change 'Sheet4' to the actual sheet name
 
-            # Example usage of the DataFrames
-            if df1 is not None:
-                print("DataFrame 1:")
-                print(df1.head())
-            if df2 is not None:
-                print("DataFrame 2:")
-                print(df2.head())
-            if df3 is not None:
-                print("DataFrame 3:")
-                print(df3.head())
-            if df4 is not None:
-                print("DataFrame 4:")
-                print(df4.head())
-        else:
-            print("No XLSB files found in today's directory.")
-    else:
-        print("No directory found for today's date inside the current month and year directory.")
+    # Example usage of the DataFrames
+    print(df1.head())
+    print(df2.head())
+    print(df3.head())
+    print(df4.head())
 else:
-    print("No directory found for the current month and year.")
+    print("No Excel file found for today.")
