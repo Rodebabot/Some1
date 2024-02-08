@@ -1,5 +1,6 @@
 import os
 import chardet
+import pandas as pd
 
 # Function to detect encoding of a file
 def detect_encoding(file_path):
@@ -23,9 +24,11 @@ if files_today:
     encoding = detect_encoding(file_path)
     try:
         with open(file_path, 'r', encoding=encoding) as file:
-            content = file.read()
-        print("File content:")
-        print(content)
+            lines = file.readlines()
+        # Convert the content to DataFrame
+        df = pd.DataFrame(lines, columns=['Content'])
+        print("DataFrame from file content:")
+        print(df)
     except Exception as e:
         print("Error reading the file:", e)
 else:
