@@ -1,33 +1,14 @@
-import os
-import chardet
 import pandas as pd
 
-# Function to detect encoding of a file
-def detect_encoding(file_path):
-    with open(file_path, 'rb') as f:
-        rawdata = f.read()
-    result = chardet.detect(rawdata)
-    return result['encoding']
+# Sample DataFrame
+data = {
+    'b': ['value_b', 'value_b', 'value_b', 'value_b'],
+    'c': ['value_c', 'value_c', 'value_c', 'value_c'],
+    'd': ['value_d', 'value_d', 'value_d', 'value_d']
+}
+df = pd.DataFrame(data)
 
-# Specify the directory to search
-directory_path = "/path/to/directory"
+# Set column 'a' based on conditions
+df['a'] = df['b'].fillna(df['c']).fillna(df['d'])
 
-# List files in the directory
-files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
-
-# Filter files containing 'today' in the filename
-files_today = [f for f in files if 'today' in f.lower()]
-
-# Read the first matching file with encoding error handling
-if files_today:
-    file_path = os.path.join(directory_path, files_today[0])
-    encoding = detect_encoding(file_path)
-    try:
-        # Read the .dat file into a DataFrame
-        df = pd.read_csv(file_path, sep='\t', encoding=encoding, header=None)
-        print("DataFrame from .dat file:")
-        print(df)
-    except Exception as e:
-        print("Error reading the file:", e)
-else:
-    print("No file containing 'today' in the filename found in the directory.")
+print(df)
