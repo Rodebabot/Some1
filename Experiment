@@ -3,9 +3,14 @@ from pyxlsb import open_workbook
 import pandas as pd
 import datetime
 
-# Get yesterday's date
-previous_date = datetime.datetime.now() - datetime.timedelta(days=1)
-previous_date_str = previous_date.strftime("%d%m%Y")
+# Get the current date
+current_date = datetime.datetime.now().date()
+
+# Get the previous date
+previous_date = current_date - datetime.timedelta(days=1)
+
+# Format the previous date in "ddmmyyyy"
+previous_date_formatted = previous_date.strftime("%d%m%Y")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -14,7 +19,6 @@ parent_directory_path = "/path/to/parent/directory"
 directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
 
 # Filter directories based on current month and year
-current_month_year = datetime.datetime.now().strftime("%b %Y")
 matching_directories = [d for d in directories if current_month_year in d]
 
 # If there's a matching directory for the current month and year, navigate into it
@@ -22,30 +26,30 @@ if matching_directories:
     current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
     print("Found directory for current month and year:", current_month_directory)
     
-    # Get yesterday's date in the format "05 Feb"
-    previous_day_month = previous_date.strftime("%d %b")
+    # Get today's date in the format "05 Feb"
+    current_day_month = datetime.datetime.now().strftime("%d %b")
     
     # List directories inside the current month directory
     month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
 
-    # Filter directories based on yesterday's date
-    matching_day_directories = [d for d in month_directories if previous_day_month in d]
+    # Filter directories based on the previous date
+    matching_previous_directories = [d for d in month_directories if previous_date.strftime("%d %b") in d]
     
-    # If there's a matching directory for yesterday's date, navigate into it
-    if matching_day_directories:
-        previous_day_directory = os.path.join(current_month_directory, matching_day_directories[0])
-        print("Found previous day's directory:", previous_day_directory)
+    # If there's a matching directory for the previous date, navigate into it
+    if matching_previous_directories:
+        previous_directory = os.path.join(current_month_directory, matching_previous_directories[0])
+        print("Found previous directory:", previous_directory)
         
-        # List files inside the previous day's directory
-        files = [f for f in os.listdir(previous_day_directory) if os.path.isfile(os.path.join(previous_day_directory, f))]
+        # List files inside the previous directory
+        files = [f for f in os.listdir(previous_directory) if os.path.isfile(os.path.join(previous_directory, f))]
         
-        # Filter XLSB files with yesterday's date in the filename
-        xlsb_files_previous_day = [f for f in files if f.endswith('.xlsb') and previous_date_str in f]
+        # Filter XLSB files with the previous date in the filename
+        xlsb_files_previous = [f for f in files if f.endswith('.xlsb') and previous_date_formatted in f]
 
-        # If there's an XLSB file with yesterday's date in the filename, read it
-        if xlsb_files_previous_day:
-            xlsb_file_path = os.path.join(previous_day_directory, xlsb_files_previous_day[0])
-            print("Found XLSB file for the previous day:", xlsb_file_path)
+        # If there's an XLSB file with the previous date in the filename, read it
+        if xlsb_files_previous:
+            xlsb_file_path = os.path.join(previous_directory, xlsb_files_previous[0])
+            print("Found XLSB file for the previous date:", xlsb_file_path)
 
             # Initialize a list to store DataFrames for each sheet
             dfs = []
@@ -75,8 +79,8 @@ if matching_directories:
             print("DataFrame 4:")
             print(df4.head())
         else:
-            print("No XLSB file found for the previous day.")
+            print("No XLSB file found for the previous date.")
     else:
-        print("No directory found for the previous day's date inside the current month and year directory.")
+        print("No directory found for the previous date inside the current month and year directory.")
 else:
     print("No directory found for the current month and year.")
