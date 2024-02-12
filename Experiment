@@ -3,8 +3,8 @@ from pyxlsb import open_workbook
 import pandas as pd
 import datetime
 
-# Get the current date
-current_date = datetime.datetime.now().date()
+# Get current month and year
+current_month_year = datetime.datetime.now().strftime("%b %Y")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -20,34 +20,36 @@ if matching_directories:
     current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
     print("Found directory for current month and year:", current_month_directory)
     
-    # Get today's date in the format "05 Feb"
-    current_day_month = datetime.datetime.now().strftime("%d %b")
-    
     # List directories inside the current month directory
     month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-    
-    # Find the closest previous day directory
-    closest_previous_date_directory = None
-    for directory in sorted(month_directories, reverse=True):
-        directory_date = datetime.datetime.strptime(directory, "%d %b").date()
-        if directory_date < current_date:
-            closest_previous_date_directory = os.path.join(current_month_directory, directory)
-            break
-    
-    # If there's a closest previous day directory, navigate into it
-    if closest_previous_date_directory:
-        print("Found closest previous day directory:", closest_previous_date_directory)
-        
-        # List files inside the closest previous day directory
-        files = [f for f in os.listdir(closest_previous_date_directory) if os.path.isfile(os.path.join(closest_previous_date_directory, f))]
-        
-        # Filter XLSB files in the directory
-        xlsb_files = [f for f in files if f.endswith('.xlsb')]
 
-        # If there's an XLSB file in the directory, read it
+    # Sort directories based on their names (assuming the directory names are dates)
+    sorted_month_directories = sorted(month_directories, key=lambda x: datetime.datetime.strptime(x, "%d %b"), reverse=True)
+
+    # Get the latest past date directory (before today)
+    latest_past_date_directory = None
+    for directory in sorted_month_directories:
+        directory_date = datetime.datetime.strptime(directory, "%d %b")
+        if directory_date < datetime.datetime.now():
+            latest_past_date_directory = directory
+            break
+
+    # If there's a latest past date directory, navigate into it
+    if latest_past_date_directory:
+        past_date_directory = os.path.join(current_month_directory, latest_past_date_directory)
+        print("Found the latest past date directory:", past_date_directory)
+        
+        # List files inside the latest past date directory
+        files = [f for f in os.listdir(past_date_directory) if os.path.isfile(os.path.join(past_date_directory, f))]
+        
+        # Filter XLSB files in the latest past date directory where latest past date is present in filename
+        current_date = datetime.datetime.now().strftime("%d%m%Y")
+        xlsb_files = [f for f in files if f.endswith('.xlsb') and current_date in f]
+
+        # If there are XLSB files in the latest past date directory, pick the first one
         if xlsb_files:
-            xlsb_file_path = os.path.join(closest_previous_date_directory, xlsb_files[0])
-            print("Found XLSB file for the closest previous day:", xlsb_file_path)
+            xlsb_file_path = os.path.join(past_date_directory, xlsb_files[0])
+            print("Found XLSB file for the latest past date:", xlsb_file_path)
 
             # Initialize a list to store DataFrames for each sheet
             dfs = []
@@ -77,8 +79,8 @@ if matching_directories:
             print("DataFrame 4:")
             print(df4.head())
         else:
-            print("No XLSB file found in the closest previous day directory.")
+            print("No XLSB files found in the latest past date directory with the latest past date in the filename.")
     else:
-        print("No closest previous day directory found inside the current month and year directory.")
+        print("No past date directory found before today's date.")
 else:
     print("No directory found for the current month and year.")
