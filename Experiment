@@ -16,3 +16,21 @@ df.loc[df['ITEM REFERENCE 1'].str.contains('SEPT', na=False), 'New Reason_x'] = 
 
 # Display the DataFrame
 print(df)
+
+
+
+
+import pandas as pd
+from datetime import datetime
+
+# Assuming your DataFrame is named df
+# Replace 'New Reason_x' with the actual name of your column
+
+# Get today's date in the desired format (ddmm)
+today_date_ddmm = datetime.today().strftime("%d%m")
+
+# Fill blank values in 'New Reason_x' with the desired format (dd-mm-yyyy Timing Issue - ddmm)
+df['New Reason_x'].fillna(datetime.today().strftime("%d-%m-%Y") + " Timing Issue - " + today_date_ddmm, inplace=True)
+
+# Display the DataFrame
+print(df)
