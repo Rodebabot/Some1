@@ -3,14 +3,14 @@ import pandas as pd
 # Load the Excel file into a pandas DataFrame
 df = pd.read_excel("your_excel_file.xlsx")
 
-# Find the index where 'Original' is present in the first column
-original_index = df.index[df.iloc[:, 0] == 'Original']
+# Find all indices where 'Original' is present in the first column
+original_indices = df.index[df.iloc[:, 0] == 'Original']
 
-# Delete the rows above 'Original' if found
-if len(original_index) > 0:
-    delete_index = original_index[0] - 4
+# Iterate through each occurrence of 'Original' and delete the rows above
+for original_index in original_indices:
+    delete_index = original_index - 4
     if delete_index >= 0:
-        df.drop(range(delete_index, original_index[0]), inplace=True)
+        df.drop(range(delete_index, original_index), inplace=True)
 
 # Save the modified DataFrame back to Excel
 df.to_excel("modified_excel_file.xlsx", index=False)
