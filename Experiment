@@ -5,6 +5,7 @@ import datetime
 
 # Get current month and year
 current_month_year = datetime.datetime.now().strftime("%b %Y")
+today_date = datetime.datetime.now().strftime("%d %b")
 
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
@@ -30,7 +31,7 @@ if matching_directories:
     latest_past_date_directory = None
     for directory in sorted_month_directories:
         directory_date = datetime.datetime.strptime(directory, "%d %b")
-        if directory_date < datetime.datetime.now():
+        if directory_date < datetime.datetime.now() and directory_date.strftime("%d %b") != today_date:
             latest_past_date_directory = directory
             break
 
@@ -42,9 +43,8 @@ if matching_directories:
         # List files inside the latest past date directory
         files = [f for f in os.listdir(past_date_directory) if os.path.isfile(os.path.join(past_date_directory, f))]
         
-        # Filter XLSB files in the latest past date directory where latest past date is present in filename
-        current_date = datetime.datetime.now().strftime("%d%m%Y")
-        xlsb_files = [f for f in files if f.endswith('.xlsb') and current_date in f]
+        # Filter XLSB files in the latest past date directory
+        xlsb_files = [f for f in files if f.endswith('.xlsb')]
 
         # If there are XLSB files in the latest past date directory, pick the first one
         if xlsb_files:
@@ -79,7 +79,7 @@ if matching_directories:
             print("DataFrame 4:")
             print(df4.head())
         else:
-            print("No XLSB files found in the latest past date directory with the latest past date in the filename.")
+            print("No XLSB files found in the latest past date directory.")
     else:
         print("No past date directory found before today's date.")
 else:
