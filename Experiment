@@ -1,86 +1,17 @@
-import os
-from pyxlsb import open_workbook
 import pandas as pd
-import datetime
 
-# Get current month and year
-current_month_year = datetime.datetime.now().strftime("%b %Y")
-today_date = datetime.datetime.now().strftime("%d %b")
+# Assuming your DataFrame is named df
+# Replace 'New Reason_x' with the actual name of your column containing the phrases
+# Replace 'Trade Splitting' and 'Timing Issue' with the specific phrases you want to check for
 
-# Specify the parent directory to search
-parent_directory_path = "/path/to/parent/directory"
+# Replace cells containing 'Trade Splitting' or 'Timing Issue' with empty strings
+df.loc[df['New Reason_x'].str.contains('Trade Splitting|Timing Issue', na=False), 'New Reason_x'] = ''
 
-# List directories in the parent directory
-directories = [d for d in os.listdir(parent_directory_path) if os.path.isdir(os.path.join(parent_directory_path, d))]
+# If you want to replace with NaN instead of empty strings, use:
+# df.loc[df['New Reason_x'].str.contains('Trade Splitting|Timing Issue', na=False), 'New Reason_x'] = pd.NA
 
-# Filter directories based on current month and year
-matching_directories = [d for d in directories if current_month_year in d]
+# If 'New Reason_x' contains phrases as part of a longer string, use regex word boundaries:
+# df.loc[df['New Reason_x'].str.contains(r'\bTrade Splitting\b|\bTiming Issue\b', na=False), 'New Reason_x'] = ''
 
-# If there's a matching directory for the current month and year, navigate into it
-if matching_directories:
-    current_month_directory = os.path.join(parent_directory_path, matching_directories[0])
-    print("Found directory for current month and year:", current_month_directory)
-    
-    # List directories inside the current month directory
-    month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-
-    # Sort directories based on their names (assuming the directory names are dates)
-    sorted_month_directories = sorted(month_directories, key=lambda x: datetime.datetime.strptime(x, "%d %b"), reverse=True)
-
-    # Get the latest past date directory (before today)
-    latest_past_date_directory = None
-    for directory in sorted_month_directories:
-        directory_date = datetime.datetime.strptime(directory, "%d %b")
-        if directory_date < datetime.datetime.now() and directory_date.strftime("%d %b") != today_date:
-            latest_past_date_directory = directory
-            break
-
-    # If there's a latest past date directory, navigate into it
-    if latest_past_date_directory:
-        past_date_directory = os.path.join(current_month_directory, latest_past_date_directory)
-        print("Found the latest past date directory:", past_date_directory)
-        
-        # List files inside the latest past date directory
-        files = [f for f in os.listdir(past_date_directory) if os.path.isfile(os.path.join(past_date_directory, f))]
-        
-        # Filter XLSB files in the latest past date directory
-        xlsb_files = [f for f in files if f.endswith('.xlsb')]
-
-        # If there are XLSB files in the latest past date directory, pick the first one
-        if xlsb_files:
-            xlsb_file_path = os.path.join(past_date_directory, xlsb_files[0])
-            print("Found XLSB file for the latest past date:", xlsb_file_path)
-
-            # Initialize a list to store DataFrames for each sheet
-            dfs = []
-
-            # Open the XLSB file
-            with open_workbook(xlsb_file_path) as wb:
-                # Iterate over sheets in the workbook
-                for sheetname in wb.sheets:
-                    # Read each sheet into a DataFrame
-                    with wb.get_sheet(sheetname) as sheet:
-                        data = []
-                        for row in sheet.rows():
-                            data.append([item.v for item in row])
-                        df = pd.DataFrame(data[1:], columns=data[0])  # Assuming the first row is headers
-                        dfs.append(df)
-
-            # Store each sheet in a separate DataFrame
-            df1, df2, df3, df4 = dfs
-
-            # Example usage of the DataFrames
-            print("DataFrame 1:")
-            print(df1.head())
-            print("DataFrame 2:")
-            print(df2.head())
-            print("DataFrame 3:")
-            print(df3.head())
-            print("DataFrame 4:")
-            print(df4.head())
-        else:
-            print("No XLSB files found in the latest past date directory.")
-    else:
-        print("No past date directory found before today's date.")
-else:
-    print("No directory found for the current month and year.")
+# Display the DataFrame
+print(df)
