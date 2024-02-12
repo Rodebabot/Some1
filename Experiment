@@ -1,14 +1,16 @@
 import pandas as pd
 
-# Sample DataFrame
-data = {
-    'b': ['value_b', 'value_b', 'value_b', 'value_b'],
-    'c': ['value_c', 'value_c', 'value_c', 'value_c'],
-    'd': ['value_d', 'value_d', 'value_d', 'value_d']
-}
-df = pd.DataFrame(data)
+# Load the Excel file into a pandas DataFrame
+df = pd.read_excel("your_excel_file.xlsx")
 
-# Set column 'a' based on conditions
-df['a'] = df['b'].fillna(df['c']).fillna(df['d'])
+# Find the index where 'Original' is present in the first column
+original_index = df.index[df.iloc[:, 0] == 'Original']
 
-print(df)
+# Delete the rows above 'Original' if found
+if len(original_index) > 0:
+    delete_index = original_index[0] - 4
+    if delete_index >= 0:
+        df.drop(range(delete_index, original_index[0]), inplace=True)
+
+# Save the modified DataFrame back to Excel
+df.to_excel("modified_excel_file.xlsx", index=False)
