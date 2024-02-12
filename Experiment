@@ -1,17 +1,18 @@
 import pandas as pd
+from datetime import datetime
 
 # Assuming your DataFrame is named df
-# Replace 'New Reason_x' with the actual name of your column containing the phrases
-# Replace 'Trade Splitting' and 'Timing Issue' with the specific phrases you want to check for
+# Replace 'ITEM REFERENCE 1' with the actual name of your column
+# Replace 'New Reason_x' with the actual name of your column
+# Replace 'SEPT' with the specific phrase you want to check for
 
-# Replace cells containing 'Trade Splitting' or 'Timing Issue' with empty strings
-df.loc[df['New Reason_x'].str.contains('Trade Splitting|Timing Issue', na=False), 'New Reason_x'] = ''
+# Get today's date in the desired format (ddmm)
+today_date = datetime.now().strftime("%d%m")
 
-# If you want to replace with NaN instead of empty strings, use:
-# df.loc[df['New Reason_x'].str.contains('Trade Splitting|Timing Issue', na=False), 'New Reason_x'] = pd.NA
-
-# If 'New Reason_x' contains phrases as part of a longer string, use regex word boundaries:
-# df.loc[df['New Reason_x'].str.contains(r'\bTrade Splitting\b|\bTiming Issue\b', na=False), 'New Reason_x'] = ''
+# Replace 'New Reason_x' where 'ITEM REFERENCE 1' contains 'SEPT' with the desired format
+df.loc[df['ITEM REFERENCE 1'].str.contains('SEPT', na=False), 'New Reason_x'] = (
+    "whwhajajajhshsgsh shshdgshjsjsh shjdjdjhdgdhdhdhdggdhdhdhdhdhhdhdhdh dhhdudjdbdhdhdh shhdjjdjdjdjjdjdjdjdj ! Ghejejejhh : hehehjejej hddhdheheh [" + today_date + "]"
+)
 
 # Display the DataFrame
 print(df)
