@@ -6,12 +6,6 @@ import datetime
 # Get the current date
 current_date = datetime.datetime.now().date()
 
-# Get the previous date
-previous_date = current_date - datetime.timedelta(days=1)
-
-# Format the previous date in "ddmmyyyy"
-previous_date_formatted = previous_date.strftime("%d%m%Y")
-
 # Specify the parent directory to search
 parent_directory_path = "/path/to/parent/directory"
 
@@ -31,25 +25,29 @@ if matching_directories:
     
     # List directories inside the current month directory
     month_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-
-    # Filter directories based on the previous date
-    matching_previous_directories = [d for d in month_directories if previous_date.strftime("%d %b") in d]
     
-    # If there's a matching directory for the previous date, navigate into it
-    if matching_previous_directories:
-        previous_directory = os.path.join(current_month_directory, matching_previous_directories[0])
-        print("Found previous directory:", previous_directory)
+    # Find the closest previous day directory
+    closest_previous_date_directory = None
+    for directory in sorted(month_directories, reverse=True):
+        directory_date = datetime.datetime.strptime(directory, "%d %b").date()
+        if directory_date < current_date:
+            closest_previous_date_directory = os.path.join(current_month_directory, directory)
+            break
+    
+    # If there's a closest previous day directory, navigate into it
+    if closest_previous_date_directory:
+        print("Found closest previous day directory:", closest_previous_date_directory)
         
-        # List files inside the previous directory
-        files = [f for f in os.listdir(previous_directory) if os.path.isfile(os.path.join(previous_directory, f))]
+        # List files inside the closest previous day directory
+        files = [f for f in os.listdir(closest_previous_date_directory) if os.path.isfile(os.path.join(closest_previous_date_directory, f))]
         
-        # Filter XLSB files with the previous date in the filename
-        xlsb_files_previous = [f for f in files if f.endswith('.xlsb') and previous_date_formatted in f]
+        # Filter XLSB files in the directory
+        xlsb_files = [f for f in files if f.endswith('.xlsb')]
 
-        # If there's an XLSB file with the previous date in the filename, read it
-        if xlsb_files_previous:
-            xlsb_file_path = os.path.join(previous_directory, xlsb_files_previous[0])
-            print("Found XLSB file for the previous date:", xlsb_file_path)
+        # If there's an XLSB file in the directory, read it
+        if xlsb_files:
+            xlsb_file_path = os.path.join(closest_previous_date_directory, xlsb_files[0])
+            print("Found XLSB file for the closest previous day:", xlsb_file_path)
 
             # Initialize a list to store DataFrames for each sheet
             dfs = []
@@ -79,8 +77,8 @@ if matching_directories:
             print("DataFrame 4:")
             print(df4.head())
         else:
-            print("No XLSB file found for the previous date.")
+            print("No XLSB file found in the closest previous day directory.")
     else:
-        print("No directory found for the previous date inside the current month and year directory.")
+        print("No closest previous day directory found inside the current month and year directory.")
 else:
     print("No directory found for the current month and year.")
