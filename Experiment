@@ -2,15 +2,18 @@ import zipfile
 import os
 import shutil
 
-# Get the list of files in the current directory
-files = os.listdir()
+# Specify the directory where the script should look for the zip file
+directory_path = '/path/to/directory'
+
+# Get the list of files in the specified directory
+files = os.listdir(directory_path)
 
 # Find the zip file in the directory
 zip_files = [file for file in files if file.endswith('.zip')]
 
 # Ensure there is only one zip file in the directory
 if len(zip_files) == 1:
-    zip_file = zip_files[0]
+    zip_file = os.path.join(directory_path, zip_files[0])
 
     # Open the zip file
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
