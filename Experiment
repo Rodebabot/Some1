@@ -3,14 +3,12 @@ import pandas as pd
 # Create a sample DataFrame
 data = {'Name': ['Alice', 'Alice', 'Alice', 'Alice', 'Alice', 'Bob', 'Bob', 'Bob', 'Bob', 'Bob'],
         'Number1': [3, 6, 4, 2, 7, 2, 3, 5, 8, 4],
-        'Number2': [4, 2, 6, 8, 3, 5, 2, 4, 1, 6],
-        'Day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
-                'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}
+        'Number2': [4, 2, 6, 8, 3, 5, 2, 4, 1, 6]}
 
 df = pd.DataFrame(data)
 
 # Function to check if the corresponding number2 exceeds 5 for the max number1
-def check_exceed(num1, num2, day):
+def check_exceed(num1, num2):
     max_num1 = max(num1)
     max_index = num1.idxmax()
     if num2[max_index] > 5:
@@ -22,7 +20,7 @@ max_num1_indices = df.groupby('Name')['Number1'].idxmax()
 filtered_df = df.loc[max_num1_indices]
 
 # Apply the function to create the new column
-filtered_df['Exceeding_Day'] = filtered_df.apply(lambda x: check_exceed(x['Number1'], x['Number2'], x['Day']), axis=1)
+filtered_df['Exceeding_Day'] = filtered_df.apply(lambda x: check_exceed(x['Number1'], x['Number2']), axis=1)
 
 # Merge back the filtered DataFrame with the original DataFrame to include all rows
 df = pd.merge(df, filtered_df[['Name', 'Exceeding_Day']], on='Name', how='left')
