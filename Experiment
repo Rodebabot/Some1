@@ -2,18 +2,52 @@ import zipfile
 import os
 import shutil
 
-# Open the zip file
-with zipfile.ZipFile('example.zip', 'r') as zip_ref:
-    # Extract the contents of the zip file to a temporary directory
-    with zipfile.ZipFile(zip_ref.open(zip_ref.namelist()[0]), 'r') as inner_zip_ref:
-        # Extract the contents of the inner zip file to a temporary directory
-        with inner_zip_ref.open(inner_zip_ref.namelist()[0]) as inner_file:
-            with open('temp.xlsx', 'wb') as f:
-                shutil.copyfileobj(inner_file, f)
+# Get the list of files in the current directory
+files = os.listdir()
 
-# Specify the desired location to save the Excel file
-save_location = 'specified_location/excel_file.xlsx'
+# Find the zip file in the directory
+zip_files = [file for file in files if file.endswith('.zip')]
 
-# Move the Excel file to the specified location
-shutil.move('temp.xlsx', save_location)
-print(f"Excel file saved to: {save_location}")
+# Ensure there is only one zip file in the directory
+if len(zip_files) == 1:
+    zip_file = zip_files[0]
+
+    # Open the zip file
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        # Get the list of files in the zip archive
+        zip_files_list = zip_ref.namelist()
+
+        # Ensure there is only one directory in the zip archive
+        if len(zip_files_list) == 1 and zip_files_list[0].endswith('/'):
+            # Extract the contents of the zip file to a temporary directory
+            zip_ref.extractall(path='temp_dir')
+
+            # Get the list of files in the extracted directory
+            extracted_files = os.listdir('temp_dir')
+
+            # Ensure there is only one directory in the extracted directory
+            if len(extracted_files) == 1 and os.path.isdir(os.path.join('temp_dir', extracted_files[0])):
+                nested_dir = extracted_files[0]
+
+                # Get the list of files in the nested directory
+                nested_files = os.listdir(os.path.join('temp_dir', nested_dir))
+
+                # Ensure there is only one Excel file in the nested directory
+                excel_files = [file for file in nested_files if file.endswith('.xlsx')]
+                if len(excel_files) == 1:
+                    excel_file = excel_files[0]
+
+                    # Specify the desired location to save the Excel file
+                    save_location = 'specified_location/excel_file.xlsx'
+
+                    # Move the Excel file to the specified location
+                    shutil.move(os.path.join('temp_dir', nested_dir, excel_file), save_location)
+                    print(f"Excel file saved to: {save_location}")
+                else:
+                    print("No or multiple Excel files found inside the nested directory in the zip archive.")
+            else:
+                print("No nested directory found inside the zip archive.")
+        else:
+            print("No or multiple directories found inside the zip archive.")
+else:
+    print("No or multiple zip files found in the directory.")
