@@ -5,18 +5,28 @@ import shutil
 # Specify the directory where the script should look for the zip file
 directory_path = '/path/to/directory'
 
-# Get the list of files in the specified directory
-files = os.listdir(directory_path)
+# Get the list of files and folders in the specified directory
+contents = os.listdir(directory_path)
 
-# Find the zip file in the directory
-zip_files = [file for file in files if file.endswith('.zip')]
+# Find the zip file or folder in the directory
+zip_item = None
+for item in contents:
+    if item.endswith('.zip'):
+        zip_item = item
+        break
 
-# Ensure there is only one zip file in the directory
-if len(zip_files) == 1:
-    zip_file = os.path.join(directory_path, zip_files[0])
+# Ensure a zip file or folder was found in the directory
+if zip_item is not None:
+    zip_path = os.path.join(directory_path, zip_item)
+
+    # If zip_item is a folder, find the zip file inside the folder
+    if os.path.isdir(zip_path):
+        zip_files = [file for file in os.listdir(zip_path) if file.endswith('.zip')]
+        if len(zip_files) == 1:
+            zip_path = os.path.join(zip_path, zip_files[0])
 
     # Open the zip file
-    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         # Get the list of files in the zip archive
         zip_files_list = zip_ref.namelist()
 
@@ -53,4 +63,4 @@ if len(zip_files) == 1:
         else:
             print("No or multiple directories found inside the zip archive.")
 else:
-    print("No or multiple zip files found in the directory.")
+    print("No zip file or folder found in the directory.")
