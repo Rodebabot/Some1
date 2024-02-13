@@ -1,36 +1,30 @@
 import pandas as pd
-from datetime import datetime
 
-# Assuming your DataFrame is named df
-# Replace 'ITEM REFERENCE 1' with the actual name of your column
-# Replace 'New Reason_x' with the actual name of your column
-# Replace 'SEPT' with the specific phrase you want to check for
+# Create a sample DataFrame
+data = {'Name': ['Alice', 'Alice', 'Alice', 'Alice', 'Alice', 'Bob', 'Bob', 'Bob', 'Bob', 'Bob'],
+        'Number1': [3, 6, 4, 2, 7, 2, 3, 5, 8, 4],
+        'Number2': [4, 2, 6, 8, 3, 5, 2, 4, 1, 6],
+        'Day': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}
 
-# Get today's date in the desired format (ddmm)
-today_date = datetime.now().strftime("%d%m")
+df = pd.DataFrame(data)
 
-# Replace 'New Reason_x' where 'ITEM REFERENCE 1' contains 'SEPT' with the desired format
-df.loc[df['ITEM REFERENCE 1'].str.contains('SEPT', na=False), 'New Reason_x'] = (
-    "whwhajajajhshsgsh shshdgshjsjsh shjdjdjhdgdhdhdhdggdhdhdhdhdhhdhdhdh dhhdudjdbdhdhdh shhdjjdjdjdjjdjdjdjdj ! Ghejejejhh : hehehjejej hddhdheheh [" + today_date + "]"
-)
+# Function to check if the corresponding number2 exceeds 5 for the max number1
+def check_exceed(num1, num2, day):
+    max_num1 = max(num1)
+    max_index = num1.idxmax()
+    if num2[max_index] > 5:
+        return 'exceeds'
+    return None
 
-# Display the DataFrame
-print(df)
+# Filter the DataFrame to include only rows where Number1 is the maximum for each name
+max_num1_indices = df.groupby('Name')['Number1'].idxmax()
+filtered_df = df.loc[max_num1_indices]
 
+# Apply the function to create the new column
+filtered_df['Exceeding_Day'] = filtered_df.apply(lambda x: check_exceed(x['Number1'], x['Number2'], x['Day']), axis=1)
 
+# Merge back the filtered DataFrame with the original DataFrame to include all rows
+df = pd.merge(df, filtered_df[['Name', 'Exceeding_Day']], on='Name', how='left')
 
-
-import pandas as pd
-from datetime import datetime
-
-# Assuming your DataFrame is named df
-# Replace 'New Reason_x' with the actual name of your column
-
-# Get today's date in the desired format (ddmm)
-today_date_ddmm = datetime.today().strftime("%d%m")
-
-# Fill blank values in 'New Reason_x' with the desired format (dd-mm-yyyy Timing Issue - ddmm)
-df['New Reason_x'].fillna(datetime.today().strftime("%d-%m-%Y") + " Timing Issue - " + today_date_ddmm, inplace=True)
-
-# Display the DataFrame
 print(df)
