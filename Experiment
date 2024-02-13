@@ -1,66 +1,27 @@
-import zipfile
 import os
-import shutil
+import zipfile
 
-# Specify the directory where the script should look for the zip file
+# Specify the directory where the .zip folder is located
 directory_path = '/path/to/directory'
 
-# Get the list of files and folders in the specified directory
-contents = os.listdir(directory_path)
+# Get the list of files in the specified directory
+files = os.listdir(directory_path)
 
-# Find the zip file or folder in the directory
-zip_item = None
-for item in contents:
-    if item.endswith('.zip'):
-        zip_item = item
-        break
+# Find the .zip folder in the directory
+zip_folders = [file for file in files if file.endswith('.zip')]
 
-# Ensure a zip file or folder was found in the directory
-if zip_item is not None:
-    zip_path = os.path.join(directory_path, zip_item)
+# Ensure there is only one .zip folder in the directory
+if len(zip_folders) == 1:
+    zip_folder = os.path.join(directory_path, zip_folders[0])
 
-    # If zip_item is a folder, find the zip file inside the folder
-    if os.path.isdir(zip_path):
-        zip_files = [file for file in os.listdir(zip_path) if file.endswith('.zip')]
-        if len(zip_files) == 1:
-            zip_path = os.path.join(zip_path, zip_files[0])
+    # Create a directory to extract the contents of the .zip folder
+    extraction_path = os.path.join(directory_path, 'extracted_folder')
+    os.makedirs(extraction_path, exist_ok=True)
 
-    # Open the zip file
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        # Get the list of files in the zip archive
-        zip_files_list = zip_ref.namelist()
-
-        # Ensure there is only one directory in the zip archive
-        if len(zip_files_list) == 1 and zip_files_list[0].endswith('/'):
-            # Extract the contents of the zip file to a temporary directory
-            zip_ref.extractall(path='temp_dir')
-
-            # Get the list of files in the extracted directory
-            extracted_files = os.listdir('temp_dir')
-
-            # Ensure there is only one directory in the extracted directory
-            if len(extracted_files) == 1 and os.path.isdir(os.path.join('temp_dir', extracted_files[0])):
-                nested_dir = extracted_files[0]
-
-                # Get the list of files in the nested directory
-                nested_files = os.listdir(os.path.join('temp_dir', nested_dir))
-
-                # Ensure there is only one Excel file in the nested directory
-                excel_files = [file for file in nested_files if file.endswith('.xlsx')]
-                if len(excel_files) == 1:
-                    excel_file = excel_files[0]
-
-                    # Specify the desired location to save the Excel file
-                    save_location = 'specified_location/excel_file.xlsx'
-
-                    # Move the Excel file to the specified location
-                    shutil.move(os.path.join('temp_dir', nested_dir, excel_file), save_location)
-                    print(f"Excel file saved to: {save_location}")
-                else:
-                    print("No or multiple Excel files found inside the nested directory in the zip archive.")
-            else:
-                print("No nested directory found inside the zip archive.")
-        else:
-            print("No or multiple directories found inside the zip archive.")
+    # Extract the contents of the .zip folder
+    with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
+        zip_ref.extractall(extraction_path)
+    
+    print(f"Contents of {zip_folder} extracted to {extraction_path}")
 else:
-    print("No zip file or folder found in the directory.")
+    print("No or multiple .zip folders found in the directory.")
