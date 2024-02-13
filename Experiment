@@ -1,28 +1,13 @@
 import pandas as pd
 
-# Create a sample DataFrame
-data = {'Name': ['Alice', 'Alice', 'Alice', 'Alice', 'Alice', 'Bob', 'Bob', 'Bob', 'Bob', 'Bob'],
-        'Number1': [3, 6, 4, 2, 7, 2, 3, 5, 8, 4],
-        'Number2': [4, 2, 6, 8, 3, 5, 2, 4, 1, 6]}
+# Assuming df is your dataframe with columns 'name' and 'number'
+# Function to mark rows with maximum number for each name
+def mark_max(rows):
+    max_number = rows['number'].max()
+    rows['is_max'] = rows['number'] == max_number
+    return rows
 
-df = pd.DataFrame(data)
+# Apply the function to the dataframe grouped by name
+df_marked = df.groupby('name').apply(mark_max)
 
-# Function to check if the corresponding number2 exceeds 5 for the max number1
-def check_exceed(num1, num2):
-    max_num1 = max(num1)
-    max_index = num1.idxmax()
-    if num2[max_index] > 5:
-        return 'exceeds'
-    return None
-
-# Filter the DataFrame to include only rows where Number1 is the maximum for each name
-max_num1_indices = df.groupby('Name')['Number1'].idxmax()
-filtered_df = df.loc[max_num1_indices]
-
-# Apply the function to create the new column
-filtered_df['Exceeding_Day'] = filtered_df.apply(lambda x: check_exceed(x['Number1'], x['Number2']), axis=1)
-
-# Merge back the filtered DataFrame with the original DataFrame to include all rows
-df = pd.merge(df, filtered_df[['Name', 'Exceeding_Day']], on='Name', how='left')
-
-print(df)
+print(df_marked)
