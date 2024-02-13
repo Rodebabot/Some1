@@ -1,11 +1,19 @@
-# Assuming df is your dataframe with columns 'B' and 'C'
-# Create a new column and initialize with empty strings
-df['exceeds'] = ''
+import zipfile
+import os
+import shutil
 
-# Filter rows where B is True
-b_true_rows = df[df['B'] == True]
+# Open the zip file
+with zipfile.ZipFile('example.zip', 'r') as zip_ref:
+    # Extract the contents of the zip file to a temporary directory
+    with zipfile.ZipFile(zip_ref.open(zip_ref.namelist()[0]), 'r') as inner_zip_ref:
+        # Extract the contents of the inner zip file to a temporary directory
+        with inner_zip_ref.open(inner_zip_ref.namelist()[0]) as inner_file:
+            with open('temp.xlsx', 'wb') as f:
+                shutil.copyfileobj(inner_file, f)
 
-# Check if values in column C exceed 5 and mark the rows accordingly
-b_true_rows.loc[b_true_rows['C'] > 5, 'exceeds'] = 'exceeds'
+# Specify the desired location to save the Excel file
+save_location = 'specified_location/excel_file.xlsx'
 
-print(b_true_rows)
+# Move the Excel file to the specified location
+shutil.move('temp.xlsx', save_location)
+print(f"Excel file saved to: {save_location}")
