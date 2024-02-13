@@ -1,27 +1,11 @@
-import os
-import zipfile
+import pandas as pd
 
-# Specify the directory where the .zip folder is located
-directory_path = '/path/to/directory'
+# Load your existing Excel file
+existing_excel_file = "path_to_your_existing_excel_file.xlsx"
+existing_excel = pd.ExcelWriter(existing_excel_file, engine='openpyxl')
 
-# Get the list of files in the specified directory
-files = os.listdir(directory_path)
+# Add df2 as the next sheet
+df2.to_excel(existing_excel, sheet_name='Sheet2')
 
-# Find the .zip folder in the directory
-zip_folders = [file for file in files if file.endswith('.zip')]
-
-# Ensure there is only one .zip folder in the directory
-if len(zip_folders) == 1:
-    zip_folder = os.path.join(directory_path, zip_folders[0])
-
-    # Create a directory to extract the contents of the .zip folder
-    extraction_path = os.path.join(directory_path, 'extracted_folder')
-    os.makedirs(extraction_path, exist_ok=True)
-
-    # Extract the contents of the .zip folder
-    with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
-        zip_ref.extractall(extraction_path)
-    
-    print(f"Contents of {zip_folder} extracted to {extraction_path}")
-else:
-    print("No or multiple .zip folders found in the directory.")
+# Save the changes
+existing_excel.save()
