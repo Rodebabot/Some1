@@ -1,13 +1,11 @@
-import pandas as pd
+# Assuming df is your dataframe with columns 'B' and 'C'
+# Create a new column and initialize with empty strings
+df['exceeds'] = ''
 
-# Assuming df is your dataframe with columns 'name' and 'number'
-# Function to mark rows with maximum number for each name
-def mark_max(rows):
-    max_number = rows['number'].max()
-    rows['is_max'] = rows['number'] == max_number
-    return rows
+# Filter rows where B is True
+b_true_rows = df[df['B'] == True]
 
-# Apply the function to the dataframe grouped by name
-df_marked = df.groupby('name').apply(mark_max)
+# Check if values in column C exceed 5 and mark the rows accordingly
+b_true_rows.loc[b_true_rows['C'] > 5, 'exceeds'] = 'exceeds'
 
-print(df_marked)
+print(b_true_rows)
