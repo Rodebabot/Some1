@@ -1,32 +1,12 @@
 import pandas as pd
-from datetime import datetime, timedelta
 
-# Assuming you have two dataframes: df1 and df2
-# df1 contains columns: ['Name', 'Number']
-# df2 contains columns: ['Name', 'Number']
+# Assuming you have a dataframe df with columns 'team' and 'capacity'
 
 # Sample data
-# df1 = pd.read_excel("path_to_your_excel_file_1.xlsx")
-# df2 = pd.read_excel("path_to_your_excel_file_2.xlsx")
+# df = pd.read_excel("path_to_your_excel_file.xlsx")
 
-# Merge the two dataframes on 'Name'
-merged_df = pd.merge(df1, df2, on='Name', suffixes=('_df1', '_df2'))
+# Extracting required columns and creating the new column
+new_df = df[['team', 'capacity']].copy()
+new_df['new_capacity'] = df['capacity'].apply(lambda x: x if x > 0 else 2400)
 
-# Calculate the difference and add 'Capacity Left' column
-merged_df['Capacity Left'] = merged_df['Number_df1'] - merged_df['Number_df2']
-
-# Tag negative results with 'Under' in a new column
-merged_df['Status'] = 'Normal'
-merged_df.loc[merged_df['Capacity Left'] < 0, 'Status'] = 'Under'
-
-# Add column for most recent last Monday's date or today's date if Monday
-today = datetime.today()
-last_monday = today - timedelta(days=today.weekday())
-if today.weekday() == 0:  # If today is Monday
-    recent_monday = today
-else:
-    recent_monday = last_monday
-
-merged_df['Date'] = recent_monday
-
-print(merged_df)
+print(new_df)
