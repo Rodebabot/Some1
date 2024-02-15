@@ -1,37 +1,38 @@
 import os
 import shutil
+import datetime
 
-# Function to recursively search for an Excel file inside the specified directory structure
-def find_excel_file(directory):
-    # Get the list of directories inside the specified directory
-    subdirectories = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d))]
-    
-    # Ensure there is only one directory inside the specified directory
-    if len(subdirectories) == 1:
-        # Get the path of the subdirectory
-        subdirectory_path = os.path.join(directory, subdirectories[0])
-        
-        # Recursively search for an Excel file inside the subdirectory
-        for root, dirs, files in os.walk(subdirectory_path):
-            # Check if an Excel file is found
-            for file in files:
-                if file.endswith('.xlsx'):
-                    return os.path.join(root, file)
-    return None
+# Get today's date
+today_date = datetime.datetime.now().strftime('%d %b')
 
-# Specify the first parent directory location
+# Specify the parent directory path
 parent_directory_path = '/path/to/parent_directory'
 
-# Find the Excel file inside the specified directory structure
-excel_file_path = find_excel_file(parent_directory_path)
+# Find the directory with recent Month and year naming like 'Feb 2024' in the specified parent directory
+recent_month_year_directory = None
+for directory_name in os.listdir(parent_directory_path):
+    if os.path.isdir(os.path.join(parent_directory_path, directory_name)):
+        if directory_name == datetime.datetime.now().strftime('%b %Y'):
+            recent_month_year_directory = os.path.join(parent_directory_path, directory_name)
+            break
 
-# Check if an Excel file is found
-if excel_file_path:
-    # Specify the desired location to save the Excel file
-    save_location = 'specified_location/excel_file.xlsx'
-
-    # Move the Excel file to the specified location
-    shutil.move(excel_file_path, save_location)
-    print(f"Excel file saved to: {save_location}")
+# Create a directory with today's date inside the recent Month and year directory
+if recent_month_year_directory:
+    today_directory_path = os.path.join(recent_month_year_directory, today_date)
+    os.makedirs(today_directory_path)
+    print(f"Directory created: {today_directory_path}")
 else:
-    print("No Excel file found in the specified directory structure.")
+    print("No directory found with recent Month and year naming.")
+
+# Specify the location of the Excel file to move
+excel_file_location = 'specified_location/excel_file.xlsx'
+
+# Move the Excel file to the newly created directory
+if recent_month_year_directory:
+    if os.path.exists(excel_file_location):
+        shutil.move(excel_file_location, today_directory_path)
+        print(f"Excel file moved to: {today_directory_path}")
+    else:
+        print("Excel file not found at the specified location.")
+else:
+    print("Unable to move the Excel file as the recent Month and year directory is not found.")
