@@ -1,28 +1,18 @@
 import os
-import datetime
 
 # Specify the directory containing the .dat file
 directory_path = '/path/to/directory'
-
-# Get today's date
-today = datetime.datetime.now()
-
-# Get yesterday's date
-yesterday = today - datetime.timedelta(days=1)
-
-# Format yesterday's date as required for the filename
-yesterday_filename = yesterday.strftime("%Y-%m-%d") + ".dat"
 
 # Iterate over the files in the directory
 for filename in os.listdir(directory_path):
     if filename.endswith('.dat'):
         dat_file_path = os.path.join(directory_path, filename)
-        yesterday_dat_file_path = os.path.join(directory_path, yesterday_filename)
+        yesterday_dat_file_path = os.path.join(directory_path, 'Yesterday.dat')
 
-        # Rename the .dat file to yesterday.dat
+        # Rename the .dat file to Yesterday.dat
         os.rename(dat_file_path, yesterday_dat_file_path)
 
-        print(f"{filename} renamed to yesterday.dat successfully.")
+        print(f"{filename} renamed to Yesterday.dat successfully.")
         break
 else:
     print("No .dat file found in the specified directory.")
