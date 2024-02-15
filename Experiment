@@ -1,12 +1,37 @@
-import pandas as pd
+import os
+import shutil
 
-# Assuming you have a dataframe df with columns 'team' and 'capacity'
+# Function to recursively search for an Excel file inside the specified directory structure
+def find_excel_file(directory):
+    # Get the list of directories inside the specified directory
+    subdirectories = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d))]
+    
+    # Ensure there is only one directory inside the specified directory
+    if len(subdirectories) == 1:
+        # Get the path of the subdirectory
+        subdirectory_path = os.path.join(directory, subdirectories[0])
+        
+        # Recursively search for an Excel file inside the subdirectory
+        for root, dirs, files in os.walk(subdirectory_path):
+            # Check if an Excel file is found
+            for file in files:
+                if file.endswith('.xlsx'):
+                    return os.path.join(root, file)
+    return None
 
-# Sample data
-# df = pd.read_excel("path_to_your_excel_file.xlsx")
+# Specify the first parent directory location
+parent_directory_path = '/path/to/parent_directory'
 
-# Extracting required columns and creating the new column
-new_df = df[['team', 'capacity']].copy()
-new_df['new_capacity'] = df['capacity'].apply(lambda x: x if x > 0 else 2400)
+# Find the Excel file inside the specified directory structure
+excel_file_path = find_excel_file(parent_directory_path)
 
-print(new_df)
+# Check if an Excel file is found
+if excel_file_path:
+    # Specify the desired location to save the Excel file
+    save_location = 'specified_location/excel_file.xlsx'
+
+    # Move the Excel file to the specified location
+    shutil.move(excel_file_path, save_location)
+    print(f"Excel file saved to: {save_location}")
+else:
+    print("No Excel file found in the specified directory structure.")
