@@ -1,22 +1,31 @@
 import os
+import pandas as pd
 
-# Specify the directory path from which you want to delete files or folders
+# Specify the directory containing the .dat file
 directory_path = '/path/to/directory'
 
-# Get the list of files and folders in the specified directory
-files_and_folders = os.listdir(directory_path)
+# Iterate over the files in the directory
+for filename in os.listdir(directory_path):
+    if filename.endswith('.dat'):
+        dat_file_path = os.path.join(directory_path, filename)
+        xlsx_file_path = os.path.join(directory_path, f"{filename[:-4]}.xlsx")  # Change extension to .xlsx
 
-# Iterate over the files and folders
-for item in files_and_folders:
-    item_path = os.path.join(directory_path, item)
-    # Check if the item is a file or folder and if its name contains ".zip"
-    if os.path.isfile(item_path) and ".zip" in item:
-        # Delete the file
-        os.remove(item_path)
-        print(f"File '{item}' deleted.")
-    elif os.path.isdir(item_path) and ".zip" in item:
-        # Delete the folder and its contents recursively
-        shutil.rmtree(item_path)
-        print(f"Folder '{item}' and its contents deleted recursively.")
-    else:
-        print(f"Ignoring '{item}' as it does not match the criteria.")
+        # Read the .dat file as binary
+        with open(dat_file_path, 'rb') as f:
+            # Read the binary data from the .dat file
+            binary_data = f.read()
+
+        # Write the binary data to a .xlsx file
+        with open(xlsx_file_path, 'wb') as f:
+            # Write the binary data to the .xlsx file
+            f.write(binary_data)
+
+        # Optionally, you can use Pandas to read the .xlsx file and perform further processing if needed
+        # df = pd.read_excel(xlsx_file_path)
+
+        print(f"{dat_file_path} converted to .xlsx successfully at: {xlsx_file_path}")
+
+        # Assuming there is only one .dat file in the directory, break the loop after processing it
+        break
+else:
+    print("No .dat file found in the specified directory.")
