@@ -1,31 +1,28 @@
 import os
-import pandas as pd
+import datetime
 
 # Specify the directory containing the .dat file
 directory_path = '/path/to/directory'
+
+# Get today's date
+today = datetime.datetime.now()
+
+# Get yesterday's date
+yesterday = today - datetime.timedelta(days=1)
+
+# Format yesterday's date as required for the filename
+yesterday_filename = yesterday.strftime("%Y-%m-%d") + ".dat"
 
 # Iterate over the files in the directory
 for filename in os.listdir(directory_path):
     if filename.endswith('.dat'):
         dat_file_path = os.path.join(directory_path, filename)
-        xlsx_file_path = os.path.join(directory_path, f"{filename[:-4]}.xlsx")  # Change extension to .xlsx
+        yesterday_dat_file_path = os.path.join(directory_path, yesterday_filename)
 
-        # Read the .dat file as binary
-        with open(dat_file_path, 'rb') as f:
-            # Read the binary data from the .dat file
-            binary_data = f.read()
+        # Rename the .dat file to yesterday.dat
+        os.rename(dat_file_path, yesterday_dat_file_path)
 
-        # Write the binary data to a .xlsx file
-        with open(xlsx_file_path, 'wb') as f:
-            # Write the binary data to the .xlsx file
-            f.write(binary_data)
-
-        # Optionally, you can use Pandas to read the .xlsx file and perform further processing if needed
-        # df = pd.read_excel(xlsx_file_path)
-
-        print(f"{dat_file_path} converted to .xlsx successfully at: {xlsx_file_path}")
-
-        # Assuming there is only one .dat file in the directory, break the loop after processing it
+        print(f"{filename} renamed to yesterday.dat successfully.")
         break
 else:
     print("No .dat file found in the specified directory.")
