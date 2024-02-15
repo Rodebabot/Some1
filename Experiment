@@ -24,15 +24,21 @@ if recent_month_year_directory:
 else:
     print("No directory found with recent Month and year naming.")
 
-# Specify the location of the Excel file to move
-excel_file_location = 'specified_location/excel_file.xlsx'
+# Specify the location of the file to copy
+file_location = 'specified_location'
 
-# Move the Excel file to the newly created directory
+# Get the list of files in the specified location
+files_in_location = os.listdir(file_location)
+
+# Copy any file present in the specified location to the newly created directory
 if recent_month_year_directory:
-    if os.path.exists(excel_file_location):
-        shutil.move(excel_file_location, today_directory_path)
-        print(f"Excel file moved to: {today_directory_path}")
+    if files_in_location:
+        for file_name in files_in_location:
+            file_path = os.path.join(file_location, file_name)
+            if os.path.isfile(file_path):
+                shutil.copy(file_path, today_directory_path)
+                print(f"File '{file_name}' copied to: {today_directory_path}")
     else:
-        print("Excel file not found at the specified location.")
+        print("No files found in the specified location.")
 else:
-    print("Unable to move the Excel file as the recent Month and year directory is not found.")
+    print("Unable to copy the file as the recent Month and year directory is not found.")
