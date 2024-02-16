@@ -1,7 +1,6 @@
 import os
 import datetime
-from openpyxl import load_workbook
-from pyxlsb import save_as_xlsb
+import pandas as pd
 
 # Specify the path to the XLSX file
 xlsx_file_path = '/path/to/input_file.xlsx'
@@ -15,13 +14,13 @@ today_ddmm = datetime.datetime.now().strftime('%d%m')
 # Create the output filename in the desired format
 output_filename = f"{saved_name}-{today_ddmm}.xlsb"
 
-# Load the XLSX file
-wb = load_workbook(xlsx_file_path)
+# Read the XLSX file into a DataFrame
+df = pd.read_excel(xlsx_file_path)
 
 # Specify the output path for the XLSB file
 xlsb_file_path = os.path.join(os.path.dirname(xlsx_file_path), output_filename)
 
-# Save the XLSX file as XLSB format
-save_as_xlsb(wb, xlsb_file_path)
+# Write the DataFrame to XLSB format
+df.to_excel(xlsb_file_path, index=False, engine='xlsxwriter')
 
 print(f"XLSX file converted to XLSB format and saved as {output_filename}.")
