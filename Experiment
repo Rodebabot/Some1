@@ -1,26 +1,25 @@
 import os
 import datetime
 import pandas as pd
+from openpyxl import load_workbook
 
 # Specify the path to the XLSX file
 xlsx_file_path = '/path/to/input_file.xlsx'
-
-# Specify the previously saved name
-saved_name = 'previously_saved_name'
 
 # Get today's date in ddmm format
 today_ddmm = datetime.datetime.now().strftime('%d%m')
 
 # Create the output filename in the desired format
-output_filename = f"{saved_name}-{today_ddmm}.xlsb"
-
-# Read the XLSX file into a DataFrame
-df = pd.read_excel(xlsx_file_path)
+output_filename = f"{os.path.splitext(os.path.basename(xlsx_file_path))[0]}_{today_ddmm}.xlsb"
 
 # Specify the output path for the XLSB file
 xlsb_file_path = os.path.join(os.path.dirname(xlsx_file_path), output_filename)
 
-# Write the DataFrame to XLSB format
-df.to_excel(xlsb_file_path, index=False, engine='xlsxwriter')
+# Read the XLSX file into a DataFrame
+df = pd.read_excel(xlsx_file_path)
+
+# Save the DataFrame to XLSB format
+with pd.ExcelWriter(xlsb_file_path, engine='pyxlsb') as writer:
+    df.to_excel(writer, index=False)
 
 print(f"XLSX file converted to XLSB format and saved as {output_filename}.")
