@@ -1,6 +1,6 @@
-import shutil
+import os
 
-# List of directory paths to delete
+# List of directory paths to delete contents from
 directory_paths = [
     '/path/to/folder1',
     '/path/to/folder2',
@@ -11,9 +11,18 @@ directory_paths = [
 # Iterate over each directory path and delete its contents
 for directory_path in directory_paths:
     try:
-        shutil.rmtree(directory_path)
-        print(f"Deleted all contents of directory: {directory_path}")
+        # Iterate over each file and subdirectory in the directory
+        for item in os.listdir(directory_path):
+            item_path = os.path.join(directory_path, item)
+            # Check if the item is a file and delete it
+            if os.path.isfile(item_path):
+                os.remove(item_path)
+                print(f"Deleted file: {item_path}")
+            # Check if the item is a directory and delete its contents recursively
+            elif os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+                print(f"Deleted contents of directory: {item_path}")
     except FileNotFoundError:
         print(f"Directory not found: {directory_path}")
     except Exception as e:
-        print(f"An error occurred while deleting directory {directory_path}: {e}")
+        print(f"An error occurred while deleting contents of directory {directory_path}: {e}")
