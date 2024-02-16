@@ -3,15 +3,15 @@ import os
 import datetime
 
 # Function to fetch and save attachments from emails
-def save_attachments(folder_path, subfolder_name):
+def save_attachments(folder_path, mailbox_name, subfolder_name):
     # Connect to Outlook
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-    # Get the Inbox folder
-    inbox = outlook.GetDefaultFolder(6)  # Inbox
+    # Get the specified mailbox
+    mailbox = outlook.Folders.Item(mailbox_name)
 
     # Get the subfolder
-    subfolder = inbox.Folders[subfolder_name]
+    subfolder = mailbox.Folders[subfolder_name]
 
     # Get today's date
     today_date = datetime.datetime.now().date()
@@ -29,8 +29,9 @@ def save_attachments(folder_path, subfolder_name):
 # Specify the folder path to save attachments
 folder_path = '/path/to/save/attachments'
 
-# Specify the name of the subfolder in Outlook
+# Specify the name of the mailbox and subfolder in Outlook
+mailbox_name = 'Name of the mailbox'
 subfolder_name = 'Name of the subfolder'
 
 # Call the function to fetch and save attachments
-save_attachments(folder_path, subfolder_name)
+save_attachments(folder_path, mailbox_name, subfolder_name)
