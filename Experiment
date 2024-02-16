@@ -1,37 +1,19 @@
-import win32com.client
-import os
-import datetime
+import shutil
 
-# Function to fetch and save attachments from emails
-def save_attachments(folder_path, mailbox_name, subfolder_name):
-    # Connect to Outlook
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+# List of directory paths to delete
+directory_paths = [
+    '/path/to/folder1',
+    '/path/to/folder2',
+    '/path/to/folder3',
+    '/path/to/folder4'
+]
 
-    # Get the specified mailbox
-    mailbox = outlook.Folders.Item(mailbox_name)
-
-    # Get the subfolder
-    subfolder = mailbox.Folders[subfolder_name]
-
-    # Get today's date
-    today_date = datetime.datetime.now().date()
-
-    # Iterate through emails in the subfolder
-    for message in subfolder.Items:
-        # Check if the email is read and received today
-        if message.UnRead == False and message.ReceivedTime.date() == today_date:
-            # Iterate through attachments
-            for attachment in message.Attachments:
-                attachment_path = os.path.join(folder_path, attachment.FileName)
-                attachment.SaveAsFile(attachment_path)
-                print(f"Attachment saved: {attachment_path}")
-
-# Specify the folder path to save attachments
-folder_path = '/path/to/save/attachments'
-
-# Specify the name of the mailbox and subfolder in Outlook
-mailbox_name = 'Name of the mailbox'
-subfolder_name = 'Name of the subfolder'
-
-# Call the function to fetch and save attachments
-save_attachments(folder_path, mailbox_name, subfolder_name)
+# Iterate over each directory path and delete its contents
+for directory_path in directory_paths:
+    try:
+        shutil.rmtree(directory_path)
+        print(f"Deleted all contents of directory: {directory_path}")
+    except FileNotFoundError:
+        print(f"Directory not found: {directory_path}")
+    except Exception as e:
+        print(f"An error occurred while deleting directory {directory_path}: {e}")
