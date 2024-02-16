@@ -1,25 +1,36 @@
+import win32com.client
 import os
 import datetime
-import pandas as pd
-from openpyxl import load_workbook
 
-# Specify the path to the XLSX file
-xlsx_file_path = '/path/to/input_file.xlsx'
+# Function to fetch and save attachments from emails
+def save_attachments(folder_path, subfolder_name):
+    # Connect to Outlook
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-# Get today's date in ddmm format
-today_ddmm = datetime.datetime.now().strftime('%d%m')
+    # Get the Inbox folder
+    inbox = outlook.GetDefaultFolder(6)  # Inbox
 
-# Create the output filename in the desired format
-output_filename = f"{os.path.splitext(os.path.basename(xlsx_file_path))[0]}_{today_ddmm}.xlsb"
+    # Get the subfolder
+    subfolder = inbox.Folders[subfolder_name]
 
-# Specify the output path for the XLSB file
-xlsb_file_path = os.path.join(os.path.dirname(xlsx_file_path), output_filename)
+    # Get today's date
+    today_date = datetime.datetime.now().date()
 
-# Read the XLSX file into a DataFrame
-df = pd.read_excel(xlsx_file_path)
+    # Iterate through emails in the subfolder
+    for message in subfolder.Items:
+        # Check if the email is read and received today
+        if message.UnRead == False and message.ReceivedTime.date() == today_date:
+            # Iterate through attachments
+            for attachment in message.Attachments:
+                attachment_path = os.path.join(folder_path, attachment.FileName)
+                attachment.SaveAsFile(attachment_path)
+                print(f"Attachment saved: {attachment_path}")
 
-# Save the DataFrame to XLSB format
-with pd.ExcelWriter(xlsb_file_path, engine='pyxlsb') as writer:
-    df.to_excel(writer, index=False)
+# Specify the folder path to save attachments
+folder_path = '/path/to/save/attachments'
 
-print(f"XLSX file converted to XLSB format and saved as {output_filename}.")
+# Specify the name of the subfolder in Outlook
+subfolder_name = 'Name of the subfolder'
+
+# Call the function to fetch and save attachments
+save_attachments(folder_path, subfolder_name)
