@@ -1,28 +1,19 @@
 import os
+import shutil
 
-# List of directory paths to delete contents from
-directory_paths = [
-    '/path/to/folder1',
-    '/path/to/folder2',
-    '/path/to/folder3',
-    '/path/to/folder4'
-]
+# Source directory containing the files
+source_directory = '/path/to/source_directory'
 
-# Iterate over each directory path and delete its contents
-for directory_path in directory_paths:
-    try:
-        # Iterate over each file and subdirectory in the directory
-        for item in os.listdir(directory_path):
-            item_path = os.path.join(directory_path, item)
-            # Check if the item is a file and delete it
-            if os.path.isfile(item_path):
-                os.remove(item_path)
-                print(f"Deleted file: {item_path}")
-            # Check if the item is a directory and delete its contents recursively
-            elif os.path.isdir(item_path):
-                shutil.rmtree(item_path)
-                print(f"Deleted contents of directory: {item_path}")
-    except FileNotFoundError:
-        print(f"Directory not found: {directory_path}")
-    except Exception as e:
-        print(f"An error occurred while deleting contents of directory {directory_path}: {e}")
+# Destination directory to move the files
+destination_directory = '/path/to/destination_directory'
+
+# Iterate over the files in the source directory
+for filename in os.listdir(source_directory):
+    # Check if the file has a .zip extension or "zip" in its filename
+    if filename.endswith('.zip') or 'zip' in filename.lower():
+        # Construct the source and destination paths
+        source_path = os.path.join(source_directory, filename)
+        destination_path = os.path.join(destination_directory, filename)
+        # Move the file to the destination directory
+        shutil.move(source_path, destination_path)
+        print(f"Moved {filename} to {destination_directory}")
