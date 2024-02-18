@@ -1,19 +1,17 @@
-import os
-import shutil
-
-# Source directory containing the files
-source_directory = '/path/to/source_directory'
-
-# Destination directory to move the files
-destination_directory = '/path/to/destination_directory'
-
-# Iterate over the files in the source directory
-for filename in os.listdir(source_directory):
-    # Check if the file has a .zip extension or "zip" in its filename
-    if filename.endswith('.zip') or 'zip' in filename.lower():
-        # Construct the source and destination paths
-        source_path = os.path.join(source_directory, filename)
-        destination_path = os.path.join(destination_directory, filename)
-        # Move the file to the destination directory
-        shutil.move(source_path, destination_path)
-        print(f"Moved {filename} to {destination_directory}")
+Sub GenerateRandomNumbersAndMultiply()
+    Dim rng As Range
+    Dim cell As Range
+    
+    ' Set the range for the first column (A1:A15)
+    Set rng = Range("A1:A15")
+    
+    ' Generate random numbers for the first column
+    For Each cell In rng
+        cell.Value = Int((100 - 1 + 1) * Rnd + 1) ' Generate random numbers between 1 and 100
+    Next cell
+    
+    ' Multiply each number in the first column by 2 and put the result in the second column (B1:B15)
+    For Each cell In rng
+        cell.Offset(0, 1).Value = cell.Value * 2
+    Next cell
+End Sub
