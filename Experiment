@@ -1,71 +1,23 @@
 import os
 import win32com.client
-import datetime
 
-def get_previous_day_with_emails(subfolder):
-    # Get today's date
-    today = datetime.datetime.now()
-
-    # Start from yesterday
-    previous_day = today - datetime.timedelta(days=1)
-
-    while True:
-        # Construct the filter for the search
-        filter_str = "[ReceivedTime] >= '" + previous_day.strftime('%m/%d/%Y') + "' AND [ReceivedTime] < '" + today.strftime('%m/%d/%Y') + "'"
-
-        # Search for emails received on the previous day in the subfolder
-        messages = subfolder.Items.Restrict(filter_str)
-
-        if messages:
-            return previous_day
-        else:
-            # Move to the previous day
-            previous_day -= datetime.timedelta(days=1)
-
-def save_attachment_from_mailbox(mailbox_name, subfolder_name):
+def fetch_attachment_from_outlook(mailbox_name, folder_name, subfolder_name, save_location):
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    
-    # Get the specified mailbox
     mailbox = outlook.Folders.Item(mailbox_name)
-    
-    # Get the Inbox folder of the specified mailbox
-    inbox = mailbox.Folders["Inbox"]
+    inbox = mailbox.Folders.Item("Inbox")
+    folder = inbox.Folders.Item(folder_name)
+    subfolder = folder.Folders.Item(subfolder_name)
 
-    # Get the specified subfolder
-    subfolder = inbox.Folders[subfolder_name]
+    # Get the 2nd latest mail
+    mails = subfolder.Items
+    mails.Sort("[ReceivedTime]", True)
+    second_latest_mail = mails.Item(2)
 
-    # Get the previous day with emails
-    previous_day = get_previous_day_with_emails(subfolder)
+    # Check if there are attachments
+    if second_latest_mail.Attachments.Count > 0:
+        for attachment in second_latest_mail.Attachments:
+            attachment.SaveAsFile(os.path.join(save_location, attachment.FileName))
+            print(f"Attachment '{attachment.FileName}' saved successfully.")
 
-    # Construct the filter for the search
-    filter_str = "[ReceivedTime] >= '" + previous_day.strftime('%m/%d/%Y') + "' AND [ReceivedTime] < '" + (previous_day + datetime.timedelta(days=1)).strftime('%m/%d/%Y') + "'"
-
-    # Search for emails received on the previous day in the subfolder
-    messages = subfolder.Items.Restrict(filter_str)
-
-    # Sort the emails by received time in descending order
-    messages.Sort("[ReceivedTime]", True)
-
-    if messages:
-        # Get the first email (latest) from the filtered result
-        latest_email = messages.GetFirst()
-
-        # Check if the latest email has attachments
-        if latest_email.Attachments:
-            # Specify the directory where you want to save the attachments
-            save_dir = "C:\\Your\\Save\\Directory\\"
-
-            # Iterate through attachments and save them
-            for attachment in latest_email.Attachments:
-                attachment.SaveAsFile(os.path.join(save_dir, attachment.FileName))
-            print("Attachments saved successfully.")
-        else:
-            print("No attachments found in the latest email.")
-    else:
-        print("No emails found from the previous day in the specified subfolder.")
-
-if __name__ == "__main__":
-    # Example usage:
-    mailbox_name = "Your Mailbox Name"
-    subfolder_name = "Your Subfolder Name"
-    save_attachment_from_mailbox(mailbox_name, subfolder_name)
+# Usage example
+fetch_attachment_from_outlook("Mailbox Name", "Inbox", "Subfolder Name", "C:/Attachments")
