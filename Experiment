@@ -1,5 +1,10 @@
 import PyPDF2
+import nltk
+from nltk.tokenize import sent_tokenize
 from openpyxl import Workbook
+
+# Download NLTK data if not already present
+nltk.download('punkt')
 
 def pdf_to_excel(pdf_file, excel_file):
     # Create a new Excel workbook
@@ -15,12 +20,12 @@ def pdf_to_excel(pdf_file, excel_file):
             page = reader.getPage(page_num)
             text = page.extractText()
             
-            # Split the text into lines
-            lines = text.split('\n')
+            # Tokenize the text into sentences
+            sentences = sent_tokenize(text)
             
-            # Write each line to a new row in the Excel sheet
-            for row_num, line in enumerate(lines, start=1):
-                ws.cell(row=row_num, column=1, value=line)
+            # Write each sentence to a new row in the Excel sheet
+            for row_num, sentence in enumerate(sentences, start=1):
+                ws.cell(row=row_num, column=1, value=sentence)
 
     # Save the Excel workbook
     wb.save(excel_file)
