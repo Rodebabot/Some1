@@ -1,48 +1,12 @@
-import os
-import win32com.client
-from datetime import datetime, timedelta
+import datetime
 
-def fetch_attachment_from_outlook(mailbox_name, subfolder_name, save_location):
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    mailbox = outlook.Folders.Item(mailbox_name)
-    inbox = mailbox.Folders.Item("Inbox")
-    subfolder = inbox.Folders.Item(subfolder_name)
+def is_monday_today():
+    today = datetime.datetime.today()
+    return today.weekday() == 0  # Monday is represented by 0 in Python's datetime module
 
-    # Get all emails in the subfolder
-    mails = subfolder.Items
-    # Sort the emails by ReceivedTime in descending order
-    mails.Sort("[ReceivedTime]", True)
-
-    # Extract dates of received emails
-    received_dates = {mail.ReceivedTime.date() for mail in mails}
-
-    # Find the latest day with received emails before the latest day
-    latest_day = max(received_dates)
-    received_dates.remove(latest_day)
-    second_latest_day = max(received_dates) if received_dates else None
-
-    if second_latest_day:
-        print(f"Found the second latest day: {second_latest_day}")
-        # Find the latest email from the second latest day
-        latest_mail = None
-        for mail in mails:
-            if mail.ReceivedTime.date() == second_latest_day:
-                latest_mail = mail
-                break
-
-        if latest_mail:
-            # Check if there are attachments
-            if latest_mail.Attachments.Count > 0:
-                # Save each attachment
-                for attachment in latest_mail.Attachments:
-                    attachment.SaveAsFile(os.path.join(save_location, attachment.FileName))
-                    print(f"Attachment '{attachment.FileName}' saved successfully.")
-            else:
-                print("No attachments found in the latest email of the second latest day.")
-        else:
-            print("No emails found in the second latest day.")
-    else:
-        print("There are not enough emails in the specified subfolder.")
-
-# Usage example
-fetch_attachment_from_outlook("Fram", "yoiiii", "C:/Attachments")
+if is_monday_today():
+    # Your code to run on Monday
+    print("Today is Monday. Running your code now...")
+    # Call your function or run your code here
+else:
+    print("Today is not Monday. Skipping your code.")
