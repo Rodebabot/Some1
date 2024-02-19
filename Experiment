@@ -1,21 +1,33 @@
 import PyPDF2
+import pytesseract
+from PIL import Image
 from docx import Document
 
-def pdf_to_text(pdf_path):
+def pdf_to_images(pdf_path):
+    images = []
     with open(pdf_path, 'rb') as file:
         reader = PyPDF2.PdfFileReader(file)
-        text = ''
         for page_num in range(reader.numPages):
-            text += reader.getPage(page_num).extractText()
-        return text
+            page = reader.getPage(page_num)
+            images.append(page.extractImages())
+    return images
+
+def extract_text_from_images(images):
+    text = ''
+    for page_images in images:
+        for img_info in page_images.values():
+            img = Image.open(img_info['stream'])
+            text += pytesseract.image_to_string(img)
+    return text
 
 def text_to_word(text, output_path):
     doc = Document()
     doc.add_paragraph(text)
     doc.save(output_path)
 
-pdf_path = 'input.pdf'
+pdf_path = 'scanned_pdf.pdf'
 word_output_path = 'output.docx'
 
-text = pdf_to_text(pdf_path)
+images = pdf_to_images(pdf_path)
+text = extract_text_from_images(images)
 text_to_word(text, word_output_path)
