@@ -1,36 +1,32 @@
 import PyPDF2
-import nltk
-from nltk.tokenize import sent_tokenize
-from openpyxl import Workbook
+import pandas as pd
 
-# Download NLTK data if not already present
-nltk.download('punkt')
+# Path to your PDF file
+pdf_path = "your_pdf_file.pdf"
 
-def pdf_to_excel(pdf_file, excel_file):
-    # Create a new Excel workbook
-    wb = Workbook()
-    ws = wb.active
+# Open the PDF file
+with open(pdf_path, "rb") as file:
+    # Create a PDF reader object
+    pdf_reader = PyPDF2.PdfFileReader(file)
+    num_pages = pdf_reader.numPages
 
-    # Open the PDF file
-    with open(pdf_file, 'rb') as file:
-        reader = PyPDF2.PdfFileReader(file)
-        
-        # Iterate through each page of the PDF
-        for page_num in range(reader.numPages):
-            page = reader.getPage(page_num)
-            text = page.extractText()
-            
-            # Tokenize the text into sentences
-            sentences = sent_tokenize(text)
-            
-            # Write each sentence to a new row in the Excel sheet
-            for row_num, sentence in enumerate(sentences, start=1):
-                ws.cell(row=row_num, column=1, value=sentence)
+    # Initialize an empty list to store the text from each page
+    pdf_text = []
 
-    # Save the Excel workbook
-    wb.save(excel_file)
+    # Extract text from each page
+    for page_number in range(num_pages):
+        # Get the page object
+        page = pdf_reader.getPage(page_number)
+        # Extract text from the page
+        text = page.extractText()
+        # Append the text to the list
+        pdf_text.append(text)
 
-# Example usage
-pdf_file = 'example.pdf'
-excel_file = 'output.xlsx'
-pdf_to_excel(pdf_file, excel_file)
+# Convert the list of text into a DataFrame
+df = pd.DataFrame(pdf_text, columns=["Text"])
+
+# Write DataFrame to Excel
+excel_path = "output_excel_file.xlsx"
+df.to_excel(excel_path, index=False)
+
+print("PDF text has been successfully converted to Excel.")
