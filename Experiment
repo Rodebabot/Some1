@@ -1,23 +1,31 @@
 import os
 import win32com.client
+from datetime import datetime
 
-def fetch_attachment_from_outlook(mailbox_name, folder_name, subfolder_name, save_location):
+def fetch_attachment_from_outlook(mailbox_name, subfolder_name, save_location):
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
     mailbox = outlook.Folders.Item(mailbox_name)
     inbox = mailbox.Folders.Item("Inbox")
-    folder = inbox.Folders.Item(folder_name)
-    subfolder = folder.Folders.Item(subfolder_name)
+    subfolder = inbox.Folders.Item(subfolder_name)
 
-    # Get the 2nd latest mail
+    # Get all emails in the subfolder
     mails = subfolder.Items
+    # Sort the emails by ReceivedTime in descending order
     mails.Sort("[ReceivedTime]", True)
-    second_latest_mail = mails.Item(2)
 
-    # Check if there are attachments
-    if second_latest_mail.Attachments.Count > 0:
-        for attachment in second_latest_mail.Attachments:
-            attachment.SaveAsFile(os.path.join(save_location, attachment.FileName))
-            print(f"Attachment '{attachment.FileName}' saved successfully.")
+    # Check if there are at least two emails
+    if len(mails) >= 2:
+        second_latest_mail = mails.Item(2)
+        # Check if there are attachments
+        if second_latest_mail.Attachments.Count > 0:
+            # Save each attachment
+            for attachment in second_latest_mail.Attachments:
+                attachment.SaveAsFile(os.path.join(save_location, attachment.FileName))
+                print(f"Attachment '{attachment.FileName}' saved successfully.")
+        else:
+            print("No attachments found in the second latest email.")
+    else:
+        print("There are not enough emails in the specified subfolder.")
 
 # Usage example
-fetch_attachment_from_outlook("Mailbox Name", "Inbox", "Subfolder Name", "C:/Attachments")
+fetch_attachment_from_outlook("Mailbox Name", "Subfolder Name", "C:/Attachments")
