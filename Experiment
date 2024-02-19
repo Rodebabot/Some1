@@ -13,14 +13,20 @@ def fetch_attachment_from_outlook(mailbox_name, subfolder_name, save_location):
     # Sort the emails by ReceivedTime in descending order
     mails.Sort("[ReceivedTime]", True)
 
-    # Get the date of the latest day
-    if len(mails) >= 2:
-        latest_day = mails.Item(1).ReceivedTime.date()
-        # Find the latest email from the day before the latest day
-        latest_day_minus_one = latest_day - timedelta(days=1)
+    # Extract dates of received emails
+    received_dates = {mail.ReceivedTime.date() for mail in mails}
+
+    # Find the latest day with received emails before the latest day
+    latest_day = max(received_dates)
+    received_dates.remove(latest_day)
+    second_latest_day = max(received_dates) if received_dates else None
+
+    if second_latest_day:
+        print(f"Found the second latest day: {second_latest_day}")
+        # Find the latest email from the second latest day
         latest_mail = None
         for mail in mails:
-            if mail.ReceivedTime.date() == latest_day_minus_one:
+            if mail.ReceivedTime.date() == second_latest_day:
                 latest_mail = mail
                 break
 
@@ -32,9 +38,9 @@ def fetch_attachment_from_outlook(mailbox_name, subfolder_name, save_location):
                     attachment.SaveAsFile(os.path.join(save_location, attachment.FileName))
                     print(f"Attachment '{attachment.FileName}' saved successfully.")
             else:
-                print("No attachments found in the latest email of the day before the latest day.")
+                print("No attachments found in the latest email of the second latest day.")
         else:
-            print("No emails found in the day before the latest day.")
+            print("No emails found in the second latest day.")
     else:
         print("There are not enough emails in the specified subfolder.")
 
