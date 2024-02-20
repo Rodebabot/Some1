@@ -1,12 +1,29 @@
-import datetime
-
-def is_monday_today():
-    today = datetime.datetime.today()
-    return today.weekday() == 0  # Monday is represented by 0 in Python's datetime module
-
-if is_monday_today():
-    # Your code to run on Monday
-    print("Today is Monday. Running your code now...")
-    # Call your function or run your code here
-else:
-    print("Today is not Monday. Skipping your code.")
+Private Sub Worksheet_SelectionChange(ByVal Target As Range)
+    Dim sCol As Integer
+    Dim eCol As Integer
+    Dim deltaCol As Integer
+    Dim startTime As Date
+    
+    ' Specify the columns for 's', 'e', and 'delta'
+    sCol = 19 ' Change this to the column number where 's' is located
+    eCol = 20 ' Change this to the column number where 'e' is located
+    deltaCol = 21 ' Change this to the column number where 'delta' is located
+    
+    ' Check if the selected cell is in the 's' column
+    If Target.Column = sCol Then
+        startTime = Now
+        Target.Offset(0, deltaCol - sCol).Value = "" ' Clear delta column
+        Target.Offset(0, deltaCol - sCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
+    End If
+    
+    ' Check if the selected cell is in the 'e' column
+    If Target.Column = eCol Then
+        If IsEmpty(Target.Offset(0, deltaCol - eCol - 1).Value) Then
+            MsgBox "Start time is not specified. Please click on 's' first.", vbExclamation
+        Else
+            Target.Value = Now
+            Target.Offset(0, deltaCol - eCol).Value = Target.Value - startTime
+            Target.Offset(0, deltaCol - eCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
+        End If
+    End If
+End Sub
