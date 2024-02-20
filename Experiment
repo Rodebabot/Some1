@@ -1,40 +1,36 @@
 Private Sub Worksheet_SelectionChange(ByVal Target As Range)
-    Dim headerRow As Range
-    Dim sCol As Integer
-    Dim eCol As Integer
-    Dim deltaCol As Integer
-    Dim headerCell As Range
+    Dim ws As Worksheet
+    Dim startCol As String
+    Dim endCol As String
+    Dim deltaCol As String
     
-    ' Find the header row
-    Set headerRow = Rows(1)
+    ' Fetch Excel file from a specific location
+    Set ws = Workbooks.Open("C:\Path\To\Your\File.xlsx").Sheets("TTTTT")
     
-    ' Search for 's', 'e', and 'delta' columns in the header row
-    For Each headerCell In headerRow
-        If headerCell.Value = "s" Then
-            sCol = headerCell.Column
-        ElseIf headerCell.Value = "e" Then
-            eCol = headerCell.Column
-        ElseIf headerCell.Value = "delta" Then
-            deltaCol = headerCell.Column
+    ' Define column letters
+    startCol = "S"
+    endCol = "E"
+    deltaCol = "F" ' Change to the appropriate column
+    
+    ' Register Start Time
+    If Target.Column = ws.Range(startCol & "1").Column Then
+        If Not IsEmpty(ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value) Then
+            ' Reset all columns of that row to empty
+            ws.Rows(Target.Row).ClearContents
+        Else
+            ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value = Now
         End If
-    Next headerCell
-    
-    ' Check if the selected cell is in the 's' column
-    If Not sCol = 0 And Target.Column = sCol Then
-        Dim startTime As Date
-        startTime = Now
-        Target.Offset(0, deltaCol - sCol).Value = "" ' Clear delta column
-        Target.Offset(0, deltaCol - sCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
     End If
     
-    ' Check if the selected cell is in the 'e' column
-    If Not eCol = 0 And Target.Column = eCol Then
-        If IsEmpty(Target.Offset(0, deltaCol - eCol - 1).Value) Then
-            MsgBox "Start time is not specified. Please click on 's' first.", vbExclamation
+    ' Register End Time and Calculate Spent Time
+    If Target.Column = ws.Range(endCol & "1").Column Then
+        If Not IsEmpty(ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value) Then
+            ws.Cells(Target.Row, ws.Range(endCol & "1").Column).Value = Now
+            ws.Cells(Target.Row, ws.Range(deltaCol & "1").Column).Value = _
+                ws.Cells(Target.Row, ws.Range(endCol & "1").Column).Value - _
+                ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value
         Else
-            Target.Value = Now
-            Target.Offset(0, deltaCol - eCol).Value = Target.Value - startTime
-            Target.Offset(0, deltaCol - eCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
+            MsgBox "Start time is not specified. Please click on 'S' first.", vbExclamation
         End If
     End If
 End Sub
