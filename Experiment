@@ -1,29 +1,51 @@
-Private Sub Worksheet_SelectionChange(ByVal Target As Range)
+Sub StartTimer()
+    Dim wb As Workbook
+    Dim ws As Worksheet
     Dim sCol As Integer
     Dim eCol As Integer
     Dim deltaCol As Integer
     Dim startTime As Date
     
+    ' Prompt user to select Excel file
+    Set wb = Application.GetOpenFilename(FileFilter:="Excel Files (*.xls; *.xlsx), *.xls; *.xlsx", Title:="Select Excel File")
+    If wb Is Nothing Then
+        MsgBox "No file selected. Exiting.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Prompt user to select Excel sheet
+    On Error Resume Next ' Disable error messages
+    Set ws = Application.InputBox("Select Excel Sheet", Type:=8)
+    On Error GoTo 0 ' Enable error messages
+    
+    If ws Is Nothing Then
+        MsgBox "No sheet selected. Exiting.", vbExclamation
+        Exit Sub
+    End If
+    
     ' Specify the columns for 's', 'e', and 'delta'
-    sCol = 19 ' Change this to the column number where 's' is located
-    eCol = 20 ' Change this to the column number where 'e' is located
-    deltaCol = 21 ' Change this to the column number where 'delta' is located
+    sCol = Application.InputBox("Enter the column number for 's'", Type:=1)
+    eCol = Application.InputBox("Enter the column number for 'e'", Type:=1)
+    deltaCol = Application.InputBox("Enter the column number for 'delta'", Type:=1)
     
-    ' Check if the selected cell is in the 's' column
-    If Target.Column = sCol Then
-        startTime = Now
-        Target.Offset(0, deltaCol - sCol).Value = "" ' Clear delta column
-        Target.Offset(0, deltaCol - sCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
+    ' Check if columns are valid
+    If sCol < 1 Or eCol < 1 Or deltaCol < 1 Then
+        MsgBox "Invalid column numbers. Exiting.", vbExclamation
+        Exit Sub
     End If
     
-    ' Check if the selected cell is in the 'e' column
-    If Target.Column = eCol Then
-        If IsEmpty(Target.Offset(0, deltaCol - eCol - 1).Value) Then
-            MsgBox "Start time is not specified. Please click on 's' first.", vbExclamation
-        Else
-            Target.Value = Now
-            Target.Offset(0, deltaCol - eCol).Value = Target.Value - startTime
-            Target.Offset(0, deltaCol - eCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
+    ' Check if selected sheet has the specified columns
+    If ws.Columns.Count < sCol Or ws.Columns.Count < eCol Or ws.Columns.Count < deltaCol Then
+        MsgBox "Selected sheet does not have the specified columns. Exiting.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Loop through each row in the 's' column
+    For Each cell In ws.Columns(sCol).Cells
+        If Not IsEmpty(cell.Value) Then
+            startTime = Now
+            cell.Offset(0, deltaCol - sCol).Value = "" ' Clear delta column
+            cell.Offset(0, deltaCol - sCol).NumberFormat = "hh:mm:ss" ' Set format for delta column
         End If
-    End If
+    Next cell
 End Sub
