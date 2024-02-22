@@ -1,36 +1,9 @@
-Private Sub Worksheet_SelectionChange(ByVal Target As Range)
-    Dim ws As Worksheet
-    Dim startCol As String
-    Dim endCol As String
-    Dim deltaCol As String
-    
-    ' Fetch Excel file from a specific location
-    Set ws = Workbooks.Open("C:\Path\To\Your\File.xlsx").Sheets("TTTTT")
-    
-    ' Define column letters
-    startCol = "S"
-    endCol = "E"
-    deltaCol = "F" ' Change to the appropriate column
-    
-    ' Register Start Time
-    If Target.Column = ws.Range(startCol & "1").Column Then
-        If Not IsEmpty(ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value) Then
-            ' Reset all columns of that row to empty
-            ws.Rows(Target.Row).ClearContents
-        Else
-            ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value = Now
-        End If
-    End If
-    
-    ' Register End Time and Calculate Spent Time
-    If Target.Column = ws.Range(endCol & "1").Column Then
-        If Not IsEmpty(ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value) Then
-            ws.Cells(Target.Row, ws.Range(endCol & "1").Column).Value = Now
-            ws.Cells(Target.Row, ws.Range(deltaCol & "1").Column).Value = _
-                ws.Cells(Target.Row, ws.Range(endCol & "1").Column).Value - _
-                ws.Cells(Target.Row, ws.Range(startCol & "1").Column).Value
-        Else
-            MsgBox "Start time is not specified. Please click on 'S' first.", vbExclamation
-        End If
-    End If
-End Sub
+import pandas as pd
+
+# Assuming df is your DataFrame
+# Replace 'C' and 'Queue' with your actual column names
+cols = df.columns.tolist()
+cols.insert(cols.index('Queue'), cols.pop(cols.index('C')))
+df = df[cols]
+
+df['D'] = df['D'].replace('0.2vae', '#N/A')
