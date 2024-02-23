@@ -1,12 +1,16 @@
 import pandas as pd
+from pyxlsb import open_workbook as open_xlsb
 
 # Read the XLSX file into a DataFrame
-df = pd.read_excel('/path/to/input_file.xlsx')
+df = pd.read_excel('/path/to/input_file.xlsx', engine='openpyxl')
 
 # Specify the output path for the XLSB file
 output_path = '/path/to/output_file.xlsb'
 
 # Save the DataFrame to XLSB format
-df.to_excel(output_path, index=False)
+with open_xlsb(output_path, mode='wb') as wb:
+    with wb.get_sheet(1) as sheet:
+        for row in df.values:
+            sheet.append(row)
 
 print(f"XLSX file converted to XLSB format and saved as {output_path}.")
