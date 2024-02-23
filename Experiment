@@ -6,23 +6,26 @@ import datetime
 source_directory = '/path/to/source_directory'
 
 # Destination directory to move the Excel file
-destination_directory = '/path/to/destination_directory'
+# Construct the destination directory path based on today's date
+today_date = datetime.datetime.now()
+destination_parent_folder = '/path/to/destination_parent_folder'
+destination_month_folder = today_date.strftime('%b %Y')
+destination_date_folder = today_date.strftime('%d %b')
+destination_directory = os.path.join(destination_parent_folder, destination_month_folder, destination_date_folder)
 
-# Move the Excel file to the destination directory
-excel_filename = os.listdir(source_directory)[0]  # Assuming only one Excel file in the source directory
-excel_source_path = os.path.join(source_directory, excel_filename)
-excel_destination_path = os.path.join(destination_directory, excel_filename)
-shutil.move(excel_source_path, excel_destination_path)
+# Check if the destination directory exists, create it if it doesn't
+if not os.path.exists(destination_directory):
+    os.makedirs(destination_directory)
 
-# Get the filename of another .xlsx file in the destination directory
-other_xlsx_filename = next(file for file in os.listdir(destination_directory) if file.endswith('.xlsx'))
+# Check if the specified Excel file with today's date in the filename exists in the source folder
+today_ddmm = today_date.strftime('%d%m')
+excel_filename = next((file for file in os.listdir(source_directory) if today_ddmm in file), None)
 
-# Get today's date in ddmm format
-today_ddmm = datetime.datetime.now().strftime('%d%m')
-
-# Rename the moved Excel file using the other .xlsx filename and today's date
-new_filename = f"{os.path.splitext(other_xlsx_filename)[0]} - {today_ddmm}.xlsx"
-new_file_path = os.path.join(destination_directory, new_filename)
-os.rename(excel_destination_path, new_file_path)
-
-print(f"Excel file moved and renamed to: {new_filename}")
+# If the file exists, move it to the destination directory
+if excel_filename:
+    excel_source_path = os.path.join(source_directory, excel_filename)
+    excel_destination_path = os.path.join(destination_directory, excel_filename)
+    shutil.move(excel_source_path, excel_destination_path)
+    print(f"Excel file moved to: {excel_destination_path}")
+else:
+    print("No Excel file with today's date found in the source directory.")
