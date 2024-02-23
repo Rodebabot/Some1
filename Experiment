@@ -1,9 +1,28 @@
-import pandas as pd
+import os
+import shutil
+import datetime
 
-# Assuming df is your DataFrame
-# Replace 'C' and 'Queue' with your actual column names
-cols = df.columns.tolist()
-cols.insert(cols.index('Queue'), cols.pop(cols.index('C')))
-df = df[cols]
+# Source directory containing the Excel file
+source_directory = '/path/to/source_directory'
 
-df['D'] = df['D'].replace('0.2vae', '#N/A')
+# Destination directory to move the Excel file
+destination_directory = '/path/to/destination_directory'
+
+# Move the Excel file to the destination directory
+excel_filename = os.listdir(source_directory)[0]  # Assuming only one Excel file in the source directory
+excel_source_path = os.path.join(source_directory, excel_filename)
+excel_destination_path = os.path.join(destination_directory, excel_filename)
+shutil.move(excel_source_path, excel_destination_path)
+
+# Get the filename of another .xlsx file in the destination directory
+other_xlsx_filename = next(file for file in os.listdir(destination_directory) if file.endswith('.xlsx'))
+
+# Get today's date in ddmm format
+today_ddmm = datetime.datetime.now().strftime('%d%m')
+
+# Rename the moved Excel file using the other .xlsx filename and today's date
+new_filename = f"{os.path.splitext(other_xlsx_filename)[0]} - {today_ddmm}.xlsx"
+new_file_path = os.path.join(destination_directory, new_filename)
+os.rename(excel_destination_path, new_file_path)
+
+print(f"Excel file moved and renamed to: {new_filename}")
