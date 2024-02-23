@@ -7,7 +7,6 @@ df = pd.read_excel('/path/to/input_file.xlsx')
 output_path = '/path/to/output_file.xlsb'
 
 # Save the DataFrame to XLSB format
-with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-    df.to_excel(writer, index=False)
+df.to_excel(output_path, index=False)
 
 print(f"XLSX file converted to XLSB format and saved as {output_path}.")
