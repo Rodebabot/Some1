@@ -1,31 +1,13 @@
-import os
-import shutil
-import datetime
+import pandas as pd
 
-# Source directory containing the Excel file
-source_directory = '/path/to/source_directory'
+# Read the XLSX file into a DataFrame
+df = pd.read_excel('/path/to/input_file.xlsx')
 
-# Destination directory to move the Excel file
-# Construct the destination directory path based on today's date
-today_date = datetime.datetime.now()
-destination_parent_folder = '/path/to/destination_parent_folder'
-destination_month_folder = today_date.strftime('%b %Y')
-destination_date_folder = today_date.strftime('%d %b')
-destination_directory = os.path.join(destination_parent_folder, destination_month_folder, destination_date_folder)
+# Specify the output path for the XLSB file
+output_path = '/path/to/output_file.xlsb'
 
-# Check if the destination directory exists, create it if it doesn't
-if not os.path.exists(destination_directory):
-    os.makedirs(destination_directory)
+# Save the DataFrame to XLSB format
+with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+    df.to_excel(writer, index=False)
 
-# Check if the specified Excel file with today's date in the filename exists in the source folder
-today_ddmm = today_date.strftime('%d%m')
-excel_filename = next((file for file in os.listdir(source_directory) if today_ddmm in file), None)
-
-# If the file exists, move it to the destination directory
-if excel_filename:
-    excel_source_path = os.path.join(source_directory, excel_filename)
-    excel_destination_path = os.path.join(destination_directory, excel_filename)
-    shutil.move(excel_source_path, excel_destination_path)
-    print(f"Excel file moved to: {excel_destination_path}")
-else:
-    print("No Excel file with today's date found in the source directory.")
+print(f"XLSX file converted to XLSB format and saved as {output_path}.")
