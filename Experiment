@@ -23,6 +23,7 @@ def display_dataframe(dataframe, root, title):
 
 root = tk.Tk()
 root.title("Display Dataframes")
+root.geometry("800x600")  # Set window size to 800x600 pixels
 
 # Replace dfa, dfab, and dfc with your actual dataframes
 display_dataframe(dfa, root, "Dataframe A")
