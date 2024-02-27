@@ -19,13 +19,14 @@ def display_dataframe(dataframe, root, title):
     tree = ttk.Treeview(frame, columns=dataframe.columns, show='headings')
     for col in dataframe.columns:
         tree.heading(col, text=col)
-    for index, row in dataframe.iterrows():
+    for _, row in dataframe.iterrows():
         tree.insert("", "end", values=list(row))
     tree.pack()
 
 root = tk.Tk()
 root.title("Display Dataframes")
 
+# Replace dfa, dfab, and dfc with your actual dataframes
 display_dataframe(dfa, root, "Dataframe A")
 display_dataframe(dfab, root, "Dataframe AB")
 display_dataframe(dfc, root, "Dataframe C")
