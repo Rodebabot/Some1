@@ -1,34 +1,38 @@
 import dash
-from dash import dcc, html
-from dash_table import DataTable
-import pandas as pd
+from dash import html
+from dash import dcc
+import dash_table
 
-# Assuming you already have dfa, dfb, and dfc dataframes
+# Assuming you have existing dataframes: dfa, dfab, and dfc
+# Replace the sample dataframes with your actual dataframes
 
-# Create Dash app
+# Initialize Dash app
 app = dash.Dash(__name__)
 
-# Layout
+# Define Dash layout
 app.layout = html.Div([
-    html.H2('DataFrame A'),
-    DataTable(
-        id='datatable-a',
+    html.H1("Dataframe A"),
+    dash_table.DataTable(
+        id='table-dfa',
         columns=[{"name": i, "id": i} for i in dfa.columns],
-        data=dfa.to_dict('records'),
+        data=dfa.to_dict('records')
     ),
-    html.H2('DataFrame B'),
-    DataTable(
-        id='datatable-b',
-        columns=[{"name": i, "id": i} for i in dfb.columns],
-        data=dfb.to_dict('records'),
+
+    html.H1("Dataframe AB"),
+    dash_table.DataTable(
+        id='table-dfab',
+        columns=[{"name": i, "id": i} for i in dfab.columns],
+        data=dfab.to_dict('records')
     ),
-    html.H2('DataFrame C'),
-    DataTable(
-        id='datatable-c',
+
+    html.H1("Dataframe C"),
+    dash_table.DataTable(
+        id='table-dfc',
         columns=[{"name": i, "id": i} for i in dfc.columns],
-        data=dfc.to_dict('records'),
-    ),
+        data=dfc.to_dict('records')
+    )
 ])
 
+# Run the app
 if __name__ == '__main__':
     app.run_server(debug=True)
