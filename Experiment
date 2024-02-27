@@ -16,12 +16,10 @@ def display_dataframe(dataframe, root, title):
     label = ttk.Label(frame, text=title, font=('Arial', 14, 'bold'))
     label.pack()
 
-    tree = ttk.Treeview(frame, columns=dataframe.columns, show='headings')
-    for col in dataframe.columns:
-        tree.heading(col, text=col)
-    for _, row in dataframe.iterrows():
-        tree.insert("", "end", values=list(row))
-    tree.pack()
+    text = tk.Text(frame, height=10, width=40, wrap='none')
+    text.insert(tk.END, dataframe.to_string(index=False))
+    text.configure(state='disabled')
+    text.pack()
 
 root = tk.Tk()
 root.title("Display Dataframes")
