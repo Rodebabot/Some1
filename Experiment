@@ -1,5 +1,6 @@
 import dash
-from dash import dcc, html, Input, Output
+from dash import dcc, html
+from dash_table import DataTable
 import pandas as pd
 
 # Assuming you already have dfa, dfb, and dfc dataframes
@@ -7,58 +8,27 @@ import pandas as pd
 # Create Dash app
 app = dash.Dash(__name__)
 
-# Function to generate table with filters
-def generate_table(dataframe, id):
-    return html.Div([
-        html.H4(f'Table {id}'),
-        dcc.Dropdown(
-            id=f'filter-dropdown-{id}',
-            options=[{'label': col, 'value': col} for col in dataframe.columns],
-            multi=True
-        ),
-        html.Table(id=f'table-{id}')
-    ])
-
 # Layout
 app.layout = html.Div([
-    html.Div([
-        generate_table(dfa, 1),
-        generate_table(dfb, 2),
-        generate_table(dfc, 3),
-    ]),
-    html.Button('Remove Filters', id='remove-filters-button'),
-    html.Div(id='output-container-button')
+    html.H2('DataFrame A'),
+    DataTable(
+        id='datatable-a',
+        columns=[{"name": i, "id": i} for i in dfa.columns],
+        data=dfa.to_dict('records'),
+    ),
+    html.H2('DataFrame B'),
+    DataTable(
+        id='datatable-b',
+        columns=[{"name": i, "id": i} for i in dfb.columns],
+        data=dfb.to_dict('records'),
+    ),
+    html.H2('DataFrame C'),
+    DataTable(
+        id='datatable-c',
+        columns=[{"name": i, "id": i} for i in dfc.columns],
+        data=dfc.to_dict('records'),
+    ),
 ])
-
-# Callback to update tables
-@app.callback(
-    [Output('table-2', 'children'),
-     Output('table-3', 'children')],
-    [Input('table-1', 'selected_rows'),
-     Input('filter-dropdown-1', 'value')]
-)
-def update_tables(selected_rows, filters):
-    # Apply filters if selected
-    filtered_df = dfa if filters is None else dfa.query(' & '.join([f'{col} == "{value}"' for col, value in filters.items()]))
-    # Update other tables based on selected row
-    if selected_rows:
-        selected_id = filtered_df.iloc[selected_rows[0]]['ID']
-        dfb_filtered = dfb[dfb['ID'] == selected_id]
-        dfc_filtered = dfc[dfc['ID'] == selected_id]
-        return dfb_filtered.to_dict('rows'), dfc_filtered.to_dict('rows')
-    return dfb.to_dict('rows'), dfc.to_dict('rows')
-
-# Callback to remove filters
-@app.callback(
-    Output('filter-dropdown-1', 'value'),
-    Output('filter-dropdown-2', 'value'),
-    Output('filter-dropdown-3', 'value'),
-    Input('remove-filters-button', 'n_clicks')
-)
-def remove_filters(n_clicks):
-    if n_clicks:
-        return None, None, None
-    return dash.no_update
 
 if __name__ == '__main__':
     app.run_server(debug=True)
