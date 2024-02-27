@@ -1,16 +1,64 @@
+import dash
+from dash import dcc, html, Input, Output
 import pandas as pd
-from pyxlsb import open_workbook as open_xlsb
 
-# Read the XLSX file into a DataFrame
-df = pd.read_excel('/path/to/input_file.xlsx', engine='openpyxl')
+# Assuming you already have dfa, dfb, and dfc dataframes
 
-# Specify the output path for the XLSB file
-output_path = '/path/to/output_file.xlsb'
+# Create Dash app
+app = dash.Dash(__name__)
 
-# Save the DataFrame to XLSB format
-with open_xlsb(output_path, mode='wb') as wb:
-    with wb.get_sheet(1) as sheet:
-        for row in df.values:
-            sheet.append(row)
+# Function to generate table with filters
+def generate_table(dataframe, id):
+    return html.Div([
+        html.H4(f'Table {id}'),
+        dcc.Dropdown(
+            id=f'filter-dropdown-{id}',
+            options=[{'label': col, 'value': col} for col in dataframe.columns],
+            multi=True
+        ),
+        html.Table(id=f'table-{id}')
+    ])
 
-print(f"XLSX file converted to XLSB format and saved as {output_path}.")
+# Layout
+app.layout = html.Div([
+    html.Div([
+        generate_table(dfa, 1),
+        generate_table(dfb, 2),
+        generate_table(dfc, 3),
+    ]),
+    html.Button('Remove Filters', id='remove-filters-button'),
+    html.Div(id='output-container-button')
+])
+
+# Callback to update tables
+@app.callback(
+    [Output('table-2', 'children'),
+     Output('table-3', 'children')],
+    [Input('table-1', 'selected_rows'),
+     Input('filter-dropdown-1', 'value')]
+)
+def update_tables(selected_rows, filters):
+    # Apply filters if selected
+    filtered_df = dfa if filters is None else dfa.query(' & '.join([f'{col} == "{value}"' for col, value in filters.items()]))
+    # Update other tables based on selected row
+    if selected_rows:
+        selected_id = filtered_df.iloc[selected_rows[0]]['ID']
+        dfb_filtered = dfb[dfb['ID'] == selected_id]
+        dfc_filtered = dfc[dfc['ID'] == selected_id]
+        return dfb_filtered.to_dict('rows'), dfc_filtered.to_dict('rows')
+    return dfb.to_dict('rows'), dfc.to_dict('rows')
+
+# Callback to remove filters
+@app.callback(
+    Output('filter-dropdown-1', 'value'),
+    Output('filter-dropdown-2', 'value'),
+    Output('filter-dropdown-3', 'value'),
+    Input('remove-filters-button', 'n_clicks')
+)
+def remove_filters(n_clicks):
+    if n_clicks:
+        return None, None, None
+    return dash.no_update
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
