@@ -1,38 +1,33 @@
-import dash
-from dash import html
-from dash import dcc
-import dash_table
+import tkinter as tk
+from tkinter import ttk
+import pandas as pd
+
+# Sample dataframes (replace these with your actual dataframes)
+# dfa = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+# dfab = pd.DataFrame({'X': ['a', 'b', 'c'], 'Y': ['d', 'e', 'f']})
+# dfc = pd.DataFrame({'Name': ['John', 'Alice', 'Bob'], 'Age': [25, 30, 35]})
 
 # Assuming you have existing dataframes: dfa, dfab, and dfc
-# Replace the sample dataframes with your actual dataframes
 
-# Initialize Dash app
-app = dash.Dash(__name__)
+def display_dataframe(dataframe, root, title):
+    frame = ttk.Frame(root)
+    frame.pack(padx=10, pady=10)
+    
+    label = ttk.Label(frame, text=title, font=('Arial', 14, 'bold'))
+    label.pack()
 
-# Define Dash layout
-app.layout = html.Div([
-    html.H1("Dataframe A"),
-    dash_table.DataTable(
-        id='table-dfa',
-        columns=[{"name": i, "id": i} for i in dfa.columns],
-        data=dfa.to_dict('records')
-    ),
+    tree = ttk.Treeview(frame, columns=dataframe.columns, show='headings')
+    for col in dataframe.columns:
+        tree.heading(col, text=col)
+    for index, row in dataframe.iterrows():
+        tree.insert("", "end", values=list(row))
+    tree.pack()
 
-    html.H1("Dataframe AB"),
-    dash_table.DataTable(
-        id='table-dfab',
-        columns=[{"name": i, "id": i} for i in dfab.columns],
-        data=dfab.to_dict('records')
-    ),
+root = tk.Tk()
+root.title("Display Dataframes")
 
-    html.H1("Dataframe C"),
-    dash_table.DataTable(
-        id='table-dfc',
-        columns=[{"name": i, "id": i} for i in dfc.columns],
-        data=dfc.to_dict('records')
-    )
-])
+display_dataframe(dfa, root, "Dataframe A")
+display_dataframe(dfab, root, "Dataframe AB")
+display_dataframe(dfc, root, "Dataframe C")
 
-# Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
+root.mainloop()
