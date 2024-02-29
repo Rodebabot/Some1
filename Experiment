@@ -44,8 +44,8 @@ if os.path.exists(current_month_directory):
                 print(f"File '{filename}' (Macro) copied to '{destination_directory}'")
                 macro_file_copied = True
 
-            # Check if the filename contains the 2nd recent day date format (ddmm)
-            if second_recent_day_directory_name[:2] + second_recent_day_directory_name[3:5] in filename:
+            # Check if the filename contains the derived date format (ddmm)
+            if second_recent_day_directory_name.replace(' ', '').lower() in filename:
                 # Copy the file to the destination directory
                 source_path = os.path.join(second_recent_day_directory, filename)
                 destination_directory = '/path/to/destination_directory'
