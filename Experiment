@@ -1,22 +1,22 @@
 import os
 import gzip
 
-# Specify the directory containing .csv.gz files
-directory = '/path/to/csv_gz_files'
+# Specify the directory containing .lst.gz files
+directory = '/path/to/lst_gz_files'
 
 # Iterate over the files in the directory
 for filename in os.listdir(directory):
-    if filename.endswith('.csv.gz'):
+    if filename.endswith('.lst.gz'):
         # Construct the paths for input and output files
         input_path = os.path.join(directory, filename)
         output_path = os.path.join(directory, filename[:-3])  # Remove .gz extension
 
-        # Decompress the .csv.gz file
+        # Decompress the .lst.gz file
         with gzip.open(input_path, 'rb') as f_in:
             with open(output_path, 'wb') as f_out:
                 f_out.write(f_in.read())
 
-        # Remove the original .csv.gz file
+        # Remove the original .lst.gz file
         os.remove(input_path)
 
 print("Conversion completed.")
