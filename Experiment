@@ -11,20 +11,24 @@ current_month_directory = os.path.join(parent_directory, current_month)
 
 # Check if the current month directory exists
 if os.path.exists(current_month_directory):
-    # Get the current date and calculate the date for the 2nd recent day
-    today = datetime.now().date()
-    second_recent_day = today - timedelta(days=2)
-    second_recent_day_format = second_recent_day.strftime('%d %b')
+    # Get a list of directories within the current month directory
+    day_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
+    
+    # Sort the day directories by their date (oldest to newest)
+    day_directories.sort()
 
-    # Construct the directory path for the 2nd recent day folder (e.g., '02 Mar')
-    second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_format)
+    # Check if there are at least two day directories
+    if len(day_directories) >= 2:
+        # Get the 2nd recent day directory name
+        second_recent_day_directory_name = day_directories[-2]
 
-    # Check if the 2nd recent day directory exists
-    if os.path.exists(second_recent_day_directory):
+        # Construct the directory path for the 2nd recent day directory
+        second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
+
         # Iterate over the files in the 2nd recent day directory
         for filename in os.listdir(second_recent_day_directory):
             # Check if the filename contains 'Macro' or the 2nd recent day date format
-            if 'Macro' in filename or second_recent_day.strftime('%d%m') in filename:
+            if 'Macro' in filename or second_recent_day_directory_name.replace(' ', '').lower() in filename:
                 # Construct the source and destination paths for the file
                 source_path = os.path.join(second_recent_day_directory, filename)
                 destination_directory = '/path/to/destination_directory'
@@ -33,8 +37,7 @@ if os.path.exists(current_month_directory):
                 # Copy the file to the destination directory
                 shutil.copy(source_path, destination_path)
                 print(f"File '{filename}' copied to '{destination_directory}'")
-
     else:
-        print(f"2nd recent day directory '{second_recent_day_directory}' does not exist.")
+        print("Insufficient day directories in the current month directory.")
 else:
     print(f"Current month directory '{current_month_directory}' does not exist.")
