@@ -57,3 +57,6 @@ else:
 
 
 if second_recent_day_directory_name[-2:] + second_recent_day_directory_name[:2] in filename:
+
+
+if second_recent_day_directory_name.replace(' ', '')[-2:] + second_recent_day_directory_name.replace(' ', '')[:-4] in filename:
