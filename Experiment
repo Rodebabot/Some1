@@ -29,25 +29,34 @@ if os.path.exists(current_month_directory):
         second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
 
         # Initialize counters for the files copied
-        files_copied = 0
+        macro_file_copied = False
+        date_file_copied = False
 
         # Iterate over the files in the 2nd recent day directory
         for filename in os.listdir(second_recent_day_directory):
-            # Check if the filename contains 'Macro' or the 2nd recent day date format
-            if 'Macro' in filename or second_recent_day_directory_name.replace(' ', '').lower() in filename:
-                # Construct the source and destination paths for the file
+            # Check if the filename contains 'Macro'
+            if 'Macro' in filename:
+                # Copy the file to the destination directory
                 source_path = os.path.join(second_recent_day_directory, filename)
                 destination_directory = '/path/to/destination_directory'
                 destination_path = os.path.join(destination_directory, filename)
-
-                # Copy the file to the destination directory
                 shutil.copy(source_path, destination_path)
-                print(f"File '{filename}' copied to '{destination_directory}'")
-                files_copied += 1
+                print(f"File '{filename}' (Macro) copied to '{destination_directory}'")
+                macro_file_copied = True
 
-                # Break if both files are copied
-                if files_copied == 2:
-                    break
+            # Check if the filename contains the 2nd recent day date format (ddmm)
+            if second_recent_day_directory_name.replace(' ', '').lower() in filename:
+                # Copy the file to the destination directory
+                source_path = os.path.join(second_recent_day_directory, filename)
+                destination_directory = '/path/to/destination_directory'
+                destination_path = os.path.join(destination_directory, filename)
+                shutil.copy(source_path, destination_path)
+                print(f"File '{filename}' (2nd recent date) copied to '{destination_directory}'")
+                date_file_copied = True
+
+            # Break if both files are copied
+            if macro_file_copied and date_file_copied:
+                break
     else:
         print("Insufficient day directories in the current month directory.")
 else:
