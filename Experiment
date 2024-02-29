@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # Specify the parent directory where the search will begin
 parent_directory = '/path/to/parent_directory'
 
-# Construct the directory path for the current month folder (e.g., 'Mar 2024')
+# Construct the directory path for the current month folder (e.g., 'Apr 2024')
 current_month = datetime.now().strftime('%b %Y')
 current_month_directory = os.path.join(parent_directory, current_month)
 
@@ -34,7 +34,7 @@ if os.path.exists(current_month_directory):
         # Iterate over the files in the 2nd recent day directory
         for filename in os.listdir(second_recent_day_directory):
             # Check if the filename contains the derived date format (ddmm)
-            if second_recent_day_directory_name.replace(' ', '')[:-4] in filename:
+            if second_recent_day_directory_name.replace(' ', '')[:2] + second_recent_day_directory_name.replace(' ', '')[-2:] in filename:
                 # Copy the file to the destination directory
                 source_path = os.path.join(second_recent_day_directory, filename)
                 destination_directory = '/path/to/destination_directory'
@@ -51,12 +51,3 @@ if os.path.exists(current_month_directory):
         print("Insufficient day directories in the current month directory.")
 else:
     print(f"Current month directory '{current_month_directory}' does not exist.")
-
-
-
-
-
-if second_recent_day_directory_name[-2:] + second_recent_day_directory_name[:2] in filename:
-
-
-if second_recent_day_directory_name.replace(' ', '')[-2:] + second_recent_day_directory_name.replace(' ', '')[:-4] in filename:
