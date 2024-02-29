@@ -51,3 +51,9 @@ if os.path.exists(current_month_directory):
         print("Insufficient day directories in the current month directory.")
 else:
     print(f"Current month directory '{current_month_directory}' does not exist.")
+
+
+
+
+
+if second_recent_day_directory_name[-2:] + second_recent_day_directory_name[:2] in filename:
