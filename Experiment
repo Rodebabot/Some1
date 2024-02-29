@@ -1,22 +1,40 @@
 import os
-import gzip
+import shutil
+from datetime import datetime, timedelta
 
-# Specify the directory containing .lst.gz files
-directory = '/path/to/lst_gz_files'
+# Specify the parent directory where the search will begin
+parent_directory = '/path/to/parent_directory'
 
-# Iterate over the files in the directory
-for filename in os.listdir(directory):
-    if filename.endswith('.lst.gz'):
-        # Construct the paths for input and output files
-        input_path = os.path.join(directory, filename)
-        output_path = os.path.join(directory, filename[:-3])  # Remove .gz extension
+# Construct the directory path for the current month folder (e.g., 'Mar 2024')
+current_month = datetime.now().strftime('%b %Y')
+current_month_directory = os.path.join(parent_directory, current_month)
 
-        # Decompress the .lst.gz file
-        with gzip.open(input_path, 'rb') as f_in:
-            with open(output_path, 'wb') as f_out:
-                f_out.write(f_in.read())
+# Check if the current month directory exists
+if os.path.exists(current_month_directory):
+    # Get the current date and calculate the date for the 2nd recent day
+    today = datetime.now().date()
+    second_recent_day = today - timedelta(days=2)
+    second_recent_day_format = second_recent_day.strftime('%d %b')
 
-        # Remove the original .lst.gz file
-        os.remove(input_path)
+    # Construct the directory path for the 2nd recent day folder (e.g., '02 Mar')
+    second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_format)
 
-print("Conversion completed.")
+    # Check if the 2nd recent day directory exists
+    if os.path.exists(second_recent_day_directory):
+        # Iterate over the files in the 2nd recent day directory
+        for filename in os.listdir(second_recent_day_directory):
+            # Check if the filename contains 'Macro' or the 2nd recent day date format
+            if 'Macro' in filename or second_recent_day.strftime('%d%m') in filename:
+                # Construct the source and destination paths for the file
+                source_path = os.path.join(second_recent_day_directory, filename)
+                destination_directory = '/path/to/destination_directory'
+                destination_path = os.path.join(destination_directory, filename)
+
+                # Copy the file to the destination directory
+                shutil.copy(source_path, destination_path)
+                print(f"File '{filename}' copied to '{destination_directory}'")
+
+    else:
+        print(f"2nd recent day directory '{second_recent_day_directory}' does not exist.")
+else:
+    print(f"Current month directory '{current_month_directory}' does not exist.")
