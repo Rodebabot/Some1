@@ -28,35 +28,25 @@ if os.path.exists(current_month_directory):
         # Construct the directory path for the 2nd recent day directory
         second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
 
-        # Initialize counters for the files copied
-        macro_file_copied = False
-        date_file_copied = False
+        # Initialize a flag to track if the file is found
+        file_found = False
 
         # Iterate over the files in the 2nd recent day directory
         for filename in os.listdir(second_recent_day_directory):
-            # Check if the filename contains 'Macro'
-            if 'Macro' in filename:
-                # Copy the file to the destination directory
-                source_path = os.path.join(second_recent_day_directory, filename)
-                destination_directory = '/path/to/destination_directory'
-                destination_path = os.path.join(destination_directory, filename)
-                shutil.copy(source_path, destination_path)
-                print(f"File '{filename}' (Macro) copied to '{destination_directory}'")
-                macro_file_copied = True
-
             # Check if the filename contains the derived date format (ddmm)
-            if second_recent_day_directory_name.replace(' ', '').lower() in filename:
+            if second_recent_day_directory_name.replace(' ', '')[:-4] in filename:
                 # Copy the file to the destination directory
                 source_path = os.path.join(second_recent_day_directory, filename)
                 destination_directory = '/path/to/destination_directory'
                 destination_path = os.path.join(destination_directory, filename)
                 shutil.copy(source_path, destination_path)
-                print(f"File '{filename}' (2nd recent date) copied to '{destination_directory}'")
-                date_file_copied = True
-
-            # Break if both files are copied
-            if macro_file_copied and date_file_copied:
+                print(f"File '{filename}' copied to '{destination_directory}'")
+                file_found = True
                 break
+
+        # Check if the file was not found
+        if not file_found:
+            print("File with the specified date format not found.")
     else:
         print("Insufficient day directories in the current month directory.")
 else:
