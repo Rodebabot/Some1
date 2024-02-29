@@ -1,33 +1,32 @@
-import tkinter as tk
-from tkinter import ttk
-import pandas as pd
+import os
+import win32com.client
+import datetime
 
-# Sample dataframes (replace these with your actual dataframes)
-# dfa = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-# dfab = pd.DataFrame({'X': ['a', 'b', 'c'], 'Y': ['d', 'e', 'f']})
-# dfc = pd.DataFrame({'Name': ['John', 'Alice', 'Bob'], 'Age': [25, 30, 35]})
+# Function to save attachments from the latest 4 mails in a specific subfolder
+def save_attachments_from_outlook(folder_path):
+    # Connect to Outlook
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-# Assuming you have existing dataframes: dfa, dfab, and dfc
+    # Get the specified mailbox and subfolders
+    mailbox = outlook.Folders.Item("Gloss Control India")
+    inbox = mailbox.Folders.Item("Inbox")
+    daily_files = inbox.Folders.Item("Daily Files")
+    tm = daily_files.Folders.Item("TM")
+    sevg_and_tver = tm.Folders.Item("SEVG AND TVER")
 
-def display_dataframe(dataframe, root, title):
-    frame = ttk.Frame(root)
-    frame.pack(padx=10, pady=10)
-    
-    label = ttk.Label(frame, text=title, font=('Arial', 14, 'bold'))
-    label.pack()
+    # Get the latest 4 mails
+    mails = sevg_and_tver.Items
+    mails.Sort("[ReceivedTime]", True)
+    latest_4_mails = mails[:4]
 
-    text = tk.Text(frame, height=10, width=40, wrap='none')
-    text.insert(tk.END, dataframe.to_string(index=False))
-    text.configure(state='disabled')
-    text.pack()
+    # Save attachments from the latest 4 mails
+    for mail in latest_4_mails:
+        for attachment in mail.Attachments:
+            attachment.SaveAsFile(os.path.join(folder_path, attachment.FileName))
+            print(f"Attachment saved: {attachment.FileName}")
 
-root = tk.Tk()
-root.title("Display Dataframes")
-root.geometry("800x600")  # Set window size to 800x600 pixels
+# Specify the folder path to save attachments
+folder_path = '/path/to/save/attachments'
 
-# Replace dfa, dfab, and dfc with your actual dataframes
-display_dataframe(dfa, root, "Dataframe A")
-display_dataframe(dfab, root, "Dataframe AB")
-display_dataframe(dfc, root, "Dataframe C")
-
-root.mainloop()
+# Call the function to save attachments from Outlook
+save_attachments_from_outlook(folder_path)
