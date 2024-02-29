@@ -1,53 +1,49 @@
 import os
-import shutil
 from datetime import datetime, timedelta
 
-# Specify the parent directory where the search will begin
-parent_directory = '/path/to/parent_directory'
-
-# Construct the directory path for the current month folder (e.g., 'Apr 2024')
-current_month = datetime.now().strftime('%b %Y')
-current_month_directory = os.path.join(parent_directory, current_month)
-
-# Check if the current month directory exists
-if os.path.exists(current_month_directory):
-    # Get a list of directories within the current month directory
-    day_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-    
-    # Sort the day directories by their date (oldest to newest)
-    day_directories.sort()
-
-    # Check if there are at least two day directories
-    if len(day_directories) >= 2:
-        # Get the 2nd recent day directory name
-        second_recent_day_directory_name = day_directories[-2]
-
-        # Print the identified folder
-        print(f"Identified folder: {second_recent_day_directory_name}")
-
-        # Construct the directory path for the 2nd recent day directory
-        second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
-
-        # Initialize a flag to track if the file is found
-        file_found = False
-
-        # Iterate over the files in the 2nd recent day directory
-        for filename in os.listdir(second_recent_day_directory):
-            # Check if the filename contains the derived date format (ddmm)
-            if second_recent_day_directory_name.replace(' ', '')[:2] + second_recent_day_directory_name.replace(' ', '')[-2:] in filename:
-                # Copy the file to the destination directory
-                source_path = os.path.join(second_recent_day_directory, filename)
-                destination_directory = '/path/to/destination_directory'
-                destination_path = os.path.join(destination_directory, filename)
-                shutil.copy(source_path, destination_path)
-                print(f"File '{filename}' copied to '{destination_directory}'")
-                file_found = True
-                break
-
-        # Check if the file was not found
-        if not file_found:
-            print("File with the specified date format not found.")
+# Function to get the second most recent directory
+def get_second_recent_dir(dir_path):
+    dirs = [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
+    dirs.sort(key=lambda x: datetime.strptime(x, '%d %b'), reverse=True)
+    if len(dirs) >= 2:
+        return dirs[1]
     else:
-        print("Insufficient day directories in the current month directory.")
-else:
-    print(f"Current month directory '{current_month_directory}' does not exist.")
+        return None
+
+# Function to get the filename with the specified date
+def get_file_with_date(dir_path, date):
+    for file_name in os.listdir(dir_path):
+        if date.strftime('%d%m') in file_name:
+            return file_name
+    return None
+
+# Main function
+def copy_file_for_second_recent_month():
+    current_date = datetime.now()
+    current_month_folder = current_date.strftime('%b %Y')
+    current_month_path = os.path.join('path_to_your_folder', current_month_folder)
+    
+    if os.path.exists(current_month_path):
+        second_recent_dir = get_second_recent_dir(current_month_path)
+        
+        if second_recent_dir:
+            second_recent_dir_path = os.path.join(current_month_path, second_recent_dir)
+            file_to_copy = get_file_with_date(second_recent_dir_path, current_date)
+            
+            if file_to_copy:
+                # Copy the file to desired location
+                file_path_to_copy = os.path.join(second_recent_dir_path, file_to_copy)
+                destination_folder = 'path_to_destination_folder'
+                destination_path = os.path.join(destination_folder, file_to_copy)
+                os.makedirs(destination_folder, exist_ok=True)
+                shutil.copy(file_path_to_copy, destination_path)
+                print("File copied successfully!")
+            else:
+                print("File with specified date not found in second recent directory.")
+        else:
+            print("Second recent directory not found.")
+    else:
+        print("Current month folder not found.")
+
+# Call the main function
+copy_file_for_second_recent_month()
