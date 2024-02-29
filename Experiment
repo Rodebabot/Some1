@@ -1,49 +1,66 @@
 import os
+import shutil
 from datetime import datetime, timedelta
 
-# Function to get the second most recent directory
-def get_second_recent_dir(dir_path):
-    dirs = [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
-    dirs.sort(key=lambda x: datetime.strptime(x, '%d %b'), reverse=True)
-    if len(dirs) >= 2:
-        return dirs[1]
-    else:
-        return None
+# Specify the parent directory where the search will begin
+parent_directory = '/path/to/parent_directory'
 
-# Function to get the filename with the specified date
-def get_file_with_date(dir_path, date):
-    for file_name in os.listdir(dir_path):
-        if date.strftime('%d%m') in file_name:
-            return file_name
-    return None
+# Construct the directory path for the current month folder (e.g., 'Mar 2024')
+current_month = datetime.now().strftime('%b %Y')
+current_month_directory = os.path.join(parent_directory, current_month)
 
-# Main function
-def copy_file_for_second_recent_month():
-    current_date = datetime.now()
-    current_month_folder = current_date.strftime('%b %Y')
-    current_month_path = os.path.join('path_to_your_folder', current_month_folder)
+# Check if the current month directory exists
+if os.path.exists(current_month_directory):
+    # Get a list of directories within the current month directory
+    day_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
     
-    if os.path.exists(current_month_path):
-        second_recent_dir = get_second_recent_dir(current_month_path)
-        
-        if second_recent_dir:
-            second_recent_dir_path = os.path.join(current_month_path, second_recent_dir)
-            file_to_copy = get_file_with_date(second_recent_dir_path, current_date)
-            
-            if file_to_copy:
-                # Copy the file to desired location
-                file_path_to_copy = os.path.join(second_recent_dir_path, file_to_copy)
-                destination_folder = 'path_to_destination_folder'
-                destination_path = os.path.join(destination_folder, file_to_copy)
-                os.makedirs(destination_folder, exist_ok=True)
-                shutil.copy(file_path_to_copy, destination_path)
-                print("File copied successfully!")
-            else:
-                print("File with specified date not found in second recent directory.")
-        else:
-            print("Second recent directory not found.")
-    else:
-        print("Current month folder not found.")
+    # Sort the day directories by their date (oldest to newest)
+    day_directories.sort()
 
-# Call the main function
-copy_file_for_second_recent_month()
+    # Check if there are at least two day directories
+    if len(day_directories) >= 2:
+        # Get the 2nd recent day directory name
+        second_recent_day_directory_name = day_directories[-2]
+
+        # Print the identified folder
+        print(f"Identified folder: {second_recent_day_directory_name}")
+
+        # Construct the directory path for the 2nd recent day directory
+        second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
+
+        # Derive today's date in ddmm format
+        today_ddmm = datetime.now().strftime('%d%m')
+
+        # Initialize the closest_date_diff to a large value
+        closest_date_diff = float('inf')
+        closest_date_filename = None
+
+        # Iterate over the files in the 2nd recent day directory
+        for filename in os.listdir(second_recent_day_directory):
+            # Check if the filename contains the date in ddmm format
+            if today_ddmm in filename:
+                # Derive the date from the filename
+                file_date_ddmm = filename.split('.')[0][-4:]
+
+                # Calculate the difference between today's date and the file date
+                date_diff = abs(int(today_ddmm) - int(file_date_ddmm))
+
+                # Update the closest date filename if this file date is closer to today's date
+                if date_diff < closest_date_diff:
+                    closest_date_diff = date_diff
+                    closest_date_filename = filename
+
+        # Check if a closest date filename is found
+        if closest_date_filename:
+            # Copy the closest date file to the destination directory
+            source_path = os.path.join(second_recent_day_directory, closest_date_filename)
+            destination_directory = '/path/to/destination_directory'
+            destination_path = os.path.join(destination_directory, closest_date_filename)
+            shutil.copy(source_path, destination_path)
+            print(f"File '{closest_date_filename}' (closest to today's date) copied to '{destination_directory}'")
+        else:
+            print("No file found with a date closest to today's date.")
+    else:
+        print("Insufficient day directories in the current month directory.")
+else:
+    print(f"Current month directory '{current_month_directory}' does not exist.")
