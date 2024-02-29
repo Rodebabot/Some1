@@ -38,10 +38,15 @@ if os.path.exists(current_month_directory):
         # Iterate over the files in the 2nd recent day directory
         for filename in os.listdir(second_recent_day_directory):
             # Extract date part from the filename
-            file_date = filename.split('.')[0][-4:]
+            file_date_str = filename.split('.')[0][-4:]
+            try:
+                file_date = int(file_date_str)
+            except ValueError:
+                print(f"Ignoring file '{filename}' with invalid date '{file_date_str}'")
+                continue
 
             # Calculate the difference between today's date and the file date
-            date_diff = abs(int(today_ddmm) - int(file_date))
+            date_diff = abs(int(today_ddmm) - file_date)
 
             # Update the closest date filename if this file date is closer to today's date
             if date_diff < closest_date_diff:
