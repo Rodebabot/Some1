@@ -17,7 +17,7 @@ def save_attachments_from_outlook(folder_path):
     # Get the latest 4 mails
     mails = sevg_and_tver.Items
     mails.Sort("[ReceivedTime]", True)
-    latest_4_mails = mails[:4]
+    latest_4_mails = list(mails)[:4]  # Convert to list
 
     # Save attachments from the latest 4 mails
     for mail in latest_4_mails:
