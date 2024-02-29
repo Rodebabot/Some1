@@ -1,32 +1,22 @@
 import os
-import win32com.client
-import datetime
+import gzip
 
-# Function to save attachments from the latest 4 mails in a specific subfolder
-def save_attachments_from_outlook(folder_path):
-    # Connect to Outlook
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+# Specify the directory containing .csv.gz files
+directory = '/path/to/csv_gz_files'
 
-    # Get the specified mailbox and subfolders
-    mailbox = outlook.Folders.Item("Gloss Control India")
-    inbox = mailbox.Folders.Item("Inbox")
-    daily_files = inbox.Folders.Item("Daily Files")
-    tm = daily_files.Folders.Item("TM")
-    sevg_and_tver = tm.Folders.Item("SEVG AND TVER")
+# Iterate over the files in the directory
+for filename in os.listdir(directory):
+    if filename.endswith('.csv.gz'):
+        # Construct the paths for input and output files
+        input_path = os.path.join(directory, filename)
+        output_path = os.path.join(directory, filename[:-3])  # Remove .gz extension
 
-    # Get the latest 4 mails
-    mails = sevg_and_tver.Items
-    mails.Sort("[ReceivedTime]", True)
-    latest_4_mails = list(mails)[:4]  # Convert to list
+        # Decompress the .csv.gz file
+        with gzip.open(input_path, 'rb') as f_in:
+            with open(output_path, 'wb') as f_out:
+                f_out.write(f_in.read())
 
-    # Save attachments from the latest 4 mails
-    for mail in latest_4_mails:
-        for attachment in mail.Attachments:
-            attachment.SaveAsFile(os.path.join(folder_path, attachment.FileName))
-            print(f"Attachment saved: {attachment.FileName}")
+        # Remove the original .csv.gz file
+        os.remove(input_path)
 
-# Specify the folder path to save attachments
-folder_path = '/path/to/save/attachments'
-
-# Call the function to save attachments from Outlook
-save_attachments_from_outlook(folder_path)
+print("Conversion completed.")
