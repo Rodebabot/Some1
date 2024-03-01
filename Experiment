@@ -1,69 +1,12 @@
-import os
-import shutil
-from datetime import datetime, timedelta
+import pandas as pd
 
-# Specify the parent directory where the search will begin
-parent_directory = '/path/to/parent_directory'
+# Assuming you have a DataFrame named df
 
-# Construct the directory path for the current month folder (e.g., 'Mar 2024')
-current_month = datetime.now().strftime('%b %Y')
-current_month_directory = os.path.join(parent_directory, current_month)
+# Define the values to drop and the column
+values_to_drop = ['f', 'g', 'h', 'i']
+column_to_drop_from = 'type'
 
-# Check if the current month directory exists
-if os.path.exists(current_month_directory):
-    # Get a list of directories within the current month directory
-    day_directories = [d for d in os.listdir(current_month_directory) if os.path.isdir(os.path.join(current_month_directory, d))]
-    
-    # Sort the day directories by their date (oldest to newest)
-    day_directories.sort()
+# Drop rows containing the specified values in the specified column
+df = df[~df[column_to_drop_from].isin(values_to_drop)]
 
-    # Check if there are at least two day directories
-    if len(day_directories) >= 2:
-        # Get the 2nd recent day directory name
-        second_recent_day_directory_name = day_directories[-2]
-
-        # Print the identified folder
-        print(f"Identified folder: {second_recent_day_directory_name}")
-
-        # Construct the directory path for the 2nd recent day directory
-        second_recent_day_directory = os.path.join(current_month_directory, second_recent_day_directory_name)
-
-        # Derive today's date in ddmm format
-        today_ddmm = datetime.now().strftime('%d%m')
-
-        # Initialize the closest_date_diff to a large value
-        closest_date_diff = float('inf')
-        closest_date_filename = None
-
-        # Iterate over the files in the 2nd recent day directory
-        for filename in os.listdir(second_recent_day_directory):
-            # Extract date part from the filename
-            file_date_str = filename.split('.')[0][-4:]
-            try:
-                file_date = int(file_date_str)
-            except ValueError:
-                print(f"Ignoring file '{filename}' with invalid date '{file_date_str}'")
-                continue
-
-            # Calculate the difference between today's date and the file date
-            date_diff = abs(int(today_ddmm) - file_date)
-
-            # Update the closest date filename if this file date is closer to today's date
-            if date_diff < closest_date_diff:
-                closest_date_diff = date_diff
-                closest_date_filename = filename
-
-        # Check if a closest date filename is found
-        if closest_date_filename:
-            # Copy the closest date file to the destination directory
-            source_path = os.path.join(second_recent_day_directory, closest_date_filename)
-            destination_directory = '/path/to/destination_directory'
-            destination_path = os.path.join(destination_directory, closest_date_filename)
-            shutil.copy(source_path, destination_path)
-            print(f"File '{closest_date_filename}' (closest to today's date) copied to '{destination_directory}'")
-        else:
-            print("No file found with a date closest to today's date.")
-    else:
-        print("Insufficient day directories in the current month directory.")
-else:
-    print(f"Current month directory '{current_month_directory}' does not exist.")
+print(df)
