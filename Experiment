@@ -1,12 +1,24 @@
-import pandas as pd
+@echo off
+setlocal enabledelayedexpansion
 
-# Assuming you have a DataFrame named df
+set "folder1=C:\path\to\folder1"
+set "folder2=C:\path\to\folder2"
 
-# Define the values to drop and the column
-values_to_drop = ['f', 'g', 'h', 'i']
-column_to_drop_from = 'type'
+for %%F in ("%folder1%\*report*.xlsx") do (
+    set "filename1=%%~nF"
+    set "targetfile1=!filename1:~7,10!"
 
-# Drop rows containing the specified values in the specified column
-df = df[~df[column_to_drop_from].isin(values_to_drop)]
+    for %%G in ("%folder2%\*data*.xlsx") do (
+        set "filename2=%%~nG"
+        set "targetfile2=!filename2:~5,10!"
 
-print(df)
+        if "!targetfile1!"=="!targetfile2!" (
+            :: Extracting sheets "a" and "b" from folder1 xlsx file
+            powershell -Command "Import-Excel '!folder1!\!filename1!.xlsx' | Select-Object -Property 'a', 'b' | Export-Excel -Path '!folder1!\temp.xlsx' -NoHeader -NoAutoSize -Show -PassThru | Out-Null"
+            :: Adding sheets "a" and "b" to folder2 xlsx file
+            powershell -Command "Import-Excel '!folder2!\!filename2!.xlsx' | Add-Worksheet -Name 'a' | Add-Worksheet -Name 'b' | Import-Excel '!folder1!\temp.xlsx' | Export-Excel -Path '!folder2!\!filename2!.xlsx' -NoHeader -NoAutoSize -Show -PassThru | Out-Null"
+            
+            del "!folder1!\temp.xlsx"
+        )
+    )
+)
