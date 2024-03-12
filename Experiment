@@ -16,3 +16,17 @@ max_index = df['Ageing Score'].idxmax()
 df.at[max_index, 'Ageing Score'] = new_value
 
 print(df)
+
+
+
+
+import pandas as pd
+
+# Example DataFrame with repeated scores
+data = {'Exposure Score': [10, 20, 30, 40, 40, 50, 60]}
+df = pd.DataFrame(data)
+
+# Create a ranking column based on the 'Exposure Score'
+df['Rank'] = df['Exposure Score'].rank(method='min').astype(int)
+
+print(df)
