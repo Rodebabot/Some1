@@ -1,24 +1,17 @@
 import pandas as pd
 
 # Example DataFrame
-data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
-        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
-        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
+data = {'A': [1, 2, 3],
+        'B': [4, 5, 6],
+        'C': [7, 8, 9],
+        'D': [10, 11, 12]}
 df = pd.DataFrame(data)
 
-# Create a score column based on remaining group
-if 'B' in df.columns:
-    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
-    min_quartile = quartile_groups.min()
-    df['Score'] = quartile_groups - min_quartile + 1
-    df['Score'] = df.groupby(df['B']).ngroup() + 1
+# Check if DataFrame has at least two columns
+if len(df.columns) >= 2:
+    # Delete the penultimate column
+    df.drop(df.columns[-2], axis=1, inplace=True)
 else:
-    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
-    min_decile = decile_groups.min()
-    max_decile = decile_groups.max()
-    df['Score'] = decile_groups - min_decile + 1
-    max_group = max(len(decile_groups), max_decile)
-    df['Score'] = df.groupby(df['C']).ngroup() + 1
-    df.loc[df['Score'] == max_group, 'Score'] = len(decile_groups)
+    print("DataFrame has less than two columns, cannot delete the penultimate column.")
 
 print(df)
