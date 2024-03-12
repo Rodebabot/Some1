@@ -1,11 +1,3 @@
-if 'B' in df.columns:
-    df['Score'] = df['B'].str.extract('(\d+)', expand=False).astype(int)
-else:
-    df['Score'] = df['C'].str.extract('(\d+)', expand=False).astype(int)
-
-print(df)
-
-
 import pandas as pd
 
 # Example DataFrame
@@ -18,28 +10,14 @@ df = pd.DataFrame(data)
 if 'B' in df.columns:
     quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
     min_quartile = quartile_groups.min()
-    df['Score'] = quartile_groups - min_quartile + 1
-else:
-    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
-    min_decile = decile_groups.min()
-    df['Score'] = decile_groups - min_decile + 1
-
-print(df)
-
-
-
-
-if 'B' in df.columns:
-    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
-    min_quartile = quartile_groups.min()
     max_quartile = quartile_groups.max()
     df['Score'] = quartile_groups - min_quartile + 1
-    df.loc[max_quartile < len(quartile_groups), 'Score'] += 1
+    df.loc[df['B'].ne('Q' + df['Score'].astype(str)), 'Score'] += 1
 else:
     decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
     min_decile = decile_groups.min()
     max_decile = decile_groups.max()
     df['Score'] = decile_groups - min_decile + 1
-    df.loc[max_decile < len(decile_groups), 'Score'] += 1
+    df.loc[df['C'].ne('D' + df['Score'].astype(str)), 'Score'] += 1
 
 print(df)
