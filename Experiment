@@ -1,43 +1,24 @@
 import pandas as pd
 
-# Assuming df is your DataFrame with column 'A'
-# Replace 'df' with the actual name of your DataFrame
+# Example DataFrame
+data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
+        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
+        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
+df = pd.DataFrame(data)
 
-# Calculate quartiles
-q1 = df['A'].quantile(0.25)
-q2 = df['A'].quantile(0.5)
-q3 = df['A'].quantile(0.75)
+# Function to calculate volatility
+def calculate_volatility(group):
+    mean = group.mean()
+    std_dev = group.std()
+    return std_dev / mean
 
-# Function to assign quartile category
-def assign_category(x):
-    if x <= q1:
-        return 'Q1'
-    elif q1 < x <= q2:
-        return 'Q2'
-    elif q2 < x <= q3:
-        return 'Q3'
-    else:
-        return 'Q4'
+# Calculate volatility for quartile groups
+quartile_volatility = df.groupby('B')['A'].apply(calculate_volatility)
 
-# Create column B with quartile categories
-df['B'] = df['A'].apply(assign_category)
+# Calculate volatility for decile groups
+decile_volatility = df.groupby('C')['A'].apply(calculate_volatility)
 
-
-
-import pandas as pd
-
-# Assuming df is your DataFrame with column 'A'
-# Replace 'df' with the actual name of your DataFrame
-
-# Calculate deciles
-deciles = [i/10 for i in range(1, 10)]
-
-# Function to assign decile category
-def assign_category_decile(x):
-    for i, decile in enumerate(deciles):
-        if x <= df['A'].quantile(decile):
-            return f'D{i+1}'
-    return 'D10'
-
-# Create column C with decile categories
-df['C'] = df['A'].apply(assign_category_decile)
+print("Volatility for quartile groups:")
+print(quartile_volatility)
+print("\nVolatility for decile groups:")
+print(decile_volatility)
