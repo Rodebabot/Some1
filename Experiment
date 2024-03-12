@@ -45,3 +45,21 @@ else:
     df['Score'] = df['C'].apply(lambda x: int(x[1:]))
 
 print(df)
+
+
+
+import pandas as pd
+
+# Example DataFrame
+data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
+        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
+        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
+df = pd.DataFrame(data)
+
+# Create a score column based on remaining group
+if 'B' in df.columns:
+    df['Score'] = df.groupby('B').ngroup() + 1
+else:
+    df['Score'] = df.groupby('C').ngroup() + 1
+
+print(df)
