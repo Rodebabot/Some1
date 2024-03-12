@@ -1,65 +1,6 @@
-import pandas as pd
-
-# Example DataFrame
-data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
-        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
-        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
-df = pd.DataFrame(data)
-
-# Function to calculate volatility
-def calculate_volatility(group):
-    mean = group.mean()
-    std_dev = group.std()
-    return std_dev / mean
-
-# Calculate volatility for quartile groups
-quartile_volatility = df.groupby('B')['A'].apply(calculate_volatility)
-# Calculate average volatility for quartile groups
-avg_quartile_volatility = quartile_volatility.mean()
-
-# Calculate volatility for decile groups
-decile_volatility = df.groupby('C')['A'].apply(calculate_volatility)
-# Calculate average volatility for decile groups
-avg_decile_volatility = decile_volatility.mean()
-
-# Choose the column with lesser average volatility
-if avg_quartile_volatility < avg_decile_volatility:
-    del df['C']
-else:
-    del df['B']
-
-print(df)
-
-import pandas as pd
-
-# Example DataFrame
-data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
-        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
-        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
-df = pd.DataFrame(data)
-
-# Create a score column based on remaining group
 if 'B' in df.columns:
-    df['Score'] = df['B'].apply(lambda x: int(x[1:]))
+    df['Score'] = df['B'].str.extract('(\d+)', expand=False).astype(int)
 else:
-    df['Score'] = df['C'].apply(lambda x: int(x[1:]))
-
-print(df)
-
-
-
-import pandas as pd
-
-# Example DataFrame
-data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
-        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
-        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
-df = pd.DataFrame(data)
-
-# Create a score column based on remaining group
-if 'B' in df.columns:
-    df['Score'] = df.groupby('B').ngroup() + 1
-else:
-    df['Score'] = df.groupby('C').ngroup() + 1
+    df['Score'] = df['C'].str.extract('(\d+)', expand=False).astype(int)
 
 print(df)
