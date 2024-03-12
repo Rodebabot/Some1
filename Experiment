@@ -21,3 +21,21 @@ else:
     df.loc[df['C'].ne('D' + df['Score'].astype(str)), 'Score'] += 1
 
 print(df)
+
+
+
+
+
+
+if 'B' in df.columns:
+    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
+    min_quartile = quartile_groups.min()
+    df['Score'] = quartile_groups - min_quartile + 1
+    df['Score'] = df.groupby(df['B']).ngroup() + 1
+else:
+    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
+    min_decile = decile_groups.min()
+    df['Score'] = decile_groups - min_decile + 1
+    df['Score'] = df.groupby(df['C']).ngroup() + 1
+
+print(df)
