@@ -14,11 +14,18 @@ def calculate_volatility(group):
 
 # Calculate volatility for quartile groups
 quartile_volatility = df.groupby('B')['A'].apply(calculate_volatility)
+# Calculate average volatility for quartile groups
+avg_quartile_volatility = quartile_volatility.mean()
 
 # Calculate volatility for decile groups
 decile_volatility = df.groupby('C')['A'].apply(calculate_volatility)
+# Calculate average volatility for decile groups
+avg_decile_volatility = decile_volatility.mean()
 
-print("Volatility for quartile groups:")
-print(quartile_volatility)
-print("\nVolatility for decile groups:")
-print(decile_volatility)
+# Choose the column with lesser average volatility
+if avg_quartile_volatility < avg_decile_volatility:
+    del df['C']
+else:
+    del df['B']
+
+print(df)
