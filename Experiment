@@ -1,24 +1,23 @@
-@echo off
-setlocal enabledelayedexpansion
+import pandas as pd
 
-set "folder1=C:\path\to\folder1"
-set "folder2=C:\path\to\folder2"
+# Assuming df is your DataFrame with column 'A'
+# Replace 'df' with the actual name of your DataFrame
 
-for %%F in ("%folder1%\*report*.xlsx") do (
-    set "filename1=%%~nF"
-    set "targetfile1=!filename1:~7,10!"
+# Calculate quartiles
+q1 = df['A'].quantile(0.25)
+q2 = df['A'].quantile(0.5)
+q3 = df['A'].quantile(0.75)
 
-    for %%G in ("%folder2%\*data*.xlsx") do (
-        set "filename2=%%~nG"
-        set "targetfile2=!filename2:~5,10!"
+# Function to assign quartile category
+def assign_category(x):
+    if x <= q1:
+        return 'Q1'
+    elif q1 < x <= q2:
+        return 'Q2'
+    elif q2 < x <= q3:
+        return 'Q3'
+    else:
+        return 'Q4'
 
-        if "!targetfile1!"=="!targetfile2!" (
-            :: Extracting sheets "a" and "b" from folder1 xlsx file
-            powershell -Command "Import-Excel '!folder1!\!filename1!.xlsx' | Select-Object -Property 'a', 'b' | Export-Excel -Path '!folder1!\temp.xlsx' -NoHeader -NoAutoSize -Show -PassThru | Out-Null"
-            :: Adding sheets "a" and "b" to folder2 xlsx file
-            powershell -Command "Import-Excel '!folder2!\!filename2!.xlsx' | Add-Worksheet -Name 'a' | Add-Worksheet -Name 'b' | Import-Excel '!folder1!\temp.xlsx' | Export-Excel -Path '!folder2!\!filename2!.xlsx' -NoHeader -NoAutoSize -Show -PassThru | Out-Null"
-            
-            del "!folder1!\temp.xlsx"
-        )
-    )
-)
+# Create column B with quartile categories
+df['B'] = df['A'].apply(assign_category)
