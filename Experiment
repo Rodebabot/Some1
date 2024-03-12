@@ -26,3 +26,20 @@ else:
 
 print(df)
 
+
+
+
+if 'B' in df.columns:
+    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
+    min_quartile = quartile_groups.min()
+    max_quartile = quartile_groups.max()
+    df['Score'] = quartile_groups - min_quartile + 1
+    df.loc[max_quartile < len(quartile_groups), 'Score'] += 1
+else:
+    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
+    min_decile = decile_groups.min()
+    max_decile = decile_groups.max()
+    df['Score'] = decile_groups - min_decile + 1
+    df.loc[max_decile < len(decile_groups), 'Score'] += 1
+
+print(df)
