@@ -10,51 +10,6 @@ df = pd.DataFrame(data)
 if 'B' in df.columns:
     quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
     min_quartile = quartile_groups.min()
-    max_quartile = quartile_groups.max()
-    df['Score'] = quartile_groups - min_quartile + 1
-    df.loc[df['B'].ne('Q' + df['Score'].astype(str)), 'Score'] += 1
-else:
-    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
-    min_decile = decile_groups.min()
-    max_decile = decile_groups.max()
-    df['Score'] = decile_groups - min_decile + 1
-    df.loc[df['C'].ne('D' + df['Score'].astype(str)), 'Score'] += 1
-
-print(df)
-
-
-
-
-
-
-if 'B' in df.columns:
-    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
-    min_quartile = quartile_groups.min()
-    df['Score'] = quartile_groups - min_quartile + 1
-    df['Score'] = df.groupby(df['B']).ngroup() + 1
-else:
-    decile_groups = df['C'].str.extract('D(\d+)', expand=False).astype(int)
-    min_decile = decile_groups.min()
-    df['Score'] = decile_groups - min_decile + 1
-    df['Score'] = df.groupby(df['C']).ngroup() + 1
-
-print(df)
-
-
-
-
-import pandas as pd
-
-# Example DataFrame
-data = {'A': [10, 25, 35, 40, 55, 70, 80, 90, 100],
-        'B': ['Q1', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q4', 'Q4', 'Q4'],
-        'C': ['D1', 'D3', 'D4', 'D5', 'D7', 'D9', 'D10', 'D10', 'D10']}
-df = pd.DataFrame(data)
-
-# Create a score column based on remaining group
-if 'B' in df.columns:
-    quartile_groups = df['B'].str.extract('Q(\d+)', expand=False).astype(int)
-    min_quartile = quartile_groups.min()
     df['Score'] = quartile_groups - min_quartile + 1
     df['Score'] = df.groupby(df['B']).ngroup() + 1
 else:
@@ -62,7 +17,8 @@ else:
     min_decile = decile_groups.min()
     max_decile = decile_groups.max()
     df['Score'] = decile_groups - min_decile + 1
+    max_group = max(len(decile_groups), max_decile)
     df['Score'] = df.groupby(df['C']).ngroup() + 1
-    df.loc[df['Score'] == max_decile, 'Score'] = len(decile_groups)
+    df.loc[df['Score'] == max_group, 'Score'] = len(decile_groups)
 
 print(df)
