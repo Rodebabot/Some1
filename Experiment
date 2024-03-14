@@ -1,5 +1,30 @@
 import pandas as pd
 
-# Assuming your DataFrame is named df and the column containing values is 'values'
-df_sorted = df.sort_values(by='values')  # Sort values in ascending order
-df_sorted['category'] = range(1, len(df_sorted) + 1)  # Assign ranks
+# Assuming your DataFrame is named 'df'
+# Assuming 'date' column is in datetime format, if not, convert it using pd.to_datetime()
+# df['date'] = pd.to_datetime(df['date'])
+
+# Sort the DataFrame by date within each group
+df_sorted = df.sort_values(by=['id', 'person', 'status', 'date'], ascending=[True, True, True, False])
+
+# Drop the last row for each unique combination of 'id', 'person', and 'status'
+df_dropped = df_sorted.drop_duplicates(subset=['id', 'person', 'status'], keep='first')
+
+# Print the first few rows of the resulting DataFrame
+print(df_dropped.head())
+
+
+import pandas as pd
+
+# Assuming your DataFrame is named 'df'
+# Assuming 'date' column is in datetime format, if not, convert it using pd.to_datetime()
+# df['date'] = pd.to_datetime(df['date'])
+
+# Find the index of the row with the most recent date within each group
+idx_to_drop = df.groupby(['id', 'person', 'status'])['date'].idxmax()
+
+# Drop the rows with these indices
+df_dropped = df.drop(idx_to_drop)
+
+# Print the first few rows of the resulting DataFrame
+print(df_dropped.head())
