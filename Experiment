@@ -1,4 +1,1 @@
-import pandas as pd
-
-# Assuming your dataframe is named df and the column you want to modify is 'column_name'
-df['column_name'] = df['column_name'].str.split('.').str[-1].str.strip()
+df['concatenated_column'] = df['column1'].str.cat([df['column2'], df['column3']], sep='')
