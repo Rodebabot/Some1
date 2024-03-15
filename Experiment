@@ -1,1 +1,40 @@
 df['concatenated_column'] = df['column1'].str.cat([df['column2'], df['column3']], sep='')
+
+
+import pandas as pd
+
+# Sample DataFrame
+data = {
+    'Id': ['We', 'We', 'We', 'We'],
+    'status': ['q', 'q', 'p', 'q'],
+    'date': ['01-03-24', '02-03-24', '03-03-24', '04-03-24']
+}
+
+df = pd.DataFrame(data)
+
+# Initialize score column with NaN values
+df['score'] = pd.NA
+
+# Initialize variables to keep track of previous ID and status
+prev_id = None
+prev_status = None
+
+# Initialize score counter
+score = 1
+
+# Iterate over each row
+for index, row in df.iterrows():
+    # Check if it's the same ID and status as previous row
+    if prev_id == row['Id'] and prev_status == row['status']:
+        # Check if status changed since the last occurrence of the same ID and status
+        if (df.loc[(df['Id'] == row['Id']) & (df['status'] == row['status']) & (df['date'] < row['date']), 'date'].max() is not None):
+            score += 1  # Increment score if status changed since the last occurrence
+    else:
+        score = 1  # Reset score if ID or status changes
+    # Update score column for the current row
+    df.at[index, 'score'] = score
+    # Update previous ID and status for the next iteration
+    prev_id = row['Id']
+    prev_status = row['status']
+
+print(df)
