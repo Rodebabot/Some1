@@ -1,7 +1,15 @@
 import pandas as pd
 import win32com.client as win32
+import os
 
 # Assuming df is your DataFrame
+# Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
+risk_df = df[df['At risk'] == 'Risk']
+
+# Save the filtered DataFrame to a CSV file
+risk_csv_file = 'risk_data.csv'
+risk_df.to_csv(risk_csv_file, index=False)
+
 # Calculate number of 'Overdue' and 'Risk'
 overdue_count = (df['Reg'] == 'Overdue').sum()
 at_risk_count = (df['At risk'] == 'Risk').sum()
@@ -24,6 +32,10 @@ mail.CC = "cc1@example.com; cc2@example.com"
 # Set email subject and body
 mail.Subject = "Important Updates"
 mail.Body = f"{overdue_sentence}\n{at_risk_sentence}"
+
+# Attach the CSV file containing 'Risk' in 'At risk' column
+attachment = os.path.abspath(risk_csv_file)
+mail.Attachments.Add(attachment)
 
 # Mark the email as important if needed
 if is_important:
