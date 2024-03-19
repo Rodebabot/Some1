@@ -1,37 +1,6 @@
 import pandas as pd
 import win32com.client as win32
 
-# Assuming df is your original DataFrame
-risk_df = df[df['At risk'] == 'Risk']
-
-# Generate a link to the DataFrame
-link = "file:///" + "path_to_save/risk_df.html"  # Change "path_to_save" to the directory where you want to save the HTML file
-risk_df.to_html(link)
-
-# Create sentences based on conditions
-overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
-at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
-
-# Send emails using Outlook
-outlook = win32.Dispatch('outlook.application')
-mail = outlook.CreateItem(0)
-
-# Set email recipients
-mail.To = "recipient@example.com"
-mail.CC = "cc1@example.com; cc2@example.com"
-
-# Set email subject and body
-mail.Subject = "Important Updates"
-mail.HTMLBody = f"<p>{overdue_sentence}</p><p>{at_risk_sentence}</p><p>Click <a href={link}>here</a> to view the At Risk UIDs.</p>"
-
-# Send email
-mail.Send()
-
-
-
-import pandas as pd
-import win32com.client as win32
-
 # Assuming df is your DataFrame
 # Calculate number of 'Overdue' and 'Risk'
 overdue_count = (df['Reg'] == 'Overdue').sum()
@@ -40,6 +9,9 @@ at_risk_count = (df['At risk'] == 'Risk').sum()
 # Create sentences based on conditions
 overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
 at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
+
+# Determine if the email should be marked as important
+is_important = overdue_count > 5 or at_risk_count >= 5
 
 # Send emails using Outlook
 outlook = win32.Dispatch('outlook.application')
@@ -52,6 +24,16 @@ mail.CC = "cc1@example.com; cc2@example.com"
 # Set email subject and body
 mail.Subject = "Important Updates"
 mail.Body = f"{overdue_sentence}\n{at_risk_sentence}"
+
+# Mark the email as important if needed
+if is_important:
+    mail.Importance = 2  # 2 represents importance level 'High'
+
+# Add clickable links
+mail.HTMLBody = f"""<p>{overdue_sentence}</p>
+                    <p>{at_risk_sentence}</p>
+                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this">Esc Ani</a></p>
+                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this">Esc Silka</a></p>"""
 
 # Send email
 mail.Send()
