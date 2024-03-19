@@ -42,7 +42,9 @@ if is_important:
 
 # Add clickable links with respective mail bodies
 mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
-                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>"""
+                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
+                    <p>{overdue_sentence}</p>
+                    <p>{at_risk_sentence}</p>"""
 
 # Send email
 mail.Send()
