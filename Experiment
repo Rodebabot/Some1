@@ -49,3 +49,10 @@ mail.HTMLBody = f"""<p>{overdue_sentence}</p>
 
 # Send email
 mail.Send()
+
+
+# Add clickable links
+mail.HTMLBody = f"""<p>{overdue_sentence}</p>
+                    <p>{at_risk_sentence}</p>
+                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&attach={risk_csv_file}">Esc Ani</a></p>
+                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&attach={risk_csv_file}">Esc Silka</a></p>"""
