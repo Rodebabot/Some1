@@ -1,24 +1,57 @@
 import pandas as pd
+import win32com.client as win32
 
-# Sample DataFrame
-data = {
-    'Ext': ['ec', 'e', 'Ic', 'c', 'I', 'Ie'],
-}
+# Assuming df is your original DataFrame
+risk_df = df[df['At risk'] == 'Risk']
 
-df = pd.DataFrame(data)
+# Generate a link to the DataFrame
+link = "file:///" + "path_to_save/risk_df.html"  # Change "path_to_save" to the directory where you want to save the HTML file
+risk_df.to_html(link)
 
-# Function to calculate score based on 'Ext' values
-def calculate_score(ext):
-    if 'e' in ext:
-        return 1
-    elif 'I' in ext:
-        return 2
-    elif 'c' in ext:
-        return 3
-    else:
-        return None
+# Create sentences based on conditions
+overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
+at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
 
-# Create 'score' column using apply function
-df['score'] = df['Ext'].apply(calculate_score)
+# Send emails using Outlook
+outlook = win32.Dispatch('outlook.application')
+mail = outlook.CreateItem(0)
 
-print(df)
+# Set email recipients
+mail.To = "recipient@example.com"
+mail.CC = "cc1@example.com; cc2@example.com"
+
+# Set email subject and body
+mail.Subject = "Important Updates"
+mail.HTMLBody = f"<p>{overdue_sentence}</p><p>{at_risk_sentence}</p><p>Click <a href={link}>here</a> to view the At Risk UIDs.</p>"
+
+# Send email
+mail.Send()
+
+
+
+import pandas as pd
+import win32com.client as win32
+
+# Assuming df is your DataFrame
+# Calculate number of 'Overdue' and 'Risk'
+overdue_count = (df['Reg'] == 'Overdue').sum()
+at_risk_count = (df['At risk'] == 'Risk').sum()
+
+# Create sentences based on conditions
+overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
+at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
+
+# Send emails using Outlook
+outlook = win32.Dispatch('outlook.application')
+mail = outlook.CreateItem(0)
+
+# Set email recipients
+mail.To = "recipient@example.com"
+mail.CC = "cc1@example.com; cc2@example.com"
+
+# Set email subject and body
+mail.Subject = "Important Updates"
+mail.Body = f"{overdue_sentence}\n{at_risk_sentence}"
+
+# Send email
+mail.Send()
