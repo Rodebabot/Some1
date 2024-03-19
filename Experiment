@@ -29,9 +29,8 @@ mail = outlook.CreateItem(0)
 mail.To = "recipient@example.com"
 mail.CC = "cc1@example.com; cc2@example.com"
 
-# Set email subject and body
+# Set email subject
 mail.Subject = "Important Updates"
-mail.Body = f"{overdue_sentence}\n{at_risk_sentence}"
 
 # Attach the CSV file containing 'Risk' in 'At risk' column
 attachment = os.path.abspath(risk_csv_file)
@@ -41,18 +40,9 @@ mail.Attachments.Add(attachment)
 if is_important:
     mail.Importance = 2  # 2 represents importance level 'High'
 
-# Add clickable links
-mail.HTMLBody = f"""<p>{overdue_sentence}</p>
-                    <p>{at_risk_sentence}</p>
-                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this">Esc Ani</a></p>
-                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this">Esc Silka</a></p>"""
+# Add clickable links with respective mail bodies
+mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
+                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>"""
 
 # Send email
 mail.Send()
-
-
-# Add clickable links
-mail.HTMLBody = f"""<p>{overdue_sentence}</p>
-                    <p>{at_risk_sentence}</p>
-                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&attach={risk_csv_file}">Esc Ani</a></p>
-                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&attach={risk_csv_file}">Esc Silka</a></p>"""
