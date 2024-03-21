@@ -1,5 +1,6 @@
 import pandas as pd
 import win32com.client as win32
+import os
 
 # Assuming df is your DataFrame
 # Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
@@ -33,6 +34,14 @@ risk_df.to_csv(risk_csv_file, index=False)
 overdue_df.to_csv(overdue_csv_file, index=False)
 deb_df.to_csv(deb_csv_file, index=False)
 
+# Get current directory
+current_directory = os.getcwd()
+
+# Set full file paths
+risk_csv_file_full = os.path.join(current_directory, risk_csv_file)
+overdue_csv_file_full = os.path.join(current_directory, overdue_csv_file)
+deb_csv_file_full = os.path.join(current_directory, deb_csv_file)
+
 # Send emails using Outlook
 outlook = win32.Dispatch('outlook.application')
 mail = outlook.CreateItem(0)
@@ -45,9 +54,9 @@ mail.CC = "cc1@example.com; cc2@example.com"
 mail.Subject = "Important Updates"
 
 # Attach the CSV files
-mail.Attachments.Add(risk_csv_file)
-mail.Attachments.Add(overdue_csv_file)
-mail.Attachments.Add(deb_csv_file)
+mail.Attachments.Add(risk_csv_file_full)
+mail.Attachments.Add(overdue_csv_file_full)
+mail.Attachments.Add(deb_csv_file_full)
 
 # Mark the email as important if needed
 if is_important:
