@@ -63,7 +63,10 @@ if is_important:
     mail.Importance = 2  # 2 represents importance level 'High'
 
 # Add clickable links with respective mail bodies
-mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
+mail.HTMLBody = f"""<p>Hi,</p>
+                    <p>This is a BIA generated mail. Please do not respond.</p>
+                    <p>Visit Link: <a href="http://www.example.com">Link Text</a></p>
+                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
                     <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
                     <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>
                     <p>{overdue_sentence}</p>
