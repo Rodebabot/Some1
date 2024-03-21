@@ -1,5 +1,6 @@
 import pandas as pd
 import win32com.client as win32
+import tempfile
 
 # Assuming df is your DataFrame
 # Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
@@ -35,11 +36,6 @@ mail.CC = "cc1@example.com; cc2@example.com"
 # Set email subject
 mail.Subject = "Important Updates"
 
-# Create HTML tables for the data
-overdue_table_html = overdue_df.to_html(index=False)
-risk_table_html = risk_df.to_html(index=False)
-deb_table_html = deb_df.to_html(index=False)
-
 # Mark the email as important if needed
 if is_important:
     mail.Importance = 2  # 2 represents importance level 'High'
@@ -47,66 +43,22 @@ if is_important:
 # Add clickable links with respective mail bodies
 mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
                     <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
-                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>
-                    <p>{overdue_sentence}</p>
-                    <p>{at_risk_sentence}</p>
-                    <h3>Overdue Data:</h3>
-                    {overdue_table_html}
-                    <h3>Risk Data:</h3>
-                    {risk_table_html}
-                    <h3>Esc Deb Data:</h3>
-                    {deb_table_html}"""
+                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>"""
+
+# Save the tables to temporary files
+overdue_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+overdue_df.to_html(overdue_temp_file.name, index=False)
+
+risk_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+risk_df.to_html(risk_temp_file.name, index=False)
+
+deb_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
+deb_df.to_html(deb_temp_file.name, index=False)
+
+# Attach the tables to the email drafts
+mail.Attachments.Add(overdue_temp_file.name)
+mail.Attachments.Add(risk_temp_file.name)
+mail.Attachments.Add(deb_temp_file.name)
 
 # Send email
-mail.Send()
-
-
-
-
-import pandas as pd
-import win32com.client as win32
-
-# Assuming df is your DataFrame
-# Calculate number of 'Overdue', 'Risk', and 'Deb'
-overdue_count = (df['Reg'] == 'Overdue').sum()
-at_risk_count = (df['At risk'] == 'Risk').sum()
-deb_count = ((df['Reg'] == 'Overdue') & (df['Reg Remediation Committed date'].notna())).sum()
-
-# Create sentences based on conditions
-overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
-at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
-deb_sentence = f"Esc Deb Data: {deb_count} records where 'Reg' is 'Overdue' and 'Reg Remediation Committed date' is not NaN or not blank."
-
-# Determine if the email should be marked as important
-is_important = overdue_count > 5 or at_risk_count >= 5 or deb_count > 0
-
-# Send emails using Outlook
-outlook = win32.Dispatch('outlook.application')
-
-# Function to send emails
-def send_email(to, subject, body, attachment=None):
-    mail = outlook.CreateItem(0)
-    mail.To = to
-    mail.Subject = subject
-    mail.Body = body
-    if attachment:
-        mail.Attachments.Add(attachment)
-    if is_important:
-        mail.Importance = 2  # 2 represents importance level 'High'
-    mail.Send()
-
-# Send Esc Ani email
-send_email("aniket@example.com", "Esc Ani", overdue_sentence)
-
-# Send Esc Silka email
-send_email("silka@example.com", "Esc Silka", at_risk_sentence)
-
-# Filter the DataFrame to include only rows where 'Reg' is "Overdue" and 'Reg Remediation Committed date' is not NaN or not blank
-deb_df = df[(df['Reg'] == 'Overdue') & (df['Reg Remediation Committed date'].notna())]
-
-# Save the filtered DataFrame to a CSV file for Esc Deb
-deb_csv_file = 'deb_data.csv'
-deb_df.to_csv(deb_csv_file, index=False)
-
-# Send Esc Deb email
-send_email("deb@example.com", "Esc Deb", deb_sentence, deb_csv_file)
+mail.Display()
