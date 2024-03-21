@@ -1,18 +1,61 @@
 import pandas as pd
+import win32com.client as win32
 
-# Assuming your DataFrame is named df
-# Calculate the bin size
-max_value = df['Final Weighted Score'].max()
-bin_size = max_value / 5
+# Assuming df is your DataFrame
+# Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
+risk_df = df[df['At risk'] == 'Risk']
 
-# Define the bins starting from 0
-bins = [i * bin_size for i in range(6)]
+# Filter the DataFrame to include only rows with 'Overdue' in the 'Reg' column
+overdue_df = df[df['Reg'] == 'Overdue']
 
-# Define the labels for the groups
-labels = ['Group A', 'Group B', 'Group C', 'Group D', 'Group E']
+# Filter the DataFrame to include only rows where 'Reg' is "Overdue" and 'Reg Remediation Committed date' is not NaN or not blank
+deb_df = overdue_df[overdue_df['Reg Remediation Committed date'].notna()]
 
-# Create a new column with the group labels based on the bins
-df['Group'] = pd.cut(df['Final Weighted Score'], bins=bins, labels=labels, include_lowest=True)
+# Calculate number of 'Overdue', 'Risk', and 'Deb'
+overdue_count = overdue_df.shape[0]
+at_risk_count = risk_df.shape[0]
+deb_count = deb_df.shape[0]
 
-# Display the DataFrame with the new 'Group' column
-print(df)
+# Create sentences based on conditions
+overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
+at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
+deb_sentence = f"Esc Deb Data: {deb_count} records where 'Reg' is 'Overdue' and 'Reg Remediation Committed date' is not NaN or not blank."
+
+# Determine if the email should be marked as important
+is_important = overdue_count > 5 or at_risk_count >= 5 or deb_count > 0
+
+# Send emails using Outlook
+outlook = win32.Dispatch('outlook.application')
+mail = outlook.CreateItem(0)
+
+# Set email recipients
+mail.To = "recipient@example.com"
+mail.CC = "cc1@example.com; cc2@example.com"
+
+# Set email subject
+mail.Subject = "Important Updates"
+
+# Create HTML tables for the data
+overdue_table_html = overdue_df.to_html(index=False)
+risk_table_html = risk_df.to_html(index=False)
+deb_table_html = deb_df.to_html(index=False)
+
+# Mark the email as important if needed
+if is_important:
+    mail.Importance = 2  # 2 represents importance level 'High'
+
+# Add clickable links with respective mail bodies
+mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
+                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
+                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>
+                    <p>{overdue_sentence}</p>
+                    <p>{at_risk_sentence}</p>
+                    <h3>Overdue Data:</h3>
+                    {overdue_table_html}
+                    <h3>Risk Data:</h3>
+                    {risk_table_html}
+                    <h3>Esc Deb Data:</h3>
+                    {deb_table_html}"""
+
+# Send email
+mail.Send()
