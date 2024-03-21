@@ -1,50 +1,18 @@
 import pandas as pd
-import win32com.client as win32
-import os
 
-# Assuming df is your DataFrame
-# Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
-risk_df = df[df['At risk'] == 'Risk']
+# Assuming your DataFrame is named df
+# Calculate the bin size
+max_value = df['Final Weighted Score'].max()
+bin_size = max_value / 5
 
-# Save the filtered DataFrame to a CSV file
-risk_csv_file = 'risk_data.csv'
-risk_df.to_csv(risk_csv_file, index=False)
+# Define the bins starting from 0
+bins = [i * bin_size for i in range(6)]
 
-# Calculate number of 'Overdue' and 'Risk'
-overdue_count = (df['Reg'] == 'Overdue').sum()
-at_risk_count = (df['At risk'] == 'Risk').sum()
+# Define the labels for the groups
+labels = ['Group A', 'Group B', 'Group C', 'Group D', 'Group E']
 
-# Create sentences based on conditions
-overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
-at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
+# Create a new column with the group labels based on the bins
+df['Group'] = pd.cut(df['Final Weighted Score'], bins=bins, labels=labels, include_lowest=True)
 
-# Determine if the email should be marked as important
-is_important = overdue_count > 5 or at_risk_count >= 5
-
-# Send emails using Outlook
-outlook = win32.Dispatch('outlook.application')
-mail = outlook.CreateItem(0)
-
-# Set email recipients
-mail.To = "recipient@example.com"
-mail.CC = "cc1@example.com; cc2@example.com"
-
-# Set email subject
-mail.Subject = "Important Updates"
-
-# Attach the CSV file containing 'Risk' in 'At risk' column
-attachment = os.path.abspath(risk_csv_file)
-mail.Attachments.Add(attachment)
-
-# Mark the email as important if needed
-if is_important:
-    mail.Importance = 2  # 2 represents importance level 'High'
-
-# Add clickable links with respective mail bodies
-mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
-                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
-                    <p>{overdue_sentence}</p>
-                    <p>{at_risk_sentence}</p>"""
-
-# Send email
-mail.Send()
+# Display the DataFrame with the new 'Group' column
+print(df)
