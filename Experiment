@@ -1,6 +1,5 @@
 import pandas as pd
 import win32com.client as win32
-import tempfile
 
 # Assuming df is your DataFrame
 # Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
@@ -25,6 +24,15 @@ deb_sentence = f"Esc Deb Data: {deb_count} records where 'Reg' is 'Overdue' and 
 # Determine if the email should be marked as important
 is_important = overdue_count > 5 or at_risk_count >= 5 or deb_count > 0
 
+# Save filtered dataframes to CSV files
+risk_csv_file = 'risk_data.csv'
+overdue_csv_file = 'overdue_data.csv'
+deb_csv_file = 'deb_data.csv'
+
+risk_df.to_csv(risk_csv_file, index=False)
+overdue_df.to_csv(overdue_csv_file, index=False)
+deb_df.to_csv(deb_csv_file, index=False)
+
 # Send emails using Outlook
 outlook = win32.Dispatch('outlook.application')
 mail = outlook.CreateItem(0)
@@ -36,6 +44,11 @@ mail.CC = "cc1@example.com; cc2@example.com"
 # Set email subject
 mail.Subject = "Important Updates"
 
+# Attach the CSV files
+mail.Attachments.Add(risk_csv_file)
+mail.Attachments.Add(overdue_csv_file)
+mail.Attachments.Add(deb_csv_file)
+
 # Mark the email as important if needed
 if is_important:
     mail.Importance = 2  # 2 represents importance level 'High'
@@ -43,22 +56,9 @@ if is_important:
 # Add clickable links with respective mail bodies
 mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
                     <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
-                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>"""
-
-# Save the tables to temporary files
-overdue_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-overdue_df.to_html(overdue_temp_file.name, index=False)
-
-risk_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-risk_df.to_html(risk_temp_file.name, index=False)
-
-deb_temp_file = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-deb_df.to_html(deb_temp_file.name, index=False)
-
-# Attach the tables to the email drafts
-mail.Attachments.Add(overdue_temp_file.name)
-mail.Attachments.Add(risk_temp_file.name)
-mail.Attachments.Add(deb_temp_file.name)
+                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>
+                    <p>{overdue_sentence}</p>
+                    <p>{at_risk_sentence}</p>"""
 
 # Send email
-mail.Display()
+mail.Send()
