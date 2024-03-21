@@ -59,3 +59,54 @@ mail.HTMLBody = f"""<p><a href="mailto:aniket@example.com?subject=Aniket%20pleas
 
 # Send email
 mail.Send()
+
+
+
+
+import pandas as pd
+import win32com.client as win32
+
+# Assuming df is your DataFrame
+# Calculate number of 'Overdue', 'Risk', and 'Deb'
+overdue_count = (df['Reg'] == 'Overdue').sum()
+at_risk_count = (df['At risk'] == 'Risk').sum()
+deb_count = ((df['Reg'] == 'Overdue') & (df['Reg Remediation Committed date'].notna())).sum()
+
+# Create sentences based on conditions
+overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
+at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
+deb_sentence = f"Esc Deb Data: {deb_count} records where 'Reg' is 'Overdue' and 'Reg Remediation Committed date' is not NaN or not blank."
+
+# Determine if the email should be marked as important
+is_important = overdue_count > 5 or at_risk_count >= 5 or deb_count > 0
+
+# Send emails using Outlook
+outlook = win32.Dispatch('outlook.application')
+
+# Function to send emails
+def send_email(to, subject, body, attachment=None):
+    mail = outlook.CreateItem(0)
+    mail.To = to
+    mail.Subject = subject
+    mail.Body = body
+    if attachment:
+        mail.Attachments.Add(attachment)
+    if is_important:
+        mail.Importance = 2  # 2 represents importance level 'High'
+    mail.Send()
+
+# Send Esc Ani email
+send_email("aniket@example.com", "Esc Ani", overdue_sentence)
+
+# Send Esc Silka email
+send_email("silka@example.com", "Esc Silka", at_risk_sentence)
+
+# Filter the DataFrame to include only rows where 'Reg' is "Overdue" and 'Reg Remediation Committed date' is not NaN or not blank
+deb_df = df[(df['Reg'] == 'Overdue') & (df['Reg Remediation Committed date'].notna())]
+
+# Save the filtered DataFrame to a CSV file for Esc Deb
+deb_csv_file = 'deb_data.csv'
+deb_df.to_csv(deb_csv_file, index=False)
+
+# Send Esc Deb email
+send_email("deb@example.com", "Esc Deb", deb_sentence, deb_csv_file)
