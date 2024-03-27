@@ -1,77 +1,32 @@
-import pandas as pd
-import win32com.client as win32
-import os
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
 
-# Assuming df is your DataFrame
-# Filter the DataFrame to include only rows with 'Risk' in the 'At risk' column
-risk_df = df[df['At risk'] == 'Risk']
+# Define the parameter grid
+param_grid = {
+    'n_estimators': [10, 50, 100],  # You can add more values if needed
+    'max_depth': [6, 8, 10, None],  # None means no maximum depth
+    'max_features': ['auto', 'sqrt', 'log2', None]  # Options for max_features
+}
 
-# Filter the DataFrame to include only rows with 'Overdue' in the 'Reg' column
-overdue_df = df[df['Reg'] == 'Overdue']
+# Initialize the RandomForestClassifier
+rf_classifier = RandomForestClassifier()
 
-# Filter the DataFrame to include only rows where 'Reg' is "Overdue" and 'Reg Remediation Committed date' is not NaN or not blank
-deb_df = overdue_df[overdue_df['Reg Remediation Committed date'].notna()]
+# Perform GridSearchCV or RandomizedSearchCV
+# Use GridSearchCV for exhaustive search or RandomizedSearchCV for random search
+# Change cv value according to your data, here 5-fold cross-validation is used
+# Change n_iter if using RandomizedSearchCV, it determines the number of parameter settings that are sampled
+grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5)
+# grid_search = RandomizedSearchCV(estimator=rf_classifier, param_distributions=param_grid, n_iter=100, cv=5, random_state=42)
 
-# Calculate number of 'Overdue', 'Risk', and 'Deb'
-overdue_count = overdue_df.shape[0]
-at_risk_count = risk_df.shape[0]
-deb_count = deb_df.shape[0]
+# Fit the model
+grid_search.fit(X_train, y_train)  # Replace X_train and y_train with your training data
 
-# Create sentences based on conditions
-overdue_sentence = f"Today's Overdue number is {overdue_count}." if overdue_count > 5 else "No need to worry about Overdue number for today."
-at_risk_sentence = f"There are {at_risk_count} UIDs At risk. You should look into it." if at_risk_count >= 5 else "No need to worry about At risk UIDs, it's well under control."
-deb_sentence = f"Esc Deb Data: {deb_count} records where 'Reg' is 'Overdue' and 'Reg Remediation Committed date' is not NaN or not blank."
+# Get the best parameters
+best_params = grid_search.best_params_
+print("Best Parameters:", best_params)
 
-# Determine if the email should be marked as important
-is_important = overdue_count > 5 or at_risk_count >= 5 or deb_count > 0
+# Get the best estimator
+best_estimator = grid_search.best_estimator_
 
-# Save filtered dataframes to CSV files
-risk_csv_file = 'risk_data.csv'
-overdue_csv_file = 'overdue_data.csv'
-deb_csv_file = 'deb_data.csv'
-
-risk_df.to_csv(risk_csv_file, index=False)
-overdue_df.to_csv(overdue_csv_file, index=False)
-deb_df.to_csv(deb_csv_file, index=False)
-
-# Get current directory
-current_directory = os.getcwd()
-
-# Set full file paths
-risk_csv_file_full = os.path.join(current_directory, risk_csv_file)
-overdue_csv_file_full = os.path.join(current_directory, overdue_csv_file)
-deb_csv_file_full = os.path.join(current_directory, deb_csv_file)
-
-# Send emails using Outlook
-outlook = win32.Dispatch('outlook.application')
-mail = outlook.CreateItem(0)
-
-# Set email recipients
-mail.To = "recipient@example.com"
-mail.CC = "cc1@example.com; cc2@example.com"
-
-# Set email subject
-mail.Subject = "Important Updates"
-
-# Attach the CSV files
-mail.Attachments.Add(risk_csv_file_full)
-mail.Attachments.Add(overdue_csv_file_full)
-mail.Attachments.Add(deb_csv_file_full)
-
-# Mark the email as important if needed
-if is_important:
-    mail.Importance = 2  # 2 represents importance level 'High'
-
-# Add clickable links with respective mail bodies
-mail.HTMLBody = f"""<p>Hi,</p>
-                    <p>This is a BIA generated mail. Please do not respond.</p>
-                    <p>Visit Link: <a href="http://www.example.com">Link Text</a></p>
-                    <p><a href="mailto:aniket@example.com?subject=Aniket%20please%20look%20into%20this&body={overdue_sentence}">Esc Ani</a></p>
-                    <p><a href="mailto:silka@example.com?subject=Silka%20please%20look%20into%20this&body={at_risk_sentence}">Esc Silka</a></p>
-                    <p><a href="mailto:deb@example.com?subject=Esc%20Deb%20Data&body={deb_sentence}">Esc Deb</a></p>
-                    <p>{overdue_sentence}</p>
-                    <p>{at_risk_sentence}</p>
-                    <p>{deb_sentence}</p>"""
-
-# Send email
-mail.Send()
+# Now you can use the best estimator for prediction
