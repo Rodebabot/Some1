@@ -19,3 +19,17 @@ merged_df = pd.concat([merged_df, df2_not_in_merged], ignore_index=True)
 merged_df['B'] = merged_df['B'].fillna('')
 
 print(merged_df)
+
+
+
+import pandas as pd
+
+# Your merged dataframe
+merged_df = pd.DataFrame({'Entity': ['R', 'P', 'Q'],
+                          'Entity_x': ['', 'P', ''],
+                          'Value': [1, 2, 3]})
+
+# Fill empty values in 'Entity_x' with corresponding values from 'Entity'
+merged_df['Entity_x'] = merged_df.apply(lambda row: row['Entity'] if pd.isna(row['Entity_x']) else row['Entity_x'], axis=1)
+
+print(merged_df)
