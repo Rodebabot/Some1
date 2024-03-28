@@ -20,7 +20,14 @@ df['Value Date'] = pd.to_datetime(df['Value Date'])
 pivot_table = pd.pivot_table(df, values=['V', 'V1'], index=['Entity', 'Counterparty Name', 'CCY'],
                              columns='Value Date', aggfunc='sum', fill_value=0)
 
-# Reorder columns to display 'V' and 'V1' side by side for every date
-pivot_table = pivot_table.swaplevel(axis=1).sort_index(axis=1)
+# Calculate difference for each date
+for col in pivot_table.columns.levels[1]:
+    pivot_table[('Difference', col)] = pivot_table[('V', col)] - pivot_table[('V1', col)]
 
-print(pivot_table)
+# Reshape the pivot table
+result = pivot_table.stack(level=1).reset_index()
+
+# Reorder columns
+result = result[['Entity', 'Counterparty Name', 'CCY', 'Value Date', 'V', 'V1', 'Difference']]
+
+print(result)
