@@ -1,32 +1,22 @@
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.ensemble import RandomForestClassifier
-import numpy as np
+import pandas as pd
 
-# Define the parameter grid
-param_grid = {
-    'n_estimators': [10, 50, 100],  # You can add more values if needed
-    'max_depth': [6, 8, 10, None],  # None means no maximum depth
-    'max_features': ['auto', 'sqrt', 'log2', None]  # Options for max_features
+# Sample data
+data = {
+    'Entity': ['A', 'B', 'A', 'B', 'A'],
+    'Counterparty Name': ['C1', 'C2', 'C1', 'C2', 'C1'],
+    'CCY': ['USD', 'EUR', 'USD', 'EUR', 'USD'],
+    'Value Date': ['2024-03-28', '2024-03-28', '2024-03-29', '2024-03-29', '2024-03-30'],
+    'V': [100, 200, 150, 250, 300]
 }
 
-# Initialize the RandomForestClassifier
-rf_classifier = RandomForestClassifier()
+# Create DataFrame
+df = pd.DataFrame(data)
 
-# Perform GridSearchCV or RandomizedSearchCV
-# Use GridSearchCV for exhaustive search or RandomizedSearchCV for random search
-# Change cv value according to your data, here 5-fold cross-validation is used
-# Change n_iter if using RandomizedSearchCV, it determines the number of parameter settings that are sampled
-grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5)
-# grid_search = RandomizedSearchCV(estimator=rf_classifier, param_distributions=param_grid, n_iter=100, cv=5, random_state=42)
+# Convert 'Value Date' column to datetime type
+df['Value Date'] = pd.to_datetime(df['Value Date'])
 
-# Fit the model
-grid_search.fit(X_train, y_train)  # Replace X_train and y_train with your training data
+# Create pivot table
+pivot_table = pd.pivot_table(df, values='V', index=['Entity', 'Counterparty Name', 'CCY'],
+                             columns='Value Date', aggfunc='sum', fill_value=0)
 
-# Get the best parameters
-best_params = grid_search.best_params_
-print("Best Parameters:", best_params)
-
-# Get the best estimator
-best_estimator = grid_search.best_estimator_
-
-# Now you can use the best estimator for prediction
+print(pivot_table)
