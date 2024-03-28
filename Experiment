@@ -1,33 +1,21 @@
 import pandas as pd
 
-# Sample data
-data = {
-    'Entity': ['A', 'B', 'A', 'B', 'A'],
-    'Counterparty Name': ['C1', 'C2', 'C1', 'C2', 'C1'],
-    'CCY': ['USD', 'EUR', 'USD', 'EUR', 'USD'],
-    'Value Date': ['2024-03-28', '2024-03-28', '2024-03-29', '2024-03-29', '2024-03-30'],
-    'V': [100, 200, 150, 250, 300],
-    'V1': [50, 70, 80, 90, 100]
-}
+# Your first dataframe
+df1 = pd.DataFrame({'A': ['R', 'P'], 'B': [1, 2]})
 
-# Create DataFrame
-df = pd.DataFrame(data)
+# Your second dataframe
+df2 = pd.DataFrame({'A': ['P', 'Q'], 'C': [4, 7]})
 
-# Convert 'Value Date' column to datetime type
-df['Value Date'] = pd.to_datetime(df['Value Date'])
+# Merge the dataframes on column 'A' using a left join
+merged_df = pd.merge(df1, df2, on='A', how='left')
 
-# Create pivot table
-pivot_table = pd.pivot_table(df, values=['V', 'V1'], index=['Entity', 'Counterparty Name', 'CCY'],
-                             columns='Value Date', aggfunc='sum', fill_value=0)
+# Find rows in df2 that are not present in the merged dataframe
+df2_not_in_merged = df2[~df2['A'].isin(merged_df['A'])]
 
-# Calculate difference for each date
-for col in pivot_table.columns.levels[1]:
-    pivot_table[('Difference', col)] = pivot_table[('V', col)] - pivot_table[('V1', col)]
+# Concatenate the rows from df2 that are not present in the merged dataframe
+merged_df = pd.concat([merged_df, df2_not_in_merged], ignore_index=True)
 
-# Reshape the pivot table
-result = pivot_table.stack(level=1).reset_index()
+# Fill NaN values in column 'B' with blank values
+merged_df['B'] = merged_df['B'].fillna('')
 
-# Reorder columns
-result = result[['Entity', 'Counterparty Name', 'CCY', 'Value Date', 'V', 'V1', 'Difference']]
-
-print(result)
+print(merged_df)
