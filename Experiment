@@ -20,3 +20,34 @@ pivot_table = pd.pivot_table(df, values='V', index=['Entity', 'Counterparty Name
                              columns='Value Date', aggfunc='sum', fill_value=0)
 
 print(pivot_table)
+
+
+
+
+import pandas as pd
+
+# Sample data
+data = {
+    'Entity': ['A', 'B', 'A', 'B', 'A'],
+    'Counterparty Name': ['C1', 'C2', 'C1', 'C2', 'C1'],
+    'CCY': ['USD', 'EUR', 'USD', 'EUR', 'USD'],
+    'Value Date': ['2024-03-28', '2024-03-28', '2024-03-29', '2024-03-29', '2024-03-30'],
+    'V': [100, 200, 150, 250, 300],
+    'V1': [50, 70, 80, 90, 100]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Convert 'Value Date' column to datetime type
+df['Value Date'] = pd.to_datetime(df['Value Date'])
+
+# Create pivot table
+pivot_table = pd.pivot_table(df, values=['V', 'V1'], index=['Entity', 'Counterparty Name', 'CCY'],
+                             columns='Value Date', aggfunc='sum', fill_value=0)
+
+# Rearrange columns
+pivot_table = pivot_table.reorder_levels([1, 2, 0], axis=1)
+pivot_table.sort_index(axis=1, level=[0, 1], inplace=True)
+
+print(pivot_table)
