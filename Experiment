@@ -1,35 +1,44 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTENC
+from xgboost import XGBClassifier
 
-# Your first dataframe
-df1 = pd.DataFrame({'A': ['R', 'P'], 'B': [1, 2]})
+# Load the dataset
+data = pd.read_csv('data.csv')
 
-# Your second dataframe
-df2 = pd.DataFrame({'A': ['P', 'Q'], 'C': [4, 7]})
+# Specify the categorical columns for SMOT
+categorical_columns = ["Entity", "trade type", "settle type"]
 
-# Merge the dataframes on column 'A' using a left join
-merged_df = pd.merge(df1, df2, on='A', how='left')
+# Extract the indices of the categorical columns
+categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
 
-# Find rows in df2 that are not present in the merged dataframe
-df2_not_in_merged = df2[~df2['A'].isin(merged_df['A'])]
+# Separate features and target variable
+X = data.drop(columns=['target_column'])
+y = data['target_column']
 
-# Concatenate the rows from df2 that are not present in the merged dataframe
-merged_df = pd.concat([merged_df, df2_not_in_merged], ignore_index=True)
+# Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Fill NaN values in column 'B' with blank values
-merged_df['B'] = merged_df['B'].fillna('')
+# Apply SMOTENC to the training set
+smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
+X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
 
-print(merged_df)
+# Train XGBoost classifier
+model = XGBClassifier()
+model.fit(X_train_resampled, y_train_resampled)
 
+# Feature importance
+feature_importance = model.feature_importances_
 
+# Create a DataFrame for feature importance
+feature_importance_df = pd.DataFrame({'Feature': X_train.columns, 'Importance': feature_importance})
 
-import pandas as pd
+# Sort the DataFrame by feature importance
+feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
 
-# Your merged dataframe
-merged_df = pd.DataFrame({'Entity': ['R', 'P', 'Q'],
-                          'Entity_x': ['', 'P', ''],
-                          'Value': [1, 2, 3]})
+# Calculate percentage importance
+total_importance = feature_importance_df['Importance'].sum()
+feature_importance_df['Percentage'] = (feature_importance_df['Importance'] / total_importance) * 100
 
-# Fill empty values in 'Entity_x' with corresponding values from 'Entity'
-merged_df['Entity_x'] = merged_df.apply(lambda row: row['Entity'] if pd.isna(row['Entity_x']) else row['Entity_x'], axis=1)
-
-print(merged_df)
+# Display the table
+print(feature_importance_df)
