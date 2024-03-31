@@ -43,3 +43,8 @@ feature_importance_df = feature_importance_df.sort_values(by='Importance', ascen
 
 # Step 11: Print feature importance
 print(feature_importance_df)
+
+
+na_indices = y[y.isna()].index
+X = X.drop(index=na_indices)
+y = y.drop(index=na_indices)
