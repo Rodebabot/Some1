@@ -7,8 +7,8 @@ def one_hot_encode_categorical_sparse(df):
     encoded_data = encoder.fit_transform(df)
     return encoded_data
 
-# Split the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Convert non-string columns to strings
+X_train = X_train.astype(str)
 
 # Fill NaN values with a specific value (e.g., "Not Mentioned")
 X_train.fillna("Not Mentioned", inplace=True)
