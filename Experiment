@@ -103,3 +103,17 @@ y_pred = pipeline.predict(X_test)
 # Calculate accuracy
 accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy:.2f}")
+
+
+
+param_mapping = {
+    'n_estimators': 'classifier__n_estimators',
+    'max_depth': 'classifier__max_depth',
+    'min_samples_split': 'classifier__min_samples_split',
+    'min_samples_leaf': 'classifier__min_samples_leaf'
+}
+
+# Set the best hyperparameters to the pipeline using the mapping
+pipeline.set_params(**{param_mapping[key]: value for key, value in best_params.items()})
+
+# Train the classifier with the best hyperparameters
