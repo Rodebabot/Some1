@@ -7,45 +7,47 @@ from sklearn.preprocessing import OneHotEncoder
 # Step 1: Read the Excel and create a dataframe
 data = pd.read_excel('data.xlsx')
 
-# Step 2: Get indices of categorical variables
-categorical_columns = ["Entity", "trade type", "settle type"]
-categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
-
-# Step 3: Separate features and target variable, and encode the target variable
-X = data.drop(columns=['Is Fail'])
-y = data['Is Fail'].map({'No': 0, 'Yes': 1})
-
-# Step 4: Split the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Step 5: Apply SMOTENC to the training set
-smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
-X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
-
-# Step 6: One-hot encode categorical variables only
-encoder = OneHotEncoder(drop='first', sparse=False)
-X_train_encoded = encoder.fit_transform(X_train_resampled.iloc[:, categorical_indices])
-
-# Step 7: Combine encoded categorical variables with continuous variables
-X_train_final = pd.concat([pd.DataFrame(X_train_encoded), X_train_resampled.drop(columns=X_train_resampled.columns[categorical_indices])], axis=1)
-
-# Step 8: Train XGBoost classifier
-model = XGBClassifier()
-model.fit(X_train_final, y_train_resampled)
-
-# Step 9: Get feature importance
-feature_importance = model.feature_importances_
-
-# Step 10: Create a DataFrame for feature importance
-feature_importance_df = pd.DataFrame({'Feature': list(encoder.get_feature_names_out()) + list(X_train_resampled.columns[categorical_indices]), 'Importance': feature_importance})
-
-# Step 11: Sort the DataFrame by feature importance
-feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
-
-# Step 12: Print feature importance
-print(feature_importance_df)
-
-
+# Step 2: Convert string categorical variables to numerical categories
+string_categorical_columns = ["Gender", "Other_categorical_column"]
 for col in string_categorical_columns:
     data[col] = data[col].astype('category').cat.codes
 
+# Step 3: Get indices of categorical variables
+categorical_columns = ["Entity", "trade type", "settle type"]
+categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
+
+# Step 4: Separate features and target variable, and encode the target variable
+X = data.drop(columns=['Is Fail'])
+y = data['Is Fail'].map({'No': 0, 'Yes': 1})
+
+# Step 5: Apply OneHotEncoder to all categorical variables
+encoder = OneHotEncoder(drop='first', sparse=False)
+X_encoded = encoder.fit_transform(X.iloc[:, categorical_indices])
+
+# Step 6: Combine encoded categorical variables with continuous variables
+X_encoded_df = pd.DataFrame(X_encoded, columns=encoder.get_feature_names_out())
+X_continuous = X.drop(columns=X.columns[categorical_indices])
+X_final = pd.concat([X_encoded_df, X_continuous], axis=1)
+
+# Step 7: Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_final, y, test_size=0.2, random_state=42)
+
+# Step 8: Apply SMOTENC to the training set
+smote_nc = SMOTENC(categorical_features=list(range(X_encoded_df.shape[1])), random_state=42)
+X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
+
+# Step 9: Train XGBoost classifier
+model = XGBClassifier()
+model.fit(X_train_resampled, y_train_resampled)
+
+# Step 10: Get feature importance
+feature_importance = model.feature_importances_
+
+# Step 11: Create a DataFrame for feature importance
+feature_importance_df = pd.DataFrame({'Feature': list(encoder.get_feature_names_out()) + list(X_continuous.columns), 'Importance': feature_importance})
+
+# Step 12: Sort the DataFrame by feature importance
+feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
+
+# Step 13: Print feature importance
+print(feature_importance_df)
