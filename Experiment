@@ -48,3 +48,8 @@ print(feature_importance_df)
 na_indices = y[y.isna()].index
 X = X.drop(index=na_indices)
 y = y.drop(index=na_indices)
+
+
+nan_indices = X[X.isna().any(axis=1)].index
+X = X.drop(index=nan_indices)
+y = y.drop(index=nan_indices)
