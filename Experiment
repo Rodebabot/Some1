@@ -1,27 +1,25 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTENC
-from xgboost import XGBClassifier
+from sklearn.preprocessing import LabelEncoder
 
-# Load the dataset
-data = pd.read_csv('data.csv')
-
-# Specify the categorical columns for SMOT
-categorical_columns = ["Entity", "trade type", "settle type"]
-
-# Extract the indices of the categorical columns
-categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
-
-# Separate features and target variable
-X = data.drop(columns=['target_column'])
-y = data['target_column']
+# Define a function to label encode categorical variables
+def label_encode_categorical(df):
+    label_encoder = LabelEncoder()
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            df[col] = label_encoder.fit_transform(df[col].astype(str))
+    return df
 
 # Split the data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Fill NaN values with a specific value (e.g., "Not Mentioned")
+X_train.fillna("Not Mentioned", inplace=True)
+
+# Label encode categorical variables
+X_train_encoded = label_encode_categorical(X_train)
+
 # Apply SMOTENC to the training set
 smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
-X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
+X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train_encoded, y_train)
 
 # Train XGBoost classifier
 model = XGBClassifier()
@@ -31,7 +29,7 @@ model.fit(X_train_resampled, y_train_resampled)
 feature_importance = model.feature_importances_
 
 # Create a DataFrame for feature importance
-feature_importance_df = pd.DataFrame({'Feature': X_train.columns, 'Importance': feature_importance})
+feature_importance_df = pd.DataFrame({'Feature': X_train_encoded.columns, 'Importance': feature_importance})
 
 # Sort the DataFrame by feature importance
 feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
