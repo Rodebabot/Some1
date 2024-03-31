@@ -44,3 +44,8 @@ feature_importance_df = feature_importance_df.sort_values(by='Importance', ascen
 
 # Step 12: Print feature importance
 print(feature_importance_df)
+
+
+for col in string_categorical_columns:
+    data[col] = data[col].astype('category').cat.codes
+
