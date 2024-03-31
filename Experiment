@@ -1,65 +1,46 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTENC
-from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from sklearn.preprocessing import OneHotEncoder
 
-# Load the dataset
-data = pd.read_csv('data.csv')
+# Step 1: Read the Excel and create a dataframe
+data = pd.read_excel('data.xlsx')
 
-# Specify the categorical columns for SMOT
+# Step 2: Get indices of categorical variables
 categorical_columns = ["Entity", "trade type", "settle type"]
-
-# Extract the indices of the categorical columns
 categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
 
-# Separate features and target variable
-X = data.drop(columns=['target_column'])
-y = data['target_column']
+# Step 3: Separate features and target variable, and encode the target variable
+X = data.drop(columns=['Is Fail'])
+y = data['Is Fail'].map({'No': 0, 'Yes': 1})
 
-# Split the data into train and test sets
+# Step 4: Split the data into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Fill NaN values with a specific value (e.g., "Not Mentioned")
-X_train.fillna("Not Mentioned", inplace=True)
-
-# Apply SMOTENC to the training set
+# Step 5: Apply SMOTENC to the training set
 smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
 X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
 
-# Train LightGBM classifier
-model = LGBMClassifier()
-model.fit(X_train_resampled, y_train_resampled)
+# Step 6: One-hot encode categorical variables only
+encoder = OneHotEncoder(drop='first', sparse=False)
+X_train_encoded = encoder.fit_transform(X_train_resampled.iloc[:, categorical_indices])
 
-# Feature importance
+# Step 7: Combine encoded categorical variables with continuous variables
+X_train_final = pd.concat([pd.DataFrame(X_train_encoded), X_train_resampled.drop(columns=X_train_resampled.columns[categorical_indices])], axis=1)
+
+# Step 8: Train XGBoost classifier
+model = XGBClassifier()
+model.fit(X_train_final, y_train_resampled)
+
+# Step 9: Get feature importance
 feature_importance = model.feature_importances_
 
-# Create a DataFrame for feature importance
-feature_importance_df = pd.DataFrame({'Feature': X_train.columns, 'Importance': feature_importance})
+# Step 10: Create a DataFrame for feature importance
+feature_importance_df = pd.DataFrame({'Feature': list(encoder.get_feature_names_out()) + list(X_train_resampled.columns[categorical_indices]), 'Importance': feature_importance})
 
-# Sort the DataFrame by feature importance
+# Step 11: Sort the DataFrame by feature importance
 feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
 
-# Calculate percentage importance
-total_importance = feature_importance_df['Importance'].sum()
-feature_importance_df['Percentage'] = (feature_importance_df['Importance'] / total_importance) * 100
-
-# Display the table
+# Step 12: Print feature importance
 print(feature_importance_df)
-
-
-
-import pandas as pd
-
-# Load the dataset
-data = pd.read_csv('data.csv')
-
-# Specify the column to keep as is
-column_to_keep_as_is = 'column_name_to_keep'
-
-# Convert all columns to string except the one to keep as is
-for col in data.columns:
-    if col != column_to_keep_as_is:
-        data[col] = data[col].astype(str)
-
-# Verify the data types
-print(data.dtypes)
