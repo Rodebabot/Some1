@@ -2,15 +2,16 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTENC
 from xgboost import XGBClassifier
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 
 # Step 1: Read the Excel and create a dataframe
 data = pd.read_excel('data.xlsx')
 
-# Step 2: Convert string categorical variables to numerical categories
-string_categorical_columns = ["Gender", "Other_categorical_column"]
-for col in string_categorical_columns:
-    data[col] = data[col].astype('category').cat.codes
+# Step 2: Convert all string categorical variables to numerical categories
+label_encoder = LabelEncoder()
+for col in data.columns:
+    if data[col].dtype == 'object':
+        data[col] = label_encoder.fit_transform(data[col])
 
 # Step 3: Get indices of categorical variables
 categorical_columns = ["Entity", "trade type", "settle type"]
@@ -20,34 +21,25 @@ categorical_indices = [data.columns.get_loc(col) for col in categorical_columns]
 X = data.drop(columns=['Is Fail'])
 y = data['Is Fail'].map({'No': 0, 'Yes': 1})
 
-# Step 5: Apply OneHotEncoder to all categorical variables
-encoder = OneHotEncoder(drop='first', sparse=False)
-X_encoded = encoder.fit_transform(X.iloc[:, categorical_indices])
+# Step 5: Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Step 6: Combine encoded categorical variables with continuous variables
-X_encoded_df = pd.DataFrame(X_encoded, columns=encoder.get_feature_names_out())
-X_continuous = X.drop(columns=X.columns[categorical_indices])
-X_final = pd.concat([X_encoded_df, X_continuous], axis=1)
-
-# Step 7: Split the data into train and test sets
-X_train, X_test, y_train, y_test = train_test_split(X_final, y, test_size=0.2, random_state=42)
-
-# Step 8: Apply SMOTENC to the training set
-smote_nc = SMOTENC(categorical_features=list(range(X_encoded_df.shape[1])), random_state=42)
+# Step 6: Apply SMOTENC to the training set
+smote_nc = SMOTENC(categorical_features=categorical_indices, random_state=42)
 X_train_resampled, y_train_resampled = smote_nc.fit_resample(X_train, y_train)
 
-# Step 9: Train XGBoost classifier
+# Step 7: Train XGBoost classifier
 model = XGBClassifier()
 model.fit(X_train_resampled, y_train_resampled)
 
-# Step 10: Get feature importance
+# Step 8: Get feature importance
 feature_importance = model.feature_importances_
 
-# Step 11: Create a DataFrame for feature importance
-feature_importance_df = pd.DataFrame({'Feature': list(encoder.get_feature_names_out()) + list(X_continuous.columns), 'Importance': feature_importance})
+# Step 9: Create a DataFrame for feature importance
+feature_importance_df = pd.DataFrame({'Feature': X_train.columns, 'Importance': feature_importance})
 
-# Step 12: Sort the DataFrame by feature importance
+# Step 10: Sort the DataFrame by feature importance
 feature_importance_df = feature_importance_df.sort_values(by='Importance', ascending=False)
 
-# Step 13: Print feature importance
+# Step 11: Print feature importance
 print(feature_importance_df)
