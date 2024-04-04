@@ -53,3 +53,17 @@ filtered_df = df.loc[idx_to_keep]
 filtered_df.drop('Absolute_Net', axis=1, inplace=True)
 
 # Now, filtered_df contains only the rows with the lowest absolute value of 'Net' for each key
+
+
+import pandas as pd
+
+# Assuming your dataset is stored in a DataFrame called df
+# Replace 'Counterparty Name', 'CCY', 'Value Date', and 'Net' with the actual column names in your dataset
+
+# Pivot the DataFrame
+pivot_df = df.pivot_table(index=['Counterparty Name', 'CCY'], columns='Value Date', values='Net', aggfunc='first')
+
+# Reset index to make 'Counterparty Name' and 'CCY' regular columns
+pivot_df.reset_index(inplace=True)
+
+# Now, pivot_df contains the 'Value Date' unique values as columns with other columns unchanged
