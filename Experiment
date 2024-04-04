@@ -20,14 +20,15 @@ wb = Workbook()
 ws = wb.active
 
 # Write the DataFrame to the worksheet including header row
-for r_idx, row in enumerate(df.itertuples(), 1):
-    for c_idx, value in enumerate(row[1:], 1):
+for r_idx, row in enumerate(df.itertuples(index=False), 1):
+    for c_idx, value in enumerate(row, 1):
         ws.cell(row=r_idx, column=c_idx, value=value)
 
 # Apply conditional formatting to increase font size for negative values
 for col_idx, col_name in enumerate(df.columns):
     if col_name in numeric_cols:
-        for row_idx, cell in enumerate(ws[col_idx + 1], 1):
+        for row_idx in range(2, len(df) + 2):  # Starting from the second row
+            cell = ws.cell(row=row_idx, column=col_idx + 1)
             if isinstance(cell.value, (int, float)) and cell.value < 0:
                 cell.font = Font(size=12)
                 cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
