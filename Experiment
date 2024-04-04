@@ -32,3 +32,24 @@ def filter_rows(group):
 filtered_df = pd.concat([filter_rows(group) for _, group in grouped])
 
 # Now, filtered_df contains the DataFrame with rows dropped as per the conditions
+
+
+
+
+import pandas as pd
+
+# Assuming your DataFrame is called df and contains columns 'Key' and 'Net'
+
+# Calculate the absolute values of the 'Net' column
+df['Absolute_Net'] = df['Net'].abs()
+
+# Get the index of the row with the lowest absolute value for each key
+idx_to_keep = df.groupby('Key')['Absolute_Net'].idxmin()
+
+# Filter the DataFrame to keep only the rows with the lowest absolute value for each key
+filtered_df = df.loc[idx_to_keep]
+
+# Drop the 'Absolute_Net' column if you no longer need it
+filtered_df.drop('Absolute_Net', axis=1, inplace=True)
+
+# Now, filtered_df contains only the rows with the lowest absolute value of 'Net' for each key
