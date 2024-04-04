@@ -1,5 +1,12 @@
 import pandas as pd
 
-# Assuming you have a DataFrame named 'df' with a column named 'Entity'
-# Replace 'df' and 'Entity' with your actual DataFrame and column name
-filtered_df = df[df['Entity'] == 'NIP']
+# Assuming your dataset is stored in a DataFrame called df
+# Replace 'Counterparty Name', 'CCY', and 'ValueDate' with the actual column names in your dataset
+
+# Group by the specified columns and count occurrences
+counts = df.groupby(['Counterparty Name', 'CCY', 'ValueDate']).size()
+
+# Filter to keep only rows where the combination repeats twice
+filtered_df = df[df.apply(lambda row: counts[(row['Counterparty Name'], row['CCY'], row['ValueDate'])] == 2, axis=1)]
+
+# Now, filtered_df contains the rows where the specified combination repeats twice
