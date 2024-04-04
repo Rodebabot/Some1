@@ -20,8 +20,8 @@ wb = Workbook()
 ws = wb.active
 
 # Write the DataFrame to the worksheet including header row
-for r_idx, row in enumerate(df.itertuples(index=False), 1):
-    for c_idx, value in enumerate(row, 1):
+for r_idx, row in enumerate(df.itertuples(index=True), 1):
+    for c_idx, value in enumerate(row[1:], 1):  # Skip the first element (index)
         ws.cell(row=r_idx, column=c_idx, value=value)
 
 # Apply conditional formatting to increase font size for negative values
