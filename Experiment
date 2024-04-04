@@ -1,85 +1,16 @@
 import pandas as pd
 
-# Assuming your dataset is stored in a DataFrame called df
-# Replace 'Counterparty Name', 'CCY', and 'ValueDate' with the actual column names in your dataset
-
-# Group by the specified columns and count occurrences
-counts = df.groupby(['Counterparty Name', 'CCY', 'ValueDate']).size()
-
-# Filter to keep only rows where the combination repeats twice
-filtered_df = df[df.apply(lambda row: counts[(row['Counterparty Name'], row['CCY'], row['ValueDate'])] == 2, axis=1)]
-
-# Now, filtered_df contains the rows where the specified combination repeats twice
-
-
-
-
-import pandas as pd
-
-# Assuming your dataset is stored in a DataFrame called df
-# Replace 'Key' and 'Net' with the actual column names in your dataset
-
-# Group by the unique key
-grouped = df.groupby('Key')
-
-# Define a function to check the conditions and drop rows accordingly
-def filter_rows(group):
-    if (group['Net'].eq(0).any()) or (group['Net'].prod() > 0):
-        return group.drop(group.index)
-    return group
-
-# Apply the function to each group and concatenate the results
-filtered_df = pd.concat([filter_rows(group) for _, group in grouped])
-
-# Now, filtered_df contains the DataFrame with rows dropped as per the conditions
-
-
-
-
-import pandas as pd
-
-# Assuming your DataFrame is called df and contains columns 'Key' and 'Net'
-
-# Calculate the absolute values of the 'Net' column
-df['Absolute_Net'] = df['Net'].abs()
-
-# Get the index of the row with the lowest absolute value for each key
-idx_to_keep = df.groupby('Key')['Absolute_Net'].idxmin()
-
-# Filter the DataFrame to keep only the rows with the lowest absolute value for each key
-filtered_df = df.loc[idx_to_keep]
-
-# Drop the 'Absolute_Net' column if you no longer need it
-filtered_df.drop('Absolute_Net', axis=1, inplace=True)
-
-# Now, filtered_df contains only the rows with the lowest absolute value of 'Net' for each key
-
-
-import pandas as pd
-
-# Assuming your dataset is stored in a DataFrame called df
-# Replace 'Counterparty Name', 'CCY', 'Value Date', and 'Net' with the actual column names in your dataset
-
-# Pivot the DataFrame
-pivot_df = df.pivot_table(index=['Counterparty Name', 'CCY'], columns='Value Date', values='Net', aggfunc='first')
-
-# Reset index to make 'Counterparty Name' and 'CCY' regular columns
-pivot_df.reset_index(inplace=True)
-
-# Now, pivot_df contains the 'Value Date' unique values as columns with other columns unchanged
-
-
-
-
-import pandas as pd
-
 # Sample DataFrame
 data = {'A': [-1, 2, -3, 4],
-        'B': [5, -6, 7, -8]}
+        'B': ['apple', -6, 'banana', -8],
+        'C': ['red', 'blue', 'green', 'yellow']}
 df = pd.DataFrame(data)
 
-# Remove the minus sign from negative values
-df = df.applymap(lambda x: abs(x) if x < 0 else x)
+# Identify numeric columns
+numeric_cols = df.select_dtypes(include=['number']).columns
+
+# Remove the minus sign from negative values in numeric columns
+df[numeric_cols] = df[numeric_cols].applymap(lambda x: abs(x) if isinstance(x, int) or isinstance(x, float) else x)
 
 # Export DataFrame to Excel
 excel_file = 'output.xlsx'
@@ -92,14 +23,14 @@ df.to_excel(writer, sheet_name=sheet_name, index=False)
 workbook = writer.book
 worksheet = writer.sheets[sheet_name]
 
-# Add a cell format for negative numbers
+# Add a cell format for negative numbers in numeric columns
 red_format = workbook.add_format({'font_color': 'red'})
 
-# Apply conditional formatting to highlight negative numbers in red
-worksheet.conditional_format(1, 0, df.shape[0], df.shape[1]-1,
-                             {'type': 'cell',
-                              'criteria': '<',
-                              'value': 0,
-                              'format': red_format})
+# Apply conditional formatting to highlight negative numbers in red in numeric columns
+for col_index, col_name in enumerate(df.columns):
+    if col_name in numeric_cols:
+        for row_index, cell_value in enumerate(df[col_name]):
+            if cell_value < 0:
+                worksheet.write(row_index + 1, col_index, cell_value, red_format)
 
 writer.save()
