@@ -10,3 +10,25 @@ counts = df.groupby(['Counterparty Name', 'CCY', 'ValueDate']).size()
 filtered_df = df[df.apply(lambda row: counts[(row['Counterparty Name'], row['CCY'], row['ValueDate'])] == 2, axis=1)]
 
 # Now, filtered_df contains the rows where the specified combination repeats twice
+
+
+
+
+import pandas as pd
+
+# Assuming your dataset is stored in a DataFrame called df
+# Replace 'Key' and 'Net' with the actual column names in your dataset
+
+# Group by the unique key
+grouped = df.groupby('Key')
+
+# Define a function to check the conditions and drop rows accordingly
+def filter_rows(group):
+    if (group['Net'].eq(0).any()) or (group['Net'].prod() > 0):
+        return group.drop(group.index)
+    return group
+
+# Apply the function to each group and concatenate the results
+filtered_df = pd.concat([filter_rows(group) for _, group in grouped])
+
+# Now, filtered_df contains the DataFrame with rows dropped as per the conditions
