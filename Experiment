@@ -1,6 +1,6 @@
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Font
+from openpyxl.styles import Font, PatternFill
 
 # Sample DataFrame
 data = {'A': [-1, 2, -3, 4],
@@ -10,9 +10,6 @@ df = pd.DataFrame(data)
 
 # Identify numeric columns
 numeric_cols = df.select_dtypes(include=['number']).columns
-
-# Remove the minus sign from negative values in numeric columns
-df[numeric_cols] = df[numeric_cols].applymap(lambda x: abs(x) if isinstance(x, int) or isinstance(x, float) else x)
 
 # Export DataFrame to Excel
 excel_file = 'output.xlsx'
@@ -33,6 +30,7 @@ for col_idx, col_name in enumerate(df.columns):
         for row_idx, cell in enumerate(ws[col_idx + 1], 1):
             if isinstance(cell.value, (int, float)) and cell.value < 0:
                 cell.font = Font(size=12)
+                cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
 # Save the Excel file
 wb.save(filename=excel_file)
