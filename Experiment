@@ -34,3 +34,47 @@ for col_index, col_name in enumerate(df.columns):
                 worksheet.write(row_index + 1, col_index, cell_value, red_format)
 
 writer.save()
+
+
+
+
+import pandas as pd
+
+# Sample DataFrame
+data = {'A': [-1, 2, -3, 4],
+        'B': ['apple', -6, 'banana', -8],
+        'C': ['red', 'blue', 'green', 'yellow']}
+df = pd.DataFrame(data)
+
+# Identify numeric columns
+numeric_cols = df.select_dtypes(include=['number']).columns
+
+# Remove the minus sign from negative values in numeric columns
+df[numeric_cols] = df[numeric_cols].applymap(lambda x: abs(x) if isinstance(x, int) or isinstance(x, float) else x)
+
+# Export DataFrame to Excel
+excel_file = 'output.xlsx'
+sheet_name = 'Sheet1'
+
+# Create a Pandas Excel writer using XlsxWriter as the engine
+writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
+
+# Write the DataFrame to a worksheet
+df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+# Get the xlsxwriter workbook and worksheet objects
+workbook = writer.book
+worksheet = writer.sheets[sheet_name]
+
+# Add a cell format for negative numbers in numeric columns
+red_format = workbook.add_format({'font_color': 'red'})
+
+# Apply conditional formatting to highlight negative numbers in red in numeric columns
+for col_index, col_name in enumerate(df.columns):
+    if col_name in numeric_cols:
+        for row_index, cell_value in enumerate(df[col_name]):
+            if isinstance(cell_value, (int, float)) and cell_value < 0:
+                worksheet.write(row_index + 1, col_index, cell_value, red_format)
+
+# Save the Excel file
+writer.save()
