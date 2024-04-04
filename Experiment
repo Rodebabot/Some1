@@ -19,9 +19,9 @@ sheet_name = 'Sheet1'
 wb = Workbook()
 ws = wb.active
 
-# Write the DataFrame to the worksheet
-for r_idx, row in enumerate(df.iterrows(), 1):
-    for c_idx, value in enumerate(row[1], 1):
+# Write the DataFrame to the worksheet including header row
+for r_idx, row in enumerate(df.itertuples(), 1):
+    for c_idx, value in enumerate(row[1:], 1):
         ws.cell(row=r_idx, column=c_idx, value=value)
 
 # Apply conditional formatting to increase font size for negative values
