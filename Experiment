@@ -67,3 +67,39 @@ pivot_df = df.pivot_table(index=['Counterparty Name', 'CCY'], columns='Value Dat
 pivot_df.reset_index(inplace=True)
 
 # Now, pivot_df contains the 'Value Date' unique values as columns with other columns unchanged
+
+
+
+
+import pandas as pd
+
+# Sample DataFrame
+data = {'A': [-1, 2, -3, 4],
+        'B': [5, -6, 7, -8]}
+df = pd.DataFrame(data)
+
+# Remove the minus sign from negative values
+df = df.applymap(lambda x: abs(x) if x < 0 else x)
+
+# Export DataFrame to Excel
+excel_file = 'output.xlsx'
+sheet_name = 'Sheet1'
+
+writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
+df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+# Get the xlsxwriter workbook and worksheet objects
+workbook = writer.book
+worksheet = writer.sheets[sheet_name]
+
+# Add a cell format for negative numbers
+red_format = workbook.add_format({'font_color': 'red'})
+
+# Apply conditional formatting to highlight negative numbers in red
+worksheet.conditional_format(1, 0, df.shape[0], df.shape[1]-1,
+                             {'type': 'cell',
+                              'criteria': '<',
+                              'value': 0,
+                              'format': red_format})
+
+writer.save()
