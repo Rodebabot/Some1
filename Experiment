@@ -31,6 +31,7 @@ for col_idx, col_name in enumerate(df.columns):
             if isinstance(cell.value, (int, float)) and cell.value < 0:
                 cell.font = Font(size=12)
                 cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+                cell.value = abs(cell.value)  # Remove negative sign
 
 # Save the Excel file
 wb.save(filename=excel_file)
