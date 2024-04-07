@@ -1,38 +1,8 @@
-import pandas as pd
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+Anaya's Birthday RSVP
+Date : 16th April  2024 
 
-# Sample DataFrame
-data = {'A': [-1, 2, -3, 4],
-        'B': ['apple', -6, 'banana', -8],
-        'C': ['red', 'blue', 'green', 'yellow']}
-df = pd.DataFrame(data)
+Tuesday,  6-9 p.m.
+Venue: At Zingeria party hall, Level-2 Metro Junction Mall, Netivali
+Kalyan (E)
 
-# Identify numeric columns
-numeric_cols = df.select_dtypes(include=['number']).columns
-
-# Export DataFrame to Excel
-excel_file = 'output.xlsx'
-sheet_name = 'Sheet1'
-
-# Create a workbook and select the active worksheet
-wb = Workbook()
-ws = wb.active
-
-# Write the DataFrame to the worksheet including header row
-for r_idx, row in enumerate(df.itertuples(index=True), 1):
-    for c_idx, value in enumerate(row[1:], 1):  # Skip the first element (index)
-        ws.cell(row=r_idx, column=c_idx, value=value)
-
-# Apply conditional formatting to increase font size for negative values
-for col_idx, col_name in enumerate(df.columns):
-    if col_name in numeric_cols:
-        for row_idx in range(2, len(df) + 2):  # Starting from the second row
-            cell = ws.cell(row=row_idx, column=col_idx + 1)
-            if isinstance(cell.value, (int, float)) and cell.value < 0:
-                cell.font = Font(size=12)
-                cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
-                cell.value = abs(cell.value)  # Remove negative sign
-
-# Save the Excel file
-wb.save(filename=excel_file)
+RSVP : 9967602678 / 9664345656
