@@ -17,13 +17,6 @@ def search_client(event=None):
 def display_info(fx_data, otc_data):
     info_label.config(text=f"FX Exception: {fx_data}\nOTC Exception: {otc_data}")
 
-def update_listbox(event=None):
-    search_term = entry.get().lower()
-    matches = [client for client in df['Client Name'] if search_term in client.lower()]
-    listbox.delete(0, tk.END)
-    for match in matches:
-        listbox.insert(tk.END, match)
-
 root = tk.Tk()
 root.title("Client Information Search")
 
@@ -32,11 +25,7 @@ label.pack(pady=10)
 
 entry = tk.Entry(root)
 entry.pack(pady=5)
-entry.bind('<KeyRelease>', update_listbox)
-
-listbox = tk.Listbox(root, width=30)
-listbox.pack(pady=5)
-listbox.bind('<<ListboxSelect>>', search_client)
+entry.bind('<KeyRelease>', search_client)
 
 search_button = tk.Button(root, text="Search", command=search_client)
 search_button.pack(pady=5)
