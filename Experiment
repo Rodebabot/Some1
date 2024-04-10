@@ -1,15 +1,15 @@
 import tkinter as tk
+from tkinter import messagebox
 import pandas as pd
-from tkinter.simpledialog import Autocomplete
 
 # Read Excel file into a DataFrame
 df = pd.read_excel('d.xlsx')
 
 def search_client(event=None):
-    client_name = entry.get()
-    if client_name in df['Client Name'].values:
-        fx_data = df.loc[df['Client Name'] == client_name, 'Fx Exception'].values[0]
-        otc_data = df.loc[df['Client Name'] == client_name, 'otc Exception'].values[0]
+    client_name = entry.get().lower()
+    if client_name in df['Client Name'].str.lower().values:
+        fx_data = df.loc[df['Client Name'].str.lower() == client_name, 'Fx Exception'].values[0]
+        otc_data = df.loc[df['Client Name'].str.lower() == client_name, 'otc Exception'].values[0]
         display_info(fx_data, otc_data)
     else:
         info_label.config(text="Client not found")
@@ -17,9 +17,12 @@ def search_client(event=None):
 def display_info(fx_data, otc_data):
     info_label.config(text=f"FX Exception: {fx_data}\nOTC Exception: {otc_data}")
 
-def update_autocomplete():
-    client_names = df['Client Name'].tolist()
-    autocomplete.set_completion_list(client_names)
+def update_listbox(event=None):
+    search_term = entry.get().lower()
+    matches = [client for client in df['Client Name'] if search_term in client.lower()]
+    listbox.delete(0, tk.END)
+    for match in matches:
+        listbox.insert(tk.END, match)
 
 root = tk.Tk()
 root.title("Client Information Search")
@@ -27,10 +30,13 @@ root.title("Client Information Search")
 label = tk.Label(root, text="Enter Client Name:")
 label.pack(pady=10)
 
-entry = Autocomplete(root)
+entry = tk.Entry(root)
 entry.pack(pady=5)
-entry.bind('<Return>', search_client)
-entry.bind('<KeyRelease>', lambda event: update_autocomplete())
+entry.bind('<KeyRelease>', update_listbox)
+
+listbox = tk.Listbox(root, width=30)
+listbox.pack(pady=5)
+listbox.bind('<<ListboxSelect>>', search_client)
 
 search_button = tk.Button(root, text="Search", command=search_client)
 search_button.pack(pady=5)
