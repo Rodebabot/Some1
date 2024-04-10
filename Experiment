@@ -1,1 +1,47 @@
-The analytical problem solved is optimizing resource allocation and activity consolidation within different business units by identifying overstaffing, underutilization, and opportunities for task consolidation through work driver analysis and feature importance assessment. This enhances operational efficiency, reduces costs, and improves productivity in investment banking operations.
+import tkinter as tk
+from tkinter import messagebox
+import pandas as pd
+
+# Read Excel file into a DataFrame
+df = pd.read_excel('your_excel_file.xlsx')
+
+def on_select(event):
+    selected_client = event.widget.get()
+    if selected_client in df['Client Name'].values:
+        fx_data = df.loc[df['Client Name'] == selected_client, 'Fx Exception'].values[0]
+        otc_data = df.loc[df['Client Name'] == selected_client, 'otc Exception'].values[0]
+        display_info(fx_data, otc_data)
+    else:
+        messagebox.showerror("Error", "Client not found!")
+
+def display_info(fx_data, otc_data):
+    # Clear previous data
+    info_label.config(text="")
+    # Update with new data
+    info_label.config(text=f"FX Exception: {fx_data}\nOTC Exception: {otc_data}")
+
+def on_search(event):
+    search_term = entry.get()
+    matches = df['Client Name'][df['Client Name'].str.contains(search_term, case=False)]
+    listbox.delete(0, tk.END)
+    for match in matches:
+        listbox.insert(tk.END, match)
+
+root = tk.Tk()
+root.title("Client Information Search")
+
+label = tk.Label(root, text="Enter Client Name:")
+label.pack(pady=10)
+
+entry = tk.Entry(root)
+entry.pack(pady=5)
+entry.bind('<KeyRelease>', on_search)
+
+listbox = tk.Listbox(root, width=30)
+listbox.pack(pady=5)
+listbox.bind('<<ListboxSelect>>', on_select)
+
+info_label = tk.Label(root, text="", wraplength=300)
+info_label.pack(pady=10)
+
+root.mainloop()
