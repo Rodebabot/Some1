@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import pandas as pd
 
 # Read Excel file into a DataFrame
@@ -17,6 +18,11 @@ def search_client(event=None):
 def display_info(fx_data, otc_data):
     info_label.config(text=f"FX Exception: {fx_data}\nOTC Exception: {otc_data}")
 
+def update_dropdown(event=None):
+    search_term = entry.get().lower()
+    matches = [client for client in df['Client Name'] if search_term in client.lower()]
+    dropdown['values'] = matches
+
 root = tk.Tk()
 root.title("Client Information Search")
 
@@ -25,7 +31,11 @@ label.pack(pady=10)
 
 entry = tk.Entry(root)
 entry.pack(pady=5)
-entry.bind('<KeyRelease>', search_client)
+entry.bind('<KeyRelease>', update_dropdown)
+
+dropdown = ttk.Combobox(root, width=30)
+dropdown.pack(pady=5)
+dropdown.bind('<<ComboboxSelected>>', search_client)
 
 search_button = tk.Button(root, text="Search", command=search_client)
 search_button.pack(pady=5)
