@@ -1,16 +1,24 @@
 import pandas as pd
 
-# Assuming dfp1 is your DataFrame
+# Assuming df is your DataFrame and 'Volume Amount' is the column of interest
 
-# Group by 'Obligor Org Rdmid' and aggregate the count, sum, and first values of 'Counterparty Name' and 'Entity'
-new_df = dfp1.groupby('Obligor Org Rdmid', as_index=False).agg({
-    'Amount USD': 'sum',          # sum of 'Amount USD'
-    'Counterparty Name': 'first', # first occurrence of 'Counterparty Name'
-    'Entity': 'first'             # first occurrence of 'Entity'
-})
+# Step 1: Identify and remove outliers
+Q1 = df['Volume Amount'].quantile(0.25)
+Q3 = df['Volume Amount'].quantile(0.75)
+IQR = Q3 - Q1
 
-# Count the occurrences of 'Obligor Org Rdmid'
-new_df['Count'] = dfp1['Obligor Org Rdmid'].value_counts().values
+# Define the threshold to identify outliers
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
 
-# Display the new DataFrame
-print(new_df)
+# Remove outliers
+filtered_df = df[(df['Volume Amount'] >= lower_bound) & (df['Volume Amount'] <= upper_bound)]
+
+# Step 2: Calculate the median of the remaining values
+median_value = filtered_df['Volume Amount'].median()
+
+# Step 3: Compare each value with the median and tag them accordingly
+df['Tag'] = df['Volume Amount'].apply(lambda x: 'High' if x > median_value else 'Low')
+
+# Display the DataFrame with the new 'Tag' column
+print(df)
