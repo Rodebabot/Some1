@@ -10,8 +10,8 @@ new_df = dfp1.groupby('Obligor Org Rdmid').agg({
     'Entity': 'first'             # first occurrence of 'Entity'
 }).reset_index()                  # reset index to make 'Obligor Org Rdmid' a regular column
 
-# Rename columns
-new_df.columns = ['Obligor Org Rdmid', 'Count', 'Sum of Amount USD', 'Counterparty Name', 'Entity']
+# Rename the count column to 'Count'
+new_df.rename(columns={'Obligor Org Rdmid': 'Count'}, inplace=True)
 
 # Display the new DataFrame
 print(new_df)
