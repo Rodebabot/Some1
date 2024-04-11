@@ -1,10 +1,17 @@
 import pandas as pd
 
-# Assuming dfv is your bigger DataFrame
-# Assuming 'Value Date' column is in datetime format
+# Assuming dfp1 is your DataFrame
 
-# Boolean indexing to filter rows with 'Value Date' in October, November, or December of 2023
-filtered_df = dfv[(dfv['Value Date'].dt.year == 2023) & 
-                 (dfv['Value Date'].dt.month.isin([10, 11, 12]))]
+# Group by 'Obligor Org Rdmid' and aggregate the count, sum, and first values of 'Counterparty Name' and 'Entity'
+new_df = dfp1.groupby('Obligor Org Rdmid').agg({
+    'Obligor Org Rdmid': 'size',  # count of occurrences
+    'Amount USD': 'sum',          # sum of 'Amount USD'
+    'Counterparty Name': 'first', # first occurrence of 'Counterparty Name'
+    'Entity': 'first'             # first occurrence of 'Entity'
+}).reset_index()                  # reset index to make 'Obligor Org Rdmid' a regular column
 
-# Now filtered_df contains rows with 'Value Date' in October, November, or December of 2023
+# Rename columns
+new_df.columns = ['Obligor Org Rdmid', 'Count', 'Sum of Amount USD', 'Counterparty Name', 'Entity']
+
+# Display the new DataFrame
+print(new_df)
