@@ -1,17 +1,9 @@
 import pandas as pd
 
-# Assuming dfp1 is your DataFrame
+# Assuming dffp1 and dfp1 are your DataFrames
 
-# Group by 'Obligor Org Rdmid' and aggregate the count, sum, and first values of 'Counterparty Name' and 'Entity'
-new_df = dfp1.groupby('Obligor Org Rdmid').agg({
-    'Obligor Org Rdmid': 'size',  # count of occurrences
-    'Amount USD': 'sum',          # sum of 'Amount USD'
-    'Counterparty Name': 'first', # first occurrence of 'Counterparty Name'
-    'Entity': 'first'             # first occurrence of 'Entity'
-}).reset_index()                  # reset index to make 'Obligor Org Rdmid' a regular column
+# Merge dffp1 with dfp1 on 'Gloss Reference' to fetch 'Obligor Org Rdmid'
+merged_df = pd.merge(dffp1, dfp1[['Gloss Reference', 'Obligor Org Rdmid']], on='Gloss Reference', how='left')
 
-# Rename the count column to 'Count'
-new_df.rename(columns={'Obligor Org Rdmid': 'Count'}, inplace=True)
-
-# Display the new DataFrame
-print(new_df)
+# Display the merged DataFrame
+print(merged_df)
