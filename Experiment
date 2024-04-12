@@ -1,24 +1,16 @@
 import pandas as pd
 
-# Assuming df is your DataFrame and 'Volume Amount' is the column of interest
+# Sample DataFrame
+data = {'Net': ['(100)', '200', '(300)', '400']}
+df = pd.DataFrame(data)
 
-# Step 1: Identify and remove outliers
-Q1 = df['Volume Amount'].quantile(0.25)
-Q3 = df['Volume Amount'].quantile(0.75)
-IQR = Q3 - Q1
+# Function to convert values inside () to negative
+def convert_to_negative(x):
+    if x.startswith('(') and x.endswith(')'):
+        return '-' + x.strip('()')
+    return x
 
-# Define the threshold to identify outliers
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
+# Apply the function to the 'Net' column
+df['Net1'] = df['Net'].apply(convert_to_negative)
 
-# Remove outliers
-filtered_df = df[(df['Volume Amount'] >= lower_bound) & (df['Volume Amount'] <= upper_bound)]
-
-# Step 2: Calculate the median of the remaining values
-median_value = filtered_df['Volume Amount'].median()
-
-# Step 3: Compare each value with the median and tag them accordingly
-df['Tag'] = df['Volume Amount'].apply(lambda x: 'High' if x > median_value else 'Low')
-
-# Display the DataFrame with the new 'Tag' column
 print(df)
