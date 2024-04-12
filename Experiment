@@ -5,3 +5,28 @@ df = pd.DataFrame(...)  # Your DataFrame here
 
 # Drop the column named "Total"
 df = df.drop(columns=['Total'], errors='ignore')
+
+
+
+import pandas as pd
+
+# Assuming df is your DataFrame
+df = pd.DataFrame(...)  # Your DataFrame here
+
+# Select numerical columns starting from the 5th column
+numerical_columns = df.columns[4:]
+
+# Function to aggregate values based on sign
+def aggregate_values(group):
+    signs = group.apply(lambda x: 1 if x > 0 else (-1 if x < 0 else 0))
+    if (signs == 1).all() or (signs == -1).all():
+        return 0
+    else:
+        positive_sum = group[signs == 1].sum()
+        negative_sum = group[signs == -1].sum()
+        return min(abs(positive_sum), abs(negative_sum)) * (1 if abs(positive_sum) < abs(negative_sum) else -1)
+
+# Group by unique combinations of "Entity", "CPTY Name", and "CCY" and aggregate values
+result = df.groupby(['Entity', 'CPTY Name', 'CCY'])[numerical_columns].agg(aggregate_values)
+
+print(result)
