@@ -4,4 +4,4 @@ import pandas as pd
 df = pd.DataFrame(...)  # Your DataFrame here
 
 # Dropping rows where the first column contains the word "Total"
-df = df[~df.iloc[:, 0].str.contains('Total')]
+df = df[~df.iloc[:, 0].astype(str).str.contains('Total')]
