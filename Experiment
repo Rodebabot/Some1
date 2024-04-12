@@ -3,12 +3,8 @@ import pandas as pd
 # Assuming df is your DataFrame
 df = pd.DataFrame(...)  # Your DataFrame here
 
-# Dropping rows where the first column contains the word "Total"
-df = df[~df.iloc[:, 0].astype(str).str.contains('Total')]
-import pandas as pd
+# Find the index of the column with the name "Total"
+total_index = df.columns.get_loc('Total')
 
-# Assuming df is your DataFrame
-df = pd.DataFrame(...)  # Your DataFrame here
-
-# Fill NaN values in the 'Entity' column with the closest non-null value above
-df['Entity'].fillna(method='ffill', inplace=True)
+# Drop all columns to the right of the "Total" column
+df = df.iloc[:, :total_index + 1]
