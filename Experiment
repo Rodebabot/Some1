@@ -1,22 +1,7 @@
 import pandas as pd
 
-# Sample DataFrame
-data = {'Net': ['(100)', '200', '(300)', '400']}
-df = pd.DataFrame(data)
+# Assuming df is your DataFrame
+df = pd.DataFrame(...)  # Your DataFrame here
 
-# Convert 'Net' column to numerical values
-df['Net'] = pd.to_numeric(df['Net'], errors='coerce')
-
-# Function to convert values inside () to negative
-def convert_to_negative(x):
-    if pd.isna(x):
-        return x
-    if x < 0:
-        return x
-    else:
-        return -x
-
-# Apply the function to the 'Net' column
-df['Net1'] = df['Net'].apply(convert_to_negative)
-
-print(df)
+# Dropping rows where the first column contains the word "Total"
+df = df[~df.iloc[:, 0].str.contains('Total')]
