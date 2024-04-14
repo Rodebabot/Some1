@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import pandas as pd
 
 class ExcelSearchApp:
@@ -19,19 +20,30 @@ class ExcelSearchApp:
         self.button = tk.Button(master, text="Search", command=self.search)
         self.button.pack()
 
-        self.result_text = tk.Text(master, height=10, width=40)
-        self.result_text.pack()
+        self.tree = ttk.Treeview(master)
+        self.tree["columns"] = list(self.df.columns)
+        self.tree.pack()
+
+        self.tree.heading("#0", text="Index")
+        for col in self.df.columns:
+            self.tree.heading(col, text=col)
 
     def search(self):
         client_name = self.entry.get()
         result = self.df[self.df['Client Name'] == client_name]
         if not result.empty:
-            info = result.to_string(index=False)
-            self.result_text.delete(1.0, tk.END)  # Clear previous result
-            self.result_text.insert(tk.END, info)
+            self.update_tree(result)
         else:
-            self.result_text.delete(1.0, tk.END)
-            self.result_text.insert(tk.END, "Client not found.")
+            self.clear_tree()
+
+    def update_tree(self, result):
+        self.clear_tree()
+        for index, row in result.iterrows():
+            self.tree.insert("", "end", text=index, values=list(row))
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
 
 def main():
     root = tk.Tk()
