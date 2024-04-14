@@ -1,68 +1,40 @@
-import pandas as pd
 import tkinter as tk
-from tkinter import ttk
+import pandas as pd
 
-def search():
-    obligor_text = obligor_entry.get().strip()
-    client_text = client_entry.get().strip()
-    
-    # Filter the dataframe based on user input
-    if obligor_text and client_text:
-        filtered_df = df[(df['Obligor'] == obligor_text) & (df['Client Name'] == client_text)]
-    elif obligor_text:
-        filtered_df = df[df['Obligor'] == obligor_text]
-    elif client_text:
-        filtered_df = df[df['Client Name'] == client_text]
-    else:
-        filtered_df = df.copy()
-    
-    # Display filtered dataframe in the treeview
-    display_data(filtered_df)
+class ExcelSearchApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Excel Search App")
 
-def display_data(data):
-    # Clear previous data
-    for row in treeview.get_children():
-        treeview.delete(row)
-    
-    # Insert new data
-    for i, row in data.iterrows():
-        treeview.insert("", "end", values=row.tolist())
+        # Load Excel file
+        self.df = pd.read_excel("your_excel_file.xlsx")
 
-# Load Excel data
-df = pd.read_excel("your_excel_file.xlsx")
+        # Create widgets
+        self.label = tk.Label(master, text="Enter Client Name:")
+        self.label.pack()
 
-# Create tkinter app
-root = tk.Tk()
-root.title("Excel Data Viewer")
+        self.entry = tk.Entry(master)
+        self.entry.pack()
 
-# Search section
-search_frame = ttk.Frame(root)
-search_frame.pack(pady=10)
+        self.button = tk.Button(master, text="Search", command=self.search)
+        self.button.pack()
 
-obligor_label = ttk.Label(search_frame, text="Obligor:")
-obligor_label.grid(row=0, column=0, padx=5, pady=5)
+        self.result_label = tk.Label(master, text="")
+        self.result_label.pack()
 
-obligor_entry = ttk.Entry(search_frame)
-obligor_entry.grid(row=0, column=1, padx=5, pady=5)
+    def search(self):
+        client_name = self.entry.get()
+        result = self.df[self.df['Client Name'] == client_name]
+        if not result.empty:
+            info = result.iloc[0].to_string(index=False)
+            self.result_label.config(text=info)
+        else:
+            self.result_label.config(text="Client not found.")
 
-client_label = ttk.Label(search_frame, text="Client Name:")
-client_label.grid(row=0, column=2, padx=5, pady=5)
+def main():
+    root = tk.Tk()
+    app = ExcelSearchApp(root)
+    root.mainloop()
 
-client_entry = ttk.Entry(search_frame)
-client_entry.grid(row=0, column=3, padx=5, pady=5)
-
-search_button = ttk.Button(search_frame, text="Search", command=search)
-search_button.grid(row=0, column=4, padx=5, pady=5)
-
-# Display section
-treeview = ttk.Treeview(root, columns=df.columns, show="headings")
-
-for col in df.columns:
-    treeview.heading(col, text=col)
-
-treeview.pack(fill="both", expand=True)
-
-# Display all data initially
-display_data(df)
-
-root.mainloop()
+if __name__ == "__main__":
+    main()
