@@ -19,17 +19,19 @@ class ExcelSearchApp:
         self.button = tk.Button(master, text="Search", command=self.search)
         self.button.pack()
 
-        self.result_label = tk.Label(master, text="")
-        self.result_label.pack()
+        self.result_text = tk.Text(master, height=10, width=40)
+        self.result_text.pack()
 
     def search(self):
         client_name = self.entry.get()
         result = self.df[self.df['Client Name'] == client_name]
         if not result.empty:
-            info = result.iloc[0].to_string(index=False)
-            self.result_label.config(text=info)
+            info = result.to_string(index=False)
+            self.result_text.delete(1.0, tk.END)  # Clear previous result
+            self.result_text.insert(tk.END, info)
         else:
-            self.result_label.config(text="Client not found.")
+            self.result_text.delete(1.0, tk.END)
+            self.result_text.insert(tk.END, "Client not found.")
 
 def main():
     root = tk.Tk()
