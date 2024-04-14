@@ -55,7 +55,7 @@ search_button = ttk.Button(search_frame, text="Search", command=search)
 search_button.grid(row=0, column=4, padx=5, pady=5)
 
 # Display section
-treeview = ttk.Treeview(root, columns=df.columns, show="headings")
+treeview = ttk.Treeview(root, columns=df.columns.tolist(), show="headings")
 
 for col in df.columns:
     treeview.heading(col, text=col)
