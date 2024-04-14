@@ -20,9 +20,16 @@ class ExcelSearchApp:
         self.button = tk.Button(master, text="Search", command=self.search)
         self.button.pack()
 
-        self.tree = ttk.Treeview(master)
+        self.tree_frame = ttk.Frame(master)
+        self.tree_frame.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_scroll = tk.Scrollbar(self.tree_frame)
+        self.tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.tree = ttk.Treeview(self.tree_frame, yscrollcommand=self.tree_scroll.set)
+        self.tree_scroll.config(command=self.tree.yview)
         self.tree["columns"] = list(self.df.columns)
-        self.tree.pack()
+        self.tree.pack(fill=tk.BOTH, expand=True)
 
         self.tree.heading("#0", text="Index")
         for col in self.df.columns:
