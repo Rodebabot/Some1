@@ -57,7 +57,13 @@ search_button.grid(row=0, column=4, padx=5, pady=5)
 # Display section
 treeview = ttk.Treeview(root, columns=df.columns, show="headings")
 
-for col in df.columns:
+# Set first column as the first column in the Treeview
+first_column = df.columns[0]
+treeview.column(first_column, width=100, anchor='center')
+treeview.heading(first_column, text=first_column)
+
+# Set other columns
+for col in df.columns[1:]:
     treeview.heading(col, text=col)
 
 treeview.pack(fill="both", expand=True)
