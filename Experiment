@@ -3,10 +3,15 @@ import tkinter as tk
 from tkinter import ttk
 
 def search():
+    obligor_text = obligor_entry.get().strip()
     client_text = client_entry.get().strip()
     
     # Filter the dataframe based on user input
-    if client_text:
+    if obligor_text and client_text:
+        filtered_df = df[(df['Obligor'] == obligor_text) & (df['Client Name'] == client_text)]
+    elif obligor_text:
+        filtered_df = df[df['Obligor'] == obligor_text]
+    elif client_text:
         filtered_df = df[df['Client Name'] == client_text]
     else:
         filtered_df = df.copy()
@@ -34,14 +39,20 @@ root.title("Excel Data Viewer")
 search_frame = ttk.Frame(root)
 search_frame.pack(pady=10)
 
+obligor_label = ttk.Label(search_frame, text="Obligor:")
+obligor_label.grid(row=0, column=0, padx=5, pady=5)
+
+obligor_entry = ttk.Entry(search_frame)
+obligor_entry.grid(row=0, column=1, padx=5, pady=5)
+
 client_label = ttk.Label(search_frame, text="Client Name:")
-client_label.grid(row=0, column=0, padx=5, pady=5)
+client_label.grid(row=0, column=2, padx=5, pady=5)
 
 client_entry = ttk.Entry(search_frame)
-client_entry.grid(row=0, column=1, padx=5, pady=5)
+client_entry.grid(row=0, column=3, padx=5, pady=5)
 
 search_button = ttk.Button(search_frame, text="Search", command=search)
-search_button.grid(row=0, column=2, padx=5, pady=5)
+search_button.grid(row=0, column=4, padx=5, pady=5)
 
 # Display section
 treeview = ttk.Treeview(root, columns=df.columns, show="headings")
