@@ -1,32 +1,68 @@
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 
-# Assuming df is your DataFrame
-df = pd.DataFrame(...)  # Your DataFrame here
-
-# Drop the column named "Total"
-df = df.drop(columns=['Total'], errors='ignore')
-
-
-
-import pandas as pd
-
-# Assuming df is your DataFrame
-df = pd.DataFrame(...)  # Your DataFrame here
-
-# Select numerical columns starting from the 5th column
-numerical_columns = df.columns[4:]
-
-# Function to aggregate values based on sign
-def aggregate_values(group):
-    signs = group.apply(lambda x: 1 if x > 0 else (-1 if x < 0 else 0))
-    if (signs == 1).all() or (signs == -1).all():
-        return 0
+def search():
+    obligor_text = obligor_entry.get().strip()
+    client_text = client_entry.get().strip()
+    
+    # Filter the dataframe based on user input
+    if obligor_text and client_text:
+        filtered_df = df[(df['Obligor'] == obligor_text) & (df['Client Name'] == client_text)]
+    elif obligor_text:
+        filtered_df = df[df['Obligor'] == obligor_text]
+    elif client_text:
+        filtered_df = df[df['Client Name'] == client_text]
     else:
-        positive_sum = group[signs == 1].sum()
-        negative_sum = group[signs == -1].sum()
-        return min(abs(positive_sum), abs(negative_sum)) * (1 if abs(positive_sum) < abs(negative_sum) else -1)
+        filtered_df = df.copy()
+    
+    # Display filtered dataframe in the treeview
+    display_data(filtered_df)
 
-# Group by unique combinations of "Entity", "CPTY Name", and "CCY" and aggregate values
-result = df.groupby(['Entity', 'CPTY Name', 'CCY'])[numerical_columns].agg(aggregate_values)
+def display_data(data):
+    # Clear previous data
+    for row in treeview.get_children():
+        treeview.delete(row)
+    
+    # Insert new data
+    for i, row in data.iterrows():
+        treeview.insert("", "end", values=row.tolist())
 
-print(result)
+# Load Excel data
+df = pd.read_excel("your_excel_file.xlsx")
+
+# Create tkinter app
+root = tk.Tk()
+root.title("Excel Data Viewer")
+
+# Search section
+search_frame = ttk.Frame(root)
+search_frame.pack(pady=10)
+
+obligor_label = ttk.Label(search_frame, text="Obligor:")
+obligor_label.grid(row=0, column=0, padx=5, pady=5)
+
+obligor_entry = ttk.Entry(search_frame)
+obligor_entry.grid(row=0, column=1, padx=5, pady=5)
+
+client_label = ttk.Label(search_frame, text="Client Name:")
+client_label.grid(row=0, column=2, padx=5, pady=5)
+
+client_entry = ttk.Entry(search_frame)
+client_entry.grid(row=0, column=3, padx=5, pady=5)
+
+search_button = ttk.Button(search_frame, text="Search", command=search)
+search_button.grid(row=0, column=4, padx=5, pady=5)
+
+# Display section
+treeview = ttk.Treeview(root, columns=df.columns, show="headings")
+
+for col in df.columns:
+    treeview.heading(col, text=col)
+
+treeview.pack(fill="both", expand=True)
+
+# Display all data initially
+display_data(df)
+
+root.mainloop()
