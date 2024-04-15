@@ -1,7 +1,7 @@
 def search(self):
     client_name = self.entry.get().lower()  # Convert search string to lowercase
-    self.df['Client Name'] = self.df['Client Name'].fillna("")  # Replace NaNs with empty string
-    result = self.df[self.df['Client Name'].str.lower().str.contains(client_name)]
+    filtered_df = self.df.dropna(subset=['Client Name'])  # Remove rows with NaN in 'Client Name' column
+    result = filtered_df[filtered_df['Client Name'].str.lower().str.contains(client_name)]
     if not result.empty:
         self.update_tree(result)
     else:
