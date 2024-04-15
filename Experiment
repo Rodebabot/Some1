@@ -34,6 +34,10 @@ class ExcelSearchApp:
         self.scrollbar_x.pack(side="bottom", fill="x")
         self.tree.configure(xscrollcommand=self.scrollbar_x.set)
 
+        self.scrollbar_y = ttk.Scrollbar(master, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.pack(side="right", fill="y")
+        self.tree.configure(yscrollcommand=self.scrollbar_y.set)
+
         self.tree.pack(side="left", fill="both", expand=True)
 
         self.tree.heading("#0", text="Index")
