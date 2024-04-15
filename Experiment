@@ -1,8 +1,60 @@
-def search(self):
-    client_name = self.entry.get().lower()  # Convert search string to lowercase
-    self.df['Client Name'] = self.df['Client Name'].fillna("")  # Replace NaNs with empty string
-    result = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
-    if not result.empty:
-        self.update_tree(result)
-    else:
+import tkinter as tk
+from tkinter import ttk
+import pandas as pd
+
+class ExcelSearchApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Excel Search App")
+
+        # Load Excel file
+        self.df = pd.read_excel("your_excel_file.xlsx")
+
+        # Create widgets
+        self.label = tk.Label(master, text="Enter Client Name:")
+        self.label.pack()
+
+        self.entry = tk.Entry(master)
+        self.entry.pack()
+
+        self.button = tk.Button(master, text="Search", command=self.search)
+        self.button.pack()
+
+        self.tree = ttk.Treeview(master)
+        self.tree["columns"] = list(self.df.columns)
+
+        self.scrollbar_x = ttk.Scrollbar(master, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.pack(side="bottom", fill="x")
+        self.tree.configure(xscrollcommand=self.scrollbar_x.set)
+
+        self.tree.pack(side="left", fill="both", expand=True)
+
+        self.tree.heading("#0", text="Index")
+        for col in self.df.columns:
+            self.tree.heading(col, text=col)
+
+    def search(self):
+        client_name = self.entry.get().lower()  # Convert search string to lowercase
+        self.df['Client Name'] = self.df['Client Name'].fillna("")  # Replace NaNs with empty string
+        result = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
+        if not result.empty:
+            self.update_tree(result)
+        else:
+            self.clear_tree()
+
+    def update_tree(self, result):
         self.clear_tree()
+        for index, row in result.iterrows():
+            self.tree.insert("", "end", text=index, values=list(row))
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+def main():
+    root = tk.Tk()
+    app = ExcelSearchApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
