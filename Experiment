@@ -81,4 +81,30 @@ class ExcelSearchApp:
             volume_sentence = "The volume for FX and OTC for this client are equal."
 
         if fx_exception > otc_exception:
-           
+            exception_sentence = "The exception for FX for this client is greater than OTC."
+        elif otc_exception > fx_exception:
+            exception_sentence = "The exception for OTC for this client is greater than FX."
+        else:
+            exception_sentence = "The exception for FX and OTC for this client are equal."
+
+        detail_text = volume_sentence + "\n" + exception_sentence
+        client_name = row['Client Name']
+        self.show_detail_window(client_name, detail_text)
+
+    def show_detail_window(self, client_name, detail_text):
+        detail_window = tk.Toplevel(self.master)
+        detail_window.title(client_name)
+        detail_window.geometry("400x200")
+        detail_window.configure(bg="#cce6ff")  # Set background color for the detail window
+
+        detail_label = tk.Label(detail_window, text=detail_text, font=("Helvetica", 12), bg="#cce6ff")  # Set background color for the label
+        detail_label.pack()
+
+def main():
+    root = tk.Tk()
+    root.geometry("800x600")
+    app = ExcelSearchApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
