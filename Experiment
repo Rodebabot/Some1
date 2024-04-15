@@ -38,10 +38,6 @@ class ExcelSearchApp:
         for col in self.df.columns:
             self.tree.heading(col, text=col)
 
-        # Detail label
-        self.detail_label = tk.Label(master, text="", font=("Helvetica", 12))
-        self.detail_label.pack()
-
         # Binding double click event to treeview item selection
         self.tree.bind("<Double-Button-1>", self.show_detail)
 
@@ -53,7 +49,7 @@ class ExcelSearchApp:
             self.update_tree(result)
         else:
             self.clear_tree()
-            self.detail_label.config(text="No matching records found.")
+            tk.messagebox.showinfo("No matching records found.")
 
     def update_tree(self, result):
         self.clear_tree()
@@ -91,7 +87,16 @@ class ExcelSearchApp:
             exception_sentence = "The exception for FX and OTC for this client are equal."
 
         detail_text = volume_sentence + "\n" + exception_sentence
-        self.detail_label.config(text=detail_text)
+        client_name = row['Client Name']
+        self.show_detail_window(client_name, detail_text)
+
+    def show_detail_window(self, client_name, detail_text):
+        detail_window = tk.Toplevel(self.master)
+        detail_window.title(client_name)
+        detail_window.geometry("400x200")
+
+        detail_label = tk.Label(detail_window, text=detail_text, font=("Helvetica", 12))
+        detail_label.pack()
 
 def main():
     root = tk.Tk()
