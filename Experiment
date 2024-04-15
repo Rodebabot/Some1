@@ -10,14 +10,19 @@ class ExcelSearchApp:
         # Load Excel file
         self.df = pd.read_excel("your_excel_file.xlsx")
 
+        # Add logo
+        self.logo = tk.PhotoImage(file="logo.png")
+        self.logo_label = tk.Label(master, image=self.logo)
+        self.logo_label.pack()
+
         # Create widgets
-        self.label = tk.Label(master, text="Enter Client Name:")
+        self.label = tk.Label(master, text="Enter Client Name:", font=("Helvetica", 12))
         self.label.pack()
 
-        self.entry = tk.Entry(master)
+        self.entry = tk.Entry(master, font=("Helvetica", 12))
         self.entry.pack()
 
-        self.button = tk.Button(master, text="Search", command=self.search)
+        self.button = tk.Button(master, text="Search", command=self.search, font=("Helvetica", 12))
         self.button.pack()
 
         self.tree = ttk.Treeview(master)
@@ -53,6 +58,7 @@ class ExcelSearchApp:
 
 def main():
     root = tk.Tk()
+    root.geometry("800x600")
     app = ExcelSearchApp(root)
     root.mainloop()
 
