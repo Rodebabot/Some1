@@ -24,7 +24,7 @@ class ExcelSearchApp:
         self.entry = tk.Entry(master, font=("Helvetica", 12), width=30)  # Increase the length of the search bar
         self.entry.pack()
 
-        self.button = tk.Button(master, text="Search", command=self.search, font=("Helvetica", 12))
+        self.button = tk.Button(master, text="Search", command=self.search, font=("Helvetica", 12, "bold"), bg="#dc143c", fg="white")
         self.button.pack(pady=5)  # Increase the gap between search bar and search button
 
         self.tree = ttk.Treeview(master)
