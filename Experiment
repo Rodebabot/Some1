@@ -43,7 +43,7 @@ class ExcelSearchApp:
         self.detail_label.pack()
 
         # Binding double click event to treeview item selection
-        self.tree.bind("<Double-1>", self.show_detail)
+        self.tree.bind("<Double-Button-1>", self.show_detail)
 
     def search(self):
         client_name = self.entry.get().lower()  # Convert search string to lowercase
