@@ -9,6 +9,7 @@ class ExcelSearchApp:
 
         # Load Excel file
         self.df = pd.read_excel("your_excel_file.xlsx")
+        self.filtered_df = self.df  # Store the original DataFrame initially
 
         # Add logo
         self.logo = tk.PhotoImage(file="logo.png")
@@ -43,10 +44,9 @@ class ExcelSearchApp:
 
     def search(self):
         client_name = self.entry.get().lower()  # Convert search string to lowercase
-        self.df['Client Name'] = self.df['Client Name'].fillna("")  # Replace NaNs with empty string
-        result = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
-        if not result.empty:
-            self.update_tree(result)
+        self.filtered_df = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
+        if not self.filtered_df.empty:
+            self.update_tree(self.filtered_df)
         else:
             self.clear_tree()
             tk.messagebox.showinfo("No matching records found.")
@@ -63,7 +63,7 @@ class ExcelSearchApp:
     def show_detail(self, event):
         item = self.tree.selection()[0]
         index = self.tree.index(item)
-        row = self.df.iloc[index]
+        row = self.filtered_df.iloc[index]  # Access row from filtered DataFrame
         fx_volume = row['FX Volume']
         otc_volume = row['OTC Volume']
         fx_exception = row['FX Exception']
