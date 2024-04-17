@@ -36,6 +36,23 @@ def main():
     fields_table.pack(fill="both", expand=True)
     fields_table.bind("<ButtonRelease-1>", on_select)
 
+    # Bespoke Processes Table
+    processes_frame = ttk.LabelFrame(root, text="Bespoke Processes")
+    processes_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    processes_headings = ["Process", "Time Required per Exception", "Count of Exception Last Month"]
+    processes_data = [
+        ("FX", "2 hours", 10),
+        ("OTC", "1.5 hours", 5),
+        # Add more rows as needed
+    ]
+    processes_table = ttk.Treeview(processes_frame, columns=processes_headings, show="headings")
+    for col in processes_headings:
+        processes_table.heading(col, text=col)
+    for row in processes_data:
+        processes_table.insert("", "end", values=row)
+    processes_table.pack(fill="both", expand=True)
+
     root.mainloop()
 
 if __name__ == "__main__":
