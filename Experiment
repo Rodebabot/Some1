@@ -9,9 +9,14 @@ def create_table(parent, headings, data, escalation_emails):
         table.insert('', 'end', values=row + (escalation_emails[idx],))
     return table
 
-def escalate():
+def escalate(entry_id):
     # Placeholder function for escalation action
-    print("Entry escalated!")
+    print(f"Entry {entry_id} escalated!")
+
+def add_buttons(table):
+    for idx in table.get_children():
+        btn = ttk.Button(table, text="Escalate", command=lambda idx=idx: escalate(idx))
+        table.window_create(idx, column="Escalate", window=btn)
 
 def main():
     # Create main window
@@ -40,10 +45,8 @@ def main():
     fields_table = create_table(fields_frame, fields_headings[:-1], fields_data, escalation_emails)
     fields_table.pack(fill="both", expand=True)
 
-    # Add escalate button
-    for idx in range(len(fields_data)):
-        btn = ttk.Button(fields_table, text="Escalate", command=escalate)
-        fields_table.window_create(fields_table.identify_region(idx, 4), window=btn)
+    # Add escalate buttons
+    add_buttons(fields_table)
 
     # Bespoke Processes Table
     processes_frame = ttk.LabelFrame(root, text="Bespoke Processes", style="Custom.TLabelframe")
