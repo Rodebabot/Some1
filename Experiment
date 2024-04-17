@@ -1,65 +1,40 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
-def create_table(parent, headings, data, escalation_emails):
-    table = ttk.Treeview(parent, columns=headings, show="headings", style="Custom.Treeview")
-    for col in headings:
-        table.heading(col, text=col)
-    for idx, row in enumerate(data):
-        table.insert('', 'end', values=row + (escalation_emails[idx],))
-    return table
+def on_select(event):
+    item = event.widget.focus()
+    values = event.widget.item(item, "values")
+    email = values[-1]  # Assuming last column contains the email
+    send_email_confirmation(email)
 
-def escalate(entry_id):
-    # Placeholder function for escalation action
-    print(f"Entry {entry_id} escalated!")
-
-def add_buttons(table):
-    for idx in table.get_children():
-        btn = ttk.Button(table, text="Escalate", command=lambda idx=idx: escalate(idx))
-        table.window_create(idx, column="Escalate", window=btn)
+def send_email_confirmation(email):
+    confirm = messagebox.askyesno("Confirmation", f"Are you sure you want to escalate to {email}?")
+    if confirm:
+        # Placeholder for sending email
+        print(f"Email sent to {email}")
 
 def main():
     # Create main window
     root = tk.Tk()
     root.title("Your App Title")
 
-    # Custom styles
-    style = ttk.Style()
-    style.configure("Custom.Treeview", background="#f0f0f0", foreground="#333", rowheight=25)
-
     # Fields Table
-    fields_frame = ttk.LabelFrame(root, text="Fields", style="Custom.TLabelframe")
+    fields_frame = ttk.LabelFrame(root, text="Fields")
     fields_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
-    fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate", "Escalate"]
+    fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate"]
     fields_data = [
-        ("Value1", "Value2", "Value3", "Value4"),
-        ("Value5", "Value6", "Value7", "Value8"),
+        ("Value1", "Value2", "Value3", "Value4", "escalation1@example.com"),
+        ("Value5", "Value6", "Value7", "Value8", "escalation2@example.com"),
         # Add more rows as needed
     ]
-    escalation_emails = [
-        "escalation1@example.com",
-        "escalation2@example.com",
-        # Add more emails as needed
-    ]
-    fields_table = create_table(fields_frame, fields_headings[:-1], fields_data, escalation_emails)
+    fields_table = ttk.Treeview(fields_frame, columns=fields_headings, show="headings")
+    for col in fields_headings:
+        fields_table.heading(col, text=col)
+    for row in fields_data:
+        fields_table.insert("", "end", values=row)
     fields_table.pack(fill="both", expand=True)
-
-    # Add escalate buttons
-    add_buttons(fields_table)
-
-    # Bespoke Processes Table
-    processes_frame = ttk.LabelFrame(root, text="Bespoke Processes", style="Custom.TLabelframe")
-    processes_frame.pack(padx=10, pady=10, fill="both", expand=True)
-
-    processes_headings = ["Process", "Time Required per Exception", "Count of Exception Last Month"]
-    processes_data = [
-        ("FX", "2 hours", 10),
-        ("OTC", "1.5 hours", 5),
-        # Add more rows as needed
-    ]
-    processes_table = create_table(processes_frame, processes_headings, processes_data, [])
-    processes_table.pack(fill="both", expand=True)
+    fields_table.bind("<ButtonRelease-1>", on_select)
 
     root.mainloop()
 
