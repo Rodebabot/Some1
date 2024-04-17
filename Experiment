@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 def create_table(parent, headings, data):
-    table = ttk.Treeview(parent, columns=headings, show="headings")
+    table = ttk.Treeview(parent, columns=headings, show="headings", style="Custom.Treeview")
     for col in headings:
         table.heading(col, text=col)
     for row in data:
@@ -14,8 +14,12 @@ def main():
     root = tk.Tk()
     root.title("Your App Title")
 
+    # Custom styles
+    style = ttk.Style()
+    style.configure("Custom.Treeview", background="#f0f0f0", foreground="#333", rowheight=25)
+
     # Fields Table
-    fields_frame = ttk.LabelFrame(root, text="Fields")
+    fields_frame = ttk.LabelFrame(root, text="Fields", style="Custom.TLabelframe")
     fields_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
     fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate"]
@@ -28,7 +32,7 @@ def main():
     fields_table.pack(fill="both", expand=True)
 
     # Bespoke Processes Table
-    processes_frame = ttk.LabelFrame(root, text="Bespoke Processes")
+    processes_frame = ttk.LabelFrame(root, text="Bespoke Processes", style="Custom.TLabelframe")
     processes_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
     processes_headings = ["Process", "Time Required per Exception", "Count of Exception Last Month"]
