@@ -15,3 +15,11 @@ def send_email_confirmation(values, headings):
         mail.Body = body
         mail.Send()
         print(f"Email sent to {values[-1]}")
+
+
+
+def on_select(event):
+    item = event.widget.focus()
+    values = event.widget.item(item, "values")
+    headings = event.widget["columns"]
+    send_email_confirmation(values, headings)
