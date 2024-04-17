@@ -1,13 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 
-def create_table(parent, headings, data):
+def create_table(parent, headings, data, escalation_emails):
     table = ttk.Treeview(parent, columns=headings, show="headings", style="Custom.Treeview")
     for col in headings:
         table.heading(col, text=col)
-    for row in data:
-        table.insert('', 'end', values=row)
+    for idx, row in enumerate(data):
+        table.insert('', 'end', values=row + (escalation_emails[idx],))
     return table
+
+def escalate():
+    # Placeholder function for escalation action
+    print("Entry escalated!")
 
 def main():
     # Create main window
@@ -22,14 +26,24 @@ def main():
     fields_frame = ttk.LabelFrame(root, text="Fields", style="Custom.TLabelframe")
     fields_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
-    fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate"]
+    fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate", "Escalate"]
     fields_data = [
         ("Value1", "Value2", "Value3", "Value4"),
         ("Value5", "Value6", "Value7", "Value8"),
         # Add more rows as needed
     ]
-    fields_table = create_table(fields_frame, fields_headings, fields_data)
+    escalation_emails = [
+        "escalation1@example.com",
+        "escalation2@example.com",
+        # Add more emails as needed
+    ]
+    fields_table = create_table(fields_frame, fields_headings[:-1], fields_data, escalation_emails)
     fields_table.pack(fill="both", expand=True)
+
+    # Add escalate button
+    for idx in range(len(fields_data)):
+        btn = ttk.Button(fields_table, text="Escalate", command=escalate)
+        fields_table.window_create(fields_table.identify_region(idx, 4), window=btn)
 
     # Bespoke Processes Table
     processes_frame = ttk.LabelFrame(root, text="Bespoke Processes", style="Custom.TLabelframe")
@@ -41,7 +55,7 @@ def main():
         ("OTC", "1.5 hours", 5),
         # Add more rows as needed
     ]
-    processes_table = create_table(processes_frame, processes_headings, processes_data)
+    processes_table = create_table(processes_frame, processes_headings, processes_data, [])
     processes_table.pack(fill="both", expand=True)
 
     root.mainloop()
