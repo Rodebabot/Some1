@@ -1,12 +1,17 @@
 import win32com.client
 
-def send_email_confirmation(email):
-    confirm = messagebox.askyesno("Confirmation", f"Are you sure you want to escalate to {email}?")
+def send_email_confirmation(values, headings):
+    confirm = messagebox.askyesno("Confirmation", "Are you sure you want to escalate?")
     if confirm:
         outlook = win32com.client.Dispatch("Outlook.Application")
         mail = outlook.CreateItem(0)
-        mail.To = email
+        mail.To = values[-1]  # Assuming last column contains the email
         mail.Subject = "Escalation"
-        mail.Body = "This is an automated message to confirm escalation."
+        
+        body = "Details of the escalated entry:\n\n"
+        for header, value in zip(headings, values[:-1]):
+            body += f"{header}: {value}\n"
+        
+        mail.Body = body
         mail.Send()
-        print(f"Email sent to {email}")
+        print(f"Email sent to {values[-1]}")
