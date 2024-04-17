@@ -1,113 +1,45 @@
 import tkinter as tk
 from tkinter import ttk
-import pandas as pd
 
-class ExcelSearchApp:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Excel Search App")
-        self.master.configure(bg="#cce6ff")  # Set background color to a shade of blue
-
-        # Load Excel file
-        self.df = pd.read_excel("your_excel_file.xlsx")
-        self.filtered_df = self.df  # Store the original DataFrame initially
-
-        # Add logo
-        self.logo = tk.PhotoImage(file="logo.png")
-        self.logo_label = tk.Label(master, image=self.logo, bg="#cce6ff")  # Set background color for the logo label
-        self.logo_label.pack()
-
-        # Create widgets
-        self.label = tk.Label(master, text="Enter Client Name:", font=("Helvetica", 12), bg="#cce6ff")  # Set background color for the label
-        self.label.pack()
-
-        self.entry = tk.Entry(master, font=("Helvetica", 12), width=30)  # Increase the length of the search bar
-        self.entry.pack()
-
-        self.button = tk.Button(master, text="Search", command=self.search, font=("Helvetica", 12, "bold"), bg="#dc143c", fg="white")
-        self.button.pack(pady=5)  # Increase the gap between search bar and search button
-
-        self.tree = ttk.Treeview(master)
-        self.tree["columns"] = list(self.df.columns)
-
-        self.scrollbar_x = ttk.Scrollbar(master, orient="horizontal", command=self.tree.xview)
-        self.scrollbar_x.pack(side="bottom", fill="x")
-        self.tree.configure(xscrollcommand=self.scrollbar_x.set)
-
-        self.scrollbar_y = ttk.Scrollbar(master, orient="vertical", command=self.tree.yview)
-        self.scrollbar_y.pack(side="right", fill="y")
-        self.tree.configure(yscrollcommand=self.scrollbar_y.set)
-
-        self.tree.pack(side="left", fill="both", expand=True)
-
-        self.tree.heading("#0", text="Index")
-        for col in self.df.columns:
-            self.tree.heading(col, text=col)
-
-        # Binding double click event to treeview item selection
-        self.tree.bind("<Double-Button-1>", self.show_detail)
-
-    def search(self):
-        client_name = self.entry.get().lower()  # Convert search string to lowercase
-        self.filtered_df = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
-        if not self.filtered_df.empty:
-            self.update_tree(self.filtered_df)
-        else:
-            self.clear_tree()
-            tk.messagebox.showinfo("No matching records found.")
-
-    def update_tree(self, result):
-        self.clear_tree()
-        for index, row in result.iterrows():
-            self.tree.insert("", "end", text=index, values=list(row))
-
-    def clear_tree(self):
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-
-    def show_detail(self, event):
-        item = self.tree.selection()[0]
-        index = self.tree.index(item)
-        row = self.filtered_df.iloc[index]  # Access row from filtered DataFrame
-        fx_volume = row['FX Volume']
-        otc_volume = row['OTC Volume']
-        fx_exception = row['FX Exception']
-        otc_exception = row['OTC Exception']
-        
-        volume_sentence = ""
-        exception_sentence = ""
-
-        if fx_volume > otc_volume:
-            volume_sentence = "The volume for FX for this client is greater than OTC."
-        elif otc_volume > fx_volume:
-            volume_sentence = "The volume for OTC for this client is greater than FX."
-        else:
-            volume_sentence = "The volume for FX and OTC for this client are equal."
-
-        if fx_exception > otc_exception:
-            exception_sentence = "The exception for FX for this client is greater than OTC."
-        elif otc_exception > fx_exception:
-            exception_sentence = "The exception for OTC for this client is greater than FX."
-        else:
-            exception_sentence = "The exception for FX and OTC for this client are equal."
-
-        detail_text = volume_sentence + "\n" + exception_sentence
-        client_name = row['Client Name']
-        self.show_detail_window(client_name, detail_text)
-
-    def show_detail_window(self, client_name, detail_text):
-        detail_window = tk.Toplevel(self.master)
-        detail_window.title(client_name)
-        detail_window.geometry("400x200")
-        detail_window.configure(bg="#cce6ff")  # Set background color for the detail window
-
-        detail_label = tk.Label(detail_window, text=detail_text, font=("Helvetica", 12), bg="#cce6ff")  # Set background color for the label
-        detail_label.pack()
+def create_table(parent, headings, data):
+    table = ttk.Treeview(parent, columns=headings, show="headings")
+    for col in headings:
+        table.heading(col, text=col)
+    for row in data:
+        table.insert('', 'end', values=row)
+    return table
 
 def main():
+    # Create main window
     root = tk.Tk()
-    root.geometry("800x600")
-    app = ExcelSearchApp(root)
+    root.title("Your App Title")
+
+    # Fields Table
+    fields_frame = ttk.LabelFrame(root, text="Fields")
+    fields_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    fields_headings = ["Sales", "Escalation Contacts", "Risk", "SSR Rate"]
+    fields_data = [
+        ("Value1", "Value2", "Value3", "Value4"),
+        ("Value5", "Value6", "Value7", "Value8"),
+        # Add more rows as needed
+    ]
+    fields_table = create_table(fields_frame, fields_headings, fields_data)
+    fields_table.pack(fill="both", expand=True)
+
+    # Bespoke Processes Table
+    processes_frame = ttk.LabelFrame(root, text="Bespoke Processes")
+    processes_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+    processes_headings = ["Process", "Time Required per Exception", "Count of Exception Last Month"]
+    processes_data = [
+        ("FX", "2 hours", 10),
+        ("OTC", "1.5 hours", 5),
+        # Add more rows as needed
+    ]
+    processes_table = create_table(processes_frame, processes_headings, processes_data)
+    processes_table.pack(fill="both", expand=True)
+
     root.mainloop()
 
 if __name__ == "__main__":
