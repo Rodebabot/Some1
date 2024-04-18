@@ -1,25 +1,123 @@
-import win32com.client
+import tkinter as tk
+from tkinter import ttk, messagebox
+import pandas as pd
+import webbrowser
 
-def send_email_confirmation(values, headings):
-    confirm = messagebox.askyesno("Confirmation", "Are you sure you want to escalate?")
-    if confirm:
-        outlook = win32com.client.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)
-        mail.To = values[-1]  # Assuming last column contains the email
-        mail.Subject = "Escalation"
+class ExcelSearchApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Excel Search App")
+        self.master.configure(bg="#cce6ff")  # Set background color to a shade of blue
+
+        # Load Excel file
+        self.df = pd.read_excel("your_excel_file.xlsx")
+        self.filtered_df = self.df  # Store the original DataFrame initially
+
+        # Add logo
+        self.logo = tk.PhotoImage(file="logo.png")
+        self.logo_label = tk.Label(master, image=self.logo, bg="#cce6ff")  # Set background color for the logo label
+        self.logo_label.pack()
+
+        # Create widgets
+        self.label = tk.Label(master, text="Enter Client Name:", font=("Helvetica", 12), bg="#cce6ff")  # Set background color for the label
+        self.label.pack()
+
+        self.entry = tk.Entry(master, font=("Helvetica", 12), width=30)  # Increase the length of the search bar
+        self.entry.pack()
+
+        self.button = tk.Button(master, text="Search", command=self.search, font=("Helvetica", 12, "bold"), bg="#dc143c", fg="white")
+        self.button.pack(pady=5)  # Increase the gap between search bar and search button
+
+        self.tree = ttk.Treeview(master)
+        self.tree["columns"] = list(self.df.columns)
+
+        self.scrollbar_x = ttk.Scrollbar(master, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.pack(side="bottom", fill="x")
+        self.tree.configure(xscrollcommand=self.scrollbar_x.set)
+
+        self.scrollbar_y = ttk.Scrollbar(master, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.pack(side="right", fill="y")
+        self.tree.configure(yscrollcommand=self.scrollbar_y.set)
+
+        self.tree.pack(side="left", fill="both", expand=True)
+
+        self.tree.heading("#0", text="Index")
+        for col in self.df.columns:
+            self.tree.heading(col, text=col)
+
+        # Binding double click event to treeview item selection
+        self.tree.bind("<Double-Button-1>", self.show_detail)
+
+        # Add button with link
+        self.link_button = tk.Button(master, text="Visit Website", font=("Helvetica", 12), bg="#008080", fg="white",
+                                      command=self.open_website)
+        self.link_button.pack(pady=10)
+
+    def search(self):
+        client_name = self.entry.get().lower()  # Convert search string to lowercase
+        self.filtered_df = self.df[self.df['Client Name'].astype(str).str.lower().str.contains(client_name)]
+        if not self.filtered_df.empty:
+            self.update_tree(self.filtered_df)
+        else:
+            self.clear_tree()
+            messagebox.showinfo("No matching records found.")
+
+    def update_tree(self, result):
+        self.clear_tree()
+        for index, row in result.iterrows():
+            self.tree.insert("", "end", text=index, values=list(row))
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+    def show_detail(self, event):
+        item = self.tree.selection()[0]
+        index = self.tree.index(item)
+        row = self.filtered_df.iloc[index]  # Access row from filtered DataFrame
+        fx_volume = row['FX Volume']
+        otc_volume = row['OTC Volume']
+        fx_exception = row['FX Exception']
+        otc_exception = row['OTC Exception']
         
-        body = "Details of the escalated entry:\n\n"
-        for header, value in zip(headings, values[:-1]):
-            body += f"{header}: {value}\n"
-        
-        mail.Body = body
-        mail.Send()
-        print(f"Email sent to {values[-1]}")
+        volume_sentence = ""
+        exception_sentence = ""
 
+        if fx_volume > otc_volume:
+            volume_sentence = "The volume for FX for this client is greater than OTC."
+        elif otc_volume > fx_volume:
+            volume_sentence = "The volume for OTC for this client is greater than FX."
+        else:
+            volume_sentence = "The volume for FX and OTC for this client are equal."
 
+        if fx_exception > otc_exception:
+            exception_sentence = "The exception for FX for this client is greater than OTC."
+        elif otc_exception > fx_exception:
+            exception_sentence = "The exception for OTC for this client is greater than FX."
+        else:
+            exception_sentence = "The exception for FX and OTC for this client are equal."
 
-def on_select(event):
-    item = event.widget.focus()
-    values = event.widget.item(item, "values")
-    headings = event.widget["columns"]
-    send_email_confirmation(values, headings)
+        detail_text = volume_sentence + "\n" + exception_sentence
+        client_name = row['Client Name']
+        self.show_detail_window(client_name, detail_text)
+
+    def show_detail_window(self, client_name, detail_text):
+        detail_window = tk.Toplevel(self.master)
+        detail_window.title(client_name)
+        detail_window.geometry("400x200")
+        detail_window.configure(bg="#cce6ff")  # Set background color for the detail window
+
+        detail_label = tk.Label(detail_window, text=detail_text, font=("Helvetica", 12), bg="#cce6ff")  # Set background color for the label
+        detail_label.pack()
+
+    def open_website(self):
+        webbrowser.open("https://example.com")  # Replace "https://example.com" with your desired website URL
+
+def main():
+    root = tk.Tk()
+    root.geometry("800x600")
+    app = ExcelSearchApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
