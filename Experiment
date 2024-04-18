@@ -39,7 +39,7 @@ class ExcelSearchApp:
         self.scrollbar_y.pack(side="right", fill="y")
         self.tree.configure(yscrollcommand=self.scrollbar_y.set)
 
-        self.tree.pack(side="left", fill="both", expand=True)
+        self.tree.pack(side="top", fill="both", expand=True)
 
         self.tree.heading("#0", text="Index")
         for col in self.df.columns:
