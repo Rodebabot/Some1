@@ -51,7 +51,7 @@ class ExcelSearchApp:
         # Add button with link
         self.link_button = tk.Button(master, text="Visit Website", font=("Helvetica", 12), bg="#008080", fg="white",
                                       command=self.open_website)
-        self.link_button.pack(pady=10)
+        self.link_button.pack(pady=10, side="bottom")  # Place the button at the bottom
 
     def search(self):
         client_name = self.entry.get().lower()  # Convert search string to lowercase
