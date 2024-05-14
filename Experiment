@@ -1,7 +1,21 @@
-Validations
-1. If payment type is OTC Net CF then the model checks gross level payment types, consolidates it using product-payment consolidation. If a new payment type is flowed in from FO system then the model marks it as NSTP and separates that flow for the retraining cycle.
-2. If product Type is blank then treat that flow as NSTP
-3. The STP/NSTP classification from the model is purely based on threshold (95%) based on historical validation testing. If, with historical evidence a similar flow has 95% chance of success, only then will the model classify it as STP.
-Assumptions
-1. If any flow has blanks in confirmation status, then it will be treated as not executed.
-2. If any new flow -(new product,payment, counterparty) flows in to the model for which the model has no historical data, it will mark it as NSTP and separate that flow for retraining cycle.
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_classification
+from sklearn.decomposition import PCA
+
+# Generate dummy data
+X, y = make_classification(n_samples=100, n_features=4, n_classes=3, n_clusters_per_class=1, random_state=42)
+
+# Perform PCA
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+
+# Visualize PCA
+plt.figure(figsize=(8, 6))
+for i in range(len(np.unique(y))):
+    plt.scatter(X_pca[y == i, 0], X_pca[y == i, 1], label=f'Class {i}')
+plt.title('PCA Visualization')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend()
+plt.show()
