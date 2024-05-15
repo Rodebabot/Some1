@@ -18,4 +18,13 @@ plt.title('PCA Visualization')
 plt.xlabel('Principal Component 1')
 plt.ylabel('Principal Component 2')
 plt.legend()
-plt.show()
+plt.show(
+
+
+
+
+import pandas as pd
+
+# Assuming df1 and df2 are your dataframes
+# merge_column is the column you want to merge on
+merged_df = pd.merge(df1, df2[['merge_column']], on='merge_column', how='left')
