@@ -18,3 +18,19 @@ appended_df = pd.concat([df1_filtered, df2_filtered, df3_filtered])
 # Output the appended dataframe
 print("Appended DataFrame:")
 print(appended_df)
+
+
+# Convert date columns to datetime format
+appended_df['BLOCKING START DATE'] = pd.to_datetime(appended_df['BLOCKING START DATE'])
+appended_df['EXPIRY DATE OF REQUEST'] = pd.to_datetime(appended_df['EXPIRY DATE OF REQUEST'])
+
+# Rename the columns
+appended_df = appended_df.rename(columns={'BLOCKING START DATE': 'Start Date (dd/mm/yyyy)', 'EXPIRY DATE OF REQUEST': 'End Date (dd/mm/yyyy)'})
+
+# Format date columns as dd/mm/yyyy
+appended_df['Start Date (dd/mm/yyyy)'] = appended_df['Start Date (dd/mm/yyyy)'].dt.strftime('%d/%m/%Y')
+appended_df['End Date (dd/mm/yyyy)'] = appended_df['End Date (dd/mm/yyyy)'].dt.strftime('%d/%m/%Y')
+
+# Output the updated dataframe
+print("Updated DataFrame:")
+print(appended_df)
