@@ -7,3 +7,23 @@ appended_df.insert(3, 'inclusion', 'E')
 # Output the updated dataframe
 print("Updated DataFrame:")
 print(appended_df)
+
+
+
+# Specify the path to the template Excel file
+template_file = 'template_file.xlsx'
+
+# Write the appended dataframe to a new Excel file using the template
+with pd.ExcelWriter('output_file.xlsx', engine='xlsxwriter') as writer:
+    # Open the template file
+    with pd.ExcelFile(template_file) as xls:
+        # Write each sheet from the template file to the output file
+        for sheet_name in xls.sheet_names:
+            # Read the sheet from the template file
+            template_df = pd.read_excel(template_file, sheet_name=sheet_name)
+            
+            # Write the template dataframe to the output file
+            template_df.to_excel(writer, sheet_name=sheet_name, index=False)
+    
+    # Write the appended dataframe to the output file under the appropriate sheet and column
+    appended_df.to_excel(writer, sheet_name='Sheet1', startrow=0, startcol=0, index=False)
