@@ -10,3 +10,11 @@ print("\nDataFrame 2:")
 print(df2_filtered)
 print("\nDataFrame 3:")
 print(df3_filtered)
+
+
+# Append all filtered dataframes
+appended_df = pd.concat([df1_filtered, df2_filtered, df3_filtered])
+
+# Output the appended dataframe
+print("Appended DataFrame:")
+print(appended_df)
