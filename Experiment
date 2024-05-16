@@ -1,19 +1,21 @@
 from openpyxl import load_workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 # Load the existing Excel file
 existing_excel_file = 'existing_file.xlsx'
 existing_wb = load_workbook(existing_excel_file)
-
-# Select the active worksheet
 existing_ws = existing_wb.active
 
 # Find the last row with data
 last_row = existing_ws.max_row
 
-# Write the appended dataframe to the Excel file starting from the last row
-for index, row in appended_df.iterrows():
-    for col_index, value in enumerate(row, start=1):
-        existing_ws.cell(row=last_row + index, column=col_index, value=value)
+# Convert appended_df to a list of rows
+rows = list(dataframe_to_rows(appended_df, index=False, header=True))
+
+# Write the rows to the Excel file starting from the 4th row
+for i, row in enumerate(rows, start=1):
+    for j, value in enumerate(row, start=1):
+        existing_ws.cell(row=last_row + 3 + i, column=j, value=value)
 
 # Save the changes
 existing_wb.save(existing_excel_file)
