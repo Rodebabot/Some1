@@ -1,29 +1,19 @@
-# Insert constant value columns before the 'ISIN' column
-appended_df.insert(0, 'Lender (L) or Borrower (B) or All (A)', 'A')
-appended_df.insert(1, 'EB Account', 90997)
-appended_df.insert(2, 'Blank Column', '')
-appended_df.insert(3, 'inclusion', 'E')
+from openpyxl import load_workbook
 
-# Output the updated dataframe
-print("Updated DataFrame:")
-print(appended_df)
+# Load the existing Excel file
+existing_excel_file = 'existing_file.xlsx'
+existing_wb = load_workbook(existing_excel_file)
 
+# Select the active worksheet
+existing_ws = existing_wb.active
 
+# Find the last row with data
+last_row = existing_ws.max_row
 
-# Specify the path to the template Excel file
-template_file = 'template_file.xlsx'
+# Write the appended dataframe to the Excel file starting from the last row
+for index, row in appended_df.iterrows():
+    for col_index, value in enumerate(row, start=1):
+        existing_ws.cell(row=last_row + index, column=col_index, value=value)
 
-# Write the appended dataframe to a new Excel file using the template
-with pd.ExcelWriter('output_file.xlsx', engine='xlsxwriter') as writer:
-    # Open the template file
-    with pd.ExcelFile(template_file) as xls:
-        # Write each sheet from the template file to the output file
-        for sheet_name in xls.sheet_names:
-            # Read the sheet from the template file
-            template_df = pd.read_excel(template_file, sheet_name=sheet_name)
-            
-            # Write the template dataframe to the output file
-            template_df.to_excel(writer, sheet_name=sheet_name, index=False)
-    
-    # Write the appended dataframe to the output file under the appropriate sheet and column
-    appended_df.to_excel(writer, sheet_name='Sheet1', startrow=0, startcol=0, index=False)
+# Save the changes
+existing_wb.save(existing_excel_file)
