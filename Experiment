@@ -1,31 +1,12 @@
-import pandas as pd
+# Filter the columns in each dataframe
+df1_filtered = df1[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
+df2_filtered = df2[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
+df3_filtered = df3[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
 
-# Read the Excel file
-excel_file = 'your_file.xlsx'
-xls = pd.ExcelFile(excel_file)
-
-# Create empty dataframes
-df1 = pd.DataFrame()
-df2 = pd.DataFrame()
-df3 = pd.DataFrame()
-
-# Iterate over each sheet
-for sheet_name in xls.sheet_names:
-    # Read the sheet skipping the first 3 rows
-    df_temp = pd.read_excel(excel_file, sheet_name=sheet_name, skiprows=3)
-    
-    # Assign dataframes based on sheet index
-    if xls.sheet_names.index(sheet_name) == 0:
-        df1 = df_temp
-    elif xls.sheet_names.index(sheet_name) == 1:
-        df2 = df_temp
-    elif xls.sheet_names.index(sheet_name) == 2:
-        df3 = df_temp
-
-# Output the dataframes
+# Output the filtered dataframes
 print("DataFrame 1:")
-print(df1)
+print(df1_filtered)
 print("\nDataFrame 2:")
-print(df2)
+print(df2_filtered)
 print("\nDataFrame 3:")
-print(df3)
+print(df3_filtered)
