@@ -1,35 +1,8 @@
-# Filter the columns in each dataframe
-df1_filtered = df1[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
-df2_filtered = df2[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
-df3_filtered = df3[['ISIN', 'BLOCKING START DATE', 'EXPIRY DATE OF REQUEST']]
-
-# Output the filtered dataframes
-print("DataFrame 1:")
-print(df1_filtered)
-print("\nDataFrame 2:")
-print(df2_filtered)
-print("\nDataFrame 3:")
-print(df3_filtered)
-
-
-# Append all filtered dataframes
-appended_df = pd.concat([df1_filtered, df2_filtered, df3_filtered])
-
-# Output the appended dataframe
-print("Appended DataFrame:")
-print(appended_df)
-
-
-# Convert date columns to datetime format
-appended_df['BLOCKING START DATE'] = pd.to_datetime(appended_df['BLOCKING START DATE'])
-appended_df['EXPIRY DATE OF REQUEST'] = pd.to_datetime(appended_df['EXPIRY DATE OF REQUEST'])
-
-# Rename the columns
-appended_df = appended_df.rename(columns={'BLOCKING START DATE': 'Start Date (dd/mm/yyyy)', 'EXPIRY DATE OF REQUEST': 'End Date (dd/mm/yyyy)'})
-
-# Format date columns as dd/mm/yyyy
-appended_df['Start Date (dd/mm/yyyy)'] = appended_df['Start Date (dd/mm/yyyy)'].dt.strftime('%d/%m/%Y')
-appended_df['End Date (dd/mm/yyyy)'] = appended_df['End Date (dd/mm/yyyy)'].dt.strftime('%d/%m/%Y')
+# Insert constant value columns before the 'ISIN' column
+appended_df.insert(0, 'Lender (L) or Borrower (B) or All (A)', 'A')
+appended_df.insert(1, 'EB Account', 90997)
+appended_df.insert(2, 'Blank Column', '')
+appended_df.insert(3, 'inclusion', 'E')
 
 # Output the updated dataframe
 print("Updated DataFrame:")
