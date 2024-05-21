@@ -29,3 +29,16 @@ filtered_df['Comment'] = filtered_df.apply(
 )
 
 print(filtered_df)
+
+
+
+
+
+
+# Assuming filtered_df is the DataFrame after the initial filtering step
+
+# Check if Trade_Type is PRIN and Interest_Days and Interest_Qty are greater than 0, otherwise mark as Invalid Trade
+filtered_df.loc[filtered_df['Trade_Type'] == 'PRIN', 'Comment'] = ''
+filtered_df.loc[(filtered_df['Trade_Type'] == 'PRIN') & ((filtered_df['Interest_Days'] <= 0) | (filtered_df['Interest_Qty'] <= 0)), 'Comment'] = 'Invalid Trade'
+
+print(filtered_df)
