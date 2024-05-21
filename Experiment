@@ -3,6 +3,7 @@ import pandas as pd
 # Sample DataFrame creation for demonstration purposes
 data = {
     'Type': ['External Open Buy', 'Internal Open Sell', 'Other Type', 'External Open Sell', 'Internal Open Buy', 'Another Type'],
+    'Trade_Type': ['PRIN', 'AGNT', 'PRIN', 'BROK', 'PRIN', 'EXEC'],
     'Value': [100, 200, 300, 400, 500, 600]
 }
 
@@ -19,22 +20,12 @@ types_to_keep = [
 # Filter the DataFrame
 filtered_df = df[df['Type'].isin(types_to_keep)]
 
+# Define the valid trade type
+valid_trade_type = 'PRIN'
+
+# Create a new column with comments
+filtered_df['Comment'] = filtered_df.apply(
+    lambda row: 'Invalid Trade' if row['Trade_Type'] != valid_trade_type else '', axis=1
+)
+
 print(filtered_df)
-from openpyxl import load_workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
-
-# Load the existing Excel file
-existing_excel_file = 'existing_file.xlsx'
-existing_wb = load_workbook(existing_excel_file)
-existing_ws = existing_wb.active
-
-# Convert appended_df to a list of rows
-rows = list(dataframe_to_rows(appended_df, index=False, header=True))
-
-# Write the rows to the Excel file starting from the 4th row
-for i, row in enumerate(rows, start=1):
-    for j, value in enumerate(row, start=1):
-        existing_ws.cell(row=3 + i, column=j, value=value)
-
-# Save the changes
-existing_wb.save(existing_excel_file)
