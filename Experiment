@@ -42,3 +42,11 @@ filtered_df.loc[filtered_df['Trade_Type'] == 'PRIN', 'Comment'] = ''
 filtered_df.loc[(filtered_df['Trade_Type'] == 'PRIN') & ((filtered_df['Interest_Days'] <= 0) | (filtered_df['Interest_Qty'] <= 0)), 'Comment'] = 'Invalid Trade'
 
 print(filtered_df)
+
+
+# Assuming filtered_df is the DataFrame with the "Comment" column
+
+# Filter out rows where the "Comment" column is blank or NaN
+filtered_df = filtered_df.dropna(subset=['Comment'])
+
+print(filtered_df)
