@@ -1,52 +1,17 @@
-import pandas as pd
-
-# Sample DataFrame creation for demonstration purposes
-data = {
-    'Type': ['External Open Buy', 'Internal Open Sell', 'Other Type', 'External Open Sell', 'Internal Open Buy', 'Another Type'],
-    'Trade_Type': ['PRIN', 'AGNT', 'PRIN', 'BROK', 'PRIN', 'EXEC'],
-    'Value': [100, 200, 300, 400, 500, 600]
-}
-
-df = pd.DataFrame(data)
-
-# Define the list of types to keep
-types_to_keep = [
-    'External Open Buy', 
-    'External Open Sell', 
-    'Internal Open Buy', 
-    'Internal Open Sell'
-]
-
-# Filter the DataFrame
-filtered_df = df[df['Type'].isin(types_to_keep)]
-
-# Define the valid trade type
-valid_trade_type = 'PRIN'
-
-# Create a new column with comments
-filtered_df['Comment'] = filtered_df.apply(
-    lambda row: 'Invalid Trade' if row['Trade_Type'] != valid_trade_type else '', axis=1
-)
-
-print(filtered_df)
-
-
-
-
-
-
-# Assuming filtered_df is the DataFrame after the initial filtering step
-
-# Check if Trade_Type is PRIN and Interest_Days and Interest_Qty are greater than 0, otherwise mark as Invalid Trade
-filtered_df.loc[filtered_df['Trade_Type'] == 'PRIN', 'Comment'] = ''
-filtered_df.loc[(filtered_df['Trade_Type'] == 'PRIN') & ((filtered_df['Interest_Days'] <= 0) | (filtered_df['Interest_Qty'] <= 0)), 'Comment'] = 'Invalid Trade'
-
-print(filtered_df)
-
-
-# Assuming filtered_df is the DataFrame with the "Comment" column
-
-# Filter out rows where the "Comment" column is blank or NaN
-filtered_df = filtered_df.dropna(subset=['Comment'])
-
-print(filtered_df)
+Goal: To identify processes with varying levels of employee utilization to determine where interventions such as cost reduction, efficiency improvements, or automation might be needed.
+2. Methodology
+Data Collection: Gather data on the total number of FTEs involved in each process and the average FTEs required.
+FTE Impact Calculation: Calculate the FTE impact for each process by multiplying the Total FTE by the average FTE.
+3. Analysis
+High FTE Impact: Identify processes with a high FTE impact, indicating higher utilization of employees.
+Low FTE Impact: Identify processes with a low FTE impact, indicating lower utilization and potential inefficiencies.
+4. Findings
+High-Impact Processes: These are the processes where a large number of FTEs are heavily utilized. Investigate if these processes are critical and require such high involvement or if there are opportunities for optimization.
+Low-Impact Processes: These processes might be overstaffed or not fully optimized. They could be candidates for automation or reallocation of resources.
+5. Conclusion
+Effective Utilization: Determine which processes make effective use of employee time and which do not.
+Intervention Needs: Highlight processes that require intervention to improve efficiency or reduce costs.
+6. Recommendations
+Automate Low-Impact Processes: Identify repetitive and low-value tasks within these processes that can be automated.
+Optimize High-Impact Processes: Look for ways to streamline high-impact processes, possibly through better workflow management or technology integration.
+Reallocate Resources: Adjust staffing levels to better align with the actual needs of each process.
