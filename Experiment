@@ -1,3 +1,25 @@
+import pandas as pd
+
+# Sample DataFrame creation for demonstration purposes
+data = {
+    'Type': ['External Open Buy', 'Internal Open Sell', 'Other Type', 'External Open Sell', 'Internal Open Buy', 'Another Type'],
+    'Value': [100, 200, 300, 400, 500, 600]
+}
+
+df = pd.DataFrame(data)
+
+# Define the list of types to keep
+types_to_keep = [
+    'External Open Buy', 
+    'External Open Sell', 
+    'Internal Open Buy', 
+    'Internal Open Sell'
+]
+
+# Filter the DataFrame
+filtered_df = df[df['Type'].isin(types_to_keep)]
+
+print(filtered_df)
 from openpyxl import load_workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 
