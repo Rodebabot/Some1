@@ -2,39 +2,19 @@ import pandas as pd
 
 # Sample DataFrame for illustration
 data = {
-    'Check': ['A-B', 'C-D', 'E-F', 'G-H'],
-    'OtherColumn': [1, 2, 3, 4]
+    'c1': ['A', 'B', 'A', 'C', 'B', 'D', 'A', 'C', 'D', 'D', 'E', 'F']
 }
 
 # Create the original DataFrame
-df = pd.DataFrame(data)
+df4 = pd.DataFrame(data)
 
-# Split the 'Check' column into multiple columns
-split_columns = df['Check'].str.split('-', expand=True)
+# Get the count of unique values in the 'c1' column
+value_counts = df4['c1'].value_counts()
 
-# Assign new column names
-split_columns.columns = ['Column1', 'Column2']
+# Filter values that appear more than once
+repeated_values = value_counts[value_counts > 1].index
 
-# Combine the new split columns with the original DataFrame (if needed)
-df_split = pd.concat([df, split_columns], axis=1)
+# Create a new DataFrame with these repeated values
+df_repeated = df4[df4['c1'].isin(repeated_values)].reset_index(drop=True)
 
-print(df_split)
-
-import pandas as pd
-
-# Sample DataFrame for illustration
-data = {
-    'Check': ['A', 'B', 'A', 'C', 'B', 'D', 'A', 'C', 'D', 'D']
-}
-
-# Create the original DataFrame
-df = pd.DataFrame(data)
-
-# Get the count of unique values in the 'Check' column
-counts = df['Check'].value_counts().reset_index()
-
-# Rename the columns
-counts.columns = ['Check', 'Count']
-
-print(counts)
-
+print(df_repeated)
