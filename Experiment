@@ -1,3 +1,21 @@
-unique_df_with_other_columns = df.drop_duplicates(subset='Check').reset_index(drop=True)
+import pandas as pd
 
-print(unique_df_with_other_columns)
+# Sample DataFrame for illustration
+data = {
+    'Check': ['A-B', 'C-D', 'E-F', 'G-H'],
+    'OtherColumn': [1, 2, 3, 4]
+}
+
+# Create the original DataFrame
+df = pd.DataFrame(data)
+
+# Split the 'Check' column into multiple columns
+split_columns = df['Check'].str.split('-', expand=True)
+
+# Assign new column names
+split_columns.columns = ['Column1', 'Column2']
+
+# Combine the new split columns with the original DataFrame (if needed)
+df_split = pd.concat([df, split_columns], axis=1)
+
+print(df_split)
