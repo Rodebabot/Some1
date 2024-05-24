@@ -1,8 +1,8 @@
 import pandas as pd
 
-# Sample DataFrame for illustration
+# Updated sample DataFrame with more values
 data = {
-    'c1': ['A', 'B', 'A', 'C', 'B', 'D', 'A', 'C', 'D', 'D', 'E', 'F']
+    'c1': ['A', 'B', 'A', 'C', 'B', 'D', 'A', 'C', 'D', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 }
 
 # Create the original DataFrame
@@ -15,6 +15,6 @@ value_counts = df4['c1'].value_counts()
 repeated_values = value_counts[value_counts > 1].index
 
 # Create a new DataFrame with these repeated values
-df_repeated = df4[df4['c1'].isin(repeated_values)].reset_index(drop=True)
+df_repeated_unique = pd.DataFrame(repeated_values, columns=['c1']).reset_index(drop=True)
 
-print(df_repeated)
+print(df_repeated_unique)
