@@ -1,1 +1,3 @@
-In FX (foreign exchange) and OTC (over-the-counter) settlements, Full-Time Equivalents (FTEs) are crucial for follow-ups to ensure accurate trade confirmation and settlement. They help resolve discrepancies, mitigate settlement risks, and ensure compliance with regulatory standards. Additionally, FTEs maintain effective communication with counterparties, enhancing the reliability and efficiency of the settlement process.
+unique_df_with_other_columns = df.drop_duplicates(subset='Check').reset_index(drop=True)
+
+print(unique_df_with_other_columns)
