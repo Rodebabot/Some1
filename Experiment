@@ -1,6 +1,6 @@
 import pandas as pd
 
-# Updated sample DataFrame with more values
+# Sample DataFrame for illustration
 data = {
     'c1': ['A', 'B', 'A', 'C', 'B', 'D', 'A', 'C', 'D', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 }
@@ -8,13 +8,7 @@ data = {
 # Create the original DataFrame
 df4 = pd.DataFrame(data)
 
-# Get the count of unique values in the 'c1' column
-value_counts = df4['c1'].value_counts()
+# Remove duplicates from the 'c1' column
+df_unique = df4.drop_duplicates(subset='c1').reset_index(drop=True)
 
-# Filter values that appear more than once
-repeated_values = value_counts[value_counts > 1].index
-
-# Create a new DataFrame with these repeated values
-df_repeated_unique = pd.DataFrame(repeated_values, columns=['c1']).reset_index(drop=True)
-
-print(df_repeated_unique)
+print(df_unique)
