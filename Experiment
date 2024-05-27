@@ -7,32 +7,26 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense
 from tensorflow.keras.utils import to_categorical
 
-# Sample Data Preparation
-# Assuming df is your DataFrame with 7 categorical input columns and 1 sentence output column
-df = pd.DataFrame({
-    'cat1': ['A', 'B', 'A', 'C'],
-    'cat2': ['X', 'Y', 'Y', 'X'],
-    'cat3': ['P', 'Q', 'P', 'Q'],
-    'cat4': ['K', 'L', 'L', 'K'],
-    'cat5': ['U', 'V', 'U', 'V'],
-    'cat6': ['G', 'H', 'G', 'H'],
-    'cat7': ['S', 'T', 'S', 'T'],
-    'sentence': ['hello world', 'machine learning', 'deep learning', 'natural language processing']
-})
+# Load the data from an Excel file
+df = pd.read_excel('data.xlsx')
+
+# Assume the first seven columns are categorical and the last column is the sentence
+categorical_columns = df.columns[:-1]
+sentence_column = df.columns[-1]
 
 # Encoding categorical variables
 label_encoders = []
-for col in df.columns[:-1]:
+for col in categorical_columns:
     le = LabelEncoder()
     df[col] = le.fit_transform(df[col])
     label_encoders.append(le)
 
-X = df[df.columns[:-1]].values
+X = df[categorical_columns].values
 
 # Tokenizing output sentences
 tokenizer = Tokenizer()
-tokenizer.fit_on_texts(df['sentence'])
-sequences = tokenizer.texts_to_sequences(df['sentence'])
+tokenizer.fit_on_texts(df[sentence_column])
+sequences = tokenizer.texts_to_sequences(df[sentence_column])
 word_index = tokenizer.word_index
 vocab_size = len(word_index) + 1
 
@@ -112,8 +106,8 @@ def decode_sequence(input_seq):
 # Function to get user input and generate output sentence
 def get_output_sentence():
     input_values = []
-    for i, le in enumerate(label_encoders):
-        value = input(f"Enter value for cat{i+1}: ")
+    for i, (col, le) in enumerate(zip(categorical_columns, label_encoders)):
+        value = input(f"Enter value for {col}: ")
         encoded_value = le.transform([value])[0]
         input_values.append(encoded_value)
     
