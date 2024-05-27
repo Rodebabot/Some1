@@ -95,9 +95,10 @@ def decode_sequence(input_seq):
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_word = tokenizer.index_word.get(sampled_token_index, '')
-        decoded_sentence += ' ' + sampled_word
         if sampled_word == '' or len(decoded_sentence.split()) > max_sequence_length:
             stop_condition = True
+        else:
+            decoded_sentence += ' ' + sampled_word
         target_seq = np.zeros((1, 1))
         target_seq[0, 0] = sampled_token_index
         states_value = [h, c]
@@ -106,7 +107,7 @@ def decode_sequence(input_seq):
 # Function to get user input and generate output sentence
 def get_output_sentence():
     input_values = []
-    for i, (col, le) in enumerate(zip(categorical_columns, label_encoders)):
+    for col, le in zip(categorical_columns, label_encoders):
         value = input(f"Enter value for {col}: ")
         encoded_value = le.transform([value])[0]
         input_values.append(encoded_value)
