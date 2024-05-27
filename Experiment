@@ -109,7 +109,17 @@ def decode_sequence(input_seq):
         states_value = [h, c]
     return decoded_sentence.strip()
 
-# Example prediction
-example_input = np.array([[0, 1, 0, 1, 0, 1, 0]])  # Encoded input example
-decoded_sentence = decode_sequence(example_input)
-print("Decoded sentence:", decoded_sentence)
+# Function to get user input and generate output sentence
+def get_output_sentence():
+    input_values = []
+    for i, le in enumerate(label_encoders):
+        value = input(f"Enter value for cat{i+1}: ")
+        encoded_value = le.transform([value])[0]
+        input_values.append(encoded_value)
+    
+    input_array = np.array(input_values).reshape(1, -1)
+    decoded_sentence = decode_sequence(input_array)
+    print("Generated sentence:", decoded_sentence)
+
+# Example usage
+get_output_sentence()
