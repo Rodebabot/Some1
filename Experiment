@@ -87,21 +87,38 @@ decoder_model = Model([decoder_inputs_single] + [decoder_state_input_h, decoder_
 
 # Function to decode the sequence
 def decode_sequence(input_seq):
+    # Encode the input as state vectors.
     states_value = encoder_model.predict(input_seq)
+    
+    # Generate empty target sequence of length 1 with only the start token.
     target_seq = np.zeros((1, 1))
+    
+    # Sampling loop for a batch of sequences.
     stop_condition = False
     decoded_sentence = ''
     while not stop_condition:
         output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
+        
+        # Sample a token
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_word = tokenizer.index_word.get(sampled_token_index, '')
-        if sampled_word == '' or len(decoded_sentence.split()) > max_sequence_length:
+        
+        if sampled_word == '':
             stop_condition = True
         else:
             decoded_sentence += ' ' + sampled_word
+        
+        # Exit condition: either hit max length or find stop character.
+        if sampled_word == '' or len(decoded_sentence.split()) >= max_sequence_length:
+            stop_condition = True
+
+        # Update the target sequence (length 1).
         target_seq = np.zeros((1, 1))
         target_seq[0, 0] = sampled_token_index
+        
+        # Update states
         states_value = [h, c]
+
     return decoded_sentence.strip()
 
 # Function to get user input and generate output sentence
