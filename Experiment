@@ -5,7 +5,7 @@ import win32com.client as win32
 from datetime import datetime
 
 # Load data from Excel
-file_path = '/path/to/your/excel/file.xlsx'
+file_path = '/path/to/your/excel/file.xlsx'  # Update this with your file path
 df = pd.read_excel(file_path)
 
 # Function to get the user's name from Outlook
@@ -31,10 +31,9 @@ static_frame.pack(padx=10, pady=10, anchor='nw')
 tk.Label(static_frame, text=f"User: {username}").grid(row=0, column=0, sticky='w')
 tk.Label(static_frame, text=f"Date/Time: {current_datetime}").grid(row=1, column=0, sticky='w')
 
-# Display static rows
+# Display static rows (first value of each of the first 3 columns)
 for i in range(3):
-    row_text = ", ".join([str(df.iloc[i, j]) for j in range(df.shape[1])])
-    tk.Label(static_frame, text=row_text).grid(row=i + 2, column=0, sticky='w')
+    tk.Label(static_frame, text=str(df.iloc[0, i])).grid(row=i + 2, column=0, sticky='w')
 
 # Scrollable Frame for Data
 data_frame = tk.Frame(root)
@@ -54,7 +53,8 @@ scrollable_frame.bind(
 canvas.create_window((0, 0), window=scrollable_frame, anchor='nw')
 canvas.configure(yscrollcommand=scrollbar.set)
 
-for i in range(3, df.shape[0]):
+# Display columns D to M (indices 3 to 12) and add Entry widget at the end of each row
+for i in range(df.shape[0]):
     for j in range(3, 13):
         tk.Label(scrollable_frame, text=str(df.iloc[i, j])).grid(row=i, column=j-3)
     entry = tk.Entry(scrollable_frame)
