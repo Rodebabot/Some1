@@ -1,19 +1,73 @@
-1. **Predictive**: Develop a model to forecast stock price movements based on historical data and market indicators.
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import classification_report
+from sklearn.base import BaseEstimator, TransformerMixin
 
-2. **Descriptive**: Create dashboards that provide insights into trading volumes, client portfolios, and transaction histories.
+# Load the Excel file
+file_path = '/mnt/data/your_excel_file.xlsx'  # Update with the correct file path
+df = pd.read_excel(file_path)
 
-3. **Prescriptive**: Implement a recommendation engine that suggests optimal portfolio adjustments based on risk tolerance and market conditions.
+# Display the first few rows of the dataframe
+print(df.head())
 
-4. **NLP (Natural Language Processing)**: Design a system to automatically extract relevant information from financial news and reports to inform investment decisions.
+# Define a custom transformer to extract the text column
+class TextExtractor(BaseEstimator, TransformerMixin):
+    def __init__(self, column):
+        self.column = column
 
-5. **Automated Report Generation**: Build a solution that generates daily, weekly, and monthly financial performance reports with minimal human intervention.
+    def fit(self, X, y=None):
+        return self
 
-6. **Text Analytics**: Analyze sentiment in social media and news articles to gauge market sentiment and its potential impact on stock prices.
+    def transform(self, X):
+        return X[self.column]
 
-7. **Language Translation**: Develop a multilingual financial document translation service to support international operations and communications.
+# Features and target
+X = df.drop(columns=['Notes'])
+y = df['Notes']
 
-8. **Decision Support**: Create a decision support system that evaluates various financial scenarios and suggests strategic actions for portfolio management.
+# Define preprocessing for numerical columns (scaling)
+num_features = ['Settlement Amount USD', 'Unmatched Amount USD']
+num_transformer = StandardScaler()
 
-9. **Scenario Analysis**: Build a tool to simulate the impact of different economic conditions on investment portfolios and overall market stability.
+# Define preprocessing for categorical columns (one-hot encoding)
+cat_features = X.columns.difference(num_features)
+cat_transformer = OneHotEncoder(handle_unknown='ignore')
 
-10. **Risk Management**: Implement an AI-driven risk management platform that identifies potential market risks and provides mitigation strategies.
+# Define TF-IDF vectorizer for the "Notes" column
+text_transformer = Pipeline(steps=[
+    ('extractor', TextExtractor(column='Notes')),
+    ('tfidf', TfidfVectorizer())
+])
+
+# Combine preprocessing steps
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', num_transformer, num_features),
+        ('cat', cat_transformer, cat_features),
+        ('text', text_transformer, 'Notes')
+    ],
+    remainder='drop'
+)
+
+# Define the model pipeline
+model = Pipeline(steps=[
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
+])
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+print(classification_report(y_test, y_pred))
