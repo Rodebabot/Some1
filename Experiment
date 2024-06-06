@@ -63,8 +63,15 @@ y_pred = model.predict(X_test)
 # Evaluate the model
 print(classification_report(y_test, y_pred))
 
+# Generate feature names manually
+num_feature_names = num_features
+cat_feature_names = preprocessor.named_transformers_['cat'].get_feature_names_out(cat_features)
+text_feature_names = text_transformer.get_feature_names_out()
+
+all_feature_names = list(num_feature_names) + list(cat_feature_names) + list(text_feature_names)
+
 # Create a DataFrame for the test results
-X_test_df = pd.DataFrame(X_test.toarray(), columns=preprocessor.get_feature_names_out().tolist() + text_transformer.get_feature_names_out().tolist())
+X_test_df = pd.DataFrame(X_test.toarray(), columns=all_feature_names)
 test_results_df = pd.DataFrame({
     'Actual Notes': y_test,
     'Predicted Notes': y_pred
