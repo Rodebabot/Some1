@@ -6,7 +6,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
-from sklearn.base import BaseEstimator, TransformerMixin
 
 # Load the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with the correct file path
@@ -14,17 +13,6 @@ df = pd.read_excel(file_path)
 
 # Display the first few rows of the dataframe
 print(df.head())
-
-# Define a custom transformer to extract the text column
-class TextExtractor(BaseEstimator, TransformerMixin):
-    def __init__(self, column):
-        self.column = column
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return X[self.column]
 
 # Features and target
 X = df.drop(columns=['Notes'])
@@ -39,28 +27,32 @@ cat_features = X.columns.difference(num_features)
 cat_transformer = OneHotEncoder(handle_unknown='ignore')
 
 # Define TF-IDF vectorizer for the "Notes" column
-text_transformer = Pipeline(steps=[
-    ('tfidf', TfidfVectorizer())
-])
+text_transformer = TfidfVectorizer()
 
-# Combine preprocessing steps
+# Preprocess the non-text features (numerical and categorical)
 preprocessor = ColumnTransformer(
     transformers=[
         ('num', num_transformer, num_features),
-        ('cat', cat_transformer, cat_features),
-        ('text', text_transformer, 'Notes')
+        ('cat', cat_transformer, cat_features)
     ],
     remainder='drop'
 )
 
-# Define the model pipeline
-model = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
-])
+# Transform the non-text features
+X_preprocessed = preprocessor.fit_transform(X)
+
+# Transform the text features
+X_text = text_transformer.fit_transform(y)
+
+# Combine non-text and text features
+from scipy.sparse import hstack
+X_combined = hstack([X_preprocessed, X_text])
 
 # Split the data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X_combined, y, test_size=0.2, random_state=42)
+
+# Define the model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
 
 # Train the model
 model.fit(X_train, y_train)
