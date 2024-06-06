@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -40,7 +40,6 @@ cat_transformer = OneHotEncoder(handle_unknown='ignore')
 
 # Define TF-IDF vectorizer for the "Notes" column
 text_transformer = Pipeline(steps=[
-    ('extractor', TextExtractor(column='Notes')),
     ('tfidf', TfidfVectorizer())
 ])
 
