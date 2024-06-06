@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import classification_report
+from scipy.sparse import hstack
 
 # Load the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with the correct file path
@@ -45,7 +46,6 @@ X_preprocessed = preprocessor.fit_transform(X)
 X_text = text_transformer.fit_transform(y)
 
 # Combine non-text and text features
-from scipy.sparse import hstack
 X_combined = hstack([X_preprocessed, X_text])
 
 # Split the data
@@ -62,3 +62,19 @@ y_pred = model.predict(X_test)
 
 # Evaluate the model
 print(classification_report(y_test, y_pred))
+
+# Create a DataFrame for the test results
+X_test_df = pd.DataFrame(X_test.toarray(), columns=preprocessor.get_feature_names_out().tolist() + text_transformer.get_feature_names_out().tolist())
+test_results_df = pd.DataFrame({
+    'Actual Notes': y_test,
+    'Predicted Notes': y_pred
+})
+
+# Combine the test features with the results
+final_df = pd.concat([X_test_df, test_results_df.reset_index(drop=True)], axis=1)
+
+# Display the DataFrame with the results
+print(final_df.head())
+
+# Optionally, save the results to a CSV file
+final_df.to_csv('/mnt/data/test_results.csv', index=False)
