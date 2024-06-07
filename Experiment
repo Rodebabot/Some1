@@ -1,6 +1,7 @@
 import pandas as pd
 from collections import Counter
 import string
+from nltk.corpus import stopwords
 
 # Load data with financial sentences
 df = pd.DataFrame({
@@ -19,10 +20,16 @@ df = pd.DataFrame({
     ]
 })
 
-# Preprocess text: Remove punctuation and convert to lowercase
+# Preprocess text: Remove punctuation, convert to lowercase, and remove stop words
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+
 def preprocess_text(text):
     translator = str.maketrans('', '', string.punctuation)
-    return text.translate(translator).lower()
+    text = text.translate(translator).lower()
+    words = text.split()
+    filtered_words = [word for word in words if word not in stop_words]
+    return ' '.join(filtered_words)
 
 df['Processed Text'] = df['Row Labels'].apply(preprocess_text)
 
@@ -48,7 +55,6 @@ for group, word_freq in results.items():
     for word, freq in word_freq:
         print(f"  {word}: {freq}")
 
-
 # Aggregate word counts across all groups
 all_texts = df['Processed Text'].tolist()
 overall_word_count = count_words(all_texts)
@@ -57,4 +63,4 @@ overall_word_count = count_words(all_texts)
 most_common_word, most_common_count = overall_word_count.most_common(1)[0]
 
 # Display the overall most frequent word
-print(f"Overall most frequent word: '{most_common_word}' with a count of {most_common_count}")
+print(f"\nOverall most frequent word: '{most_common_word}' with a count of {most_common_count}")
