@@ -47,3 +47,14 @@ for group, word_freq in results.items():
     print(f"Group {group}:")
     for word, freq in word_freq:
         print(f"  {word}: {freq}")
+
+
+# Aggregate word counts across all groups
+all_texts = df['Processed Text'].tolist()
+overall_word_count = count_words(all_texts)
+
+# Find the overall most frequent word
+most_common_word, most_common_count = overall_word_count.most_common(1)[0]
+
+# Display the overall most frequent word
+print(f"Overall most frequent word: '{most_common_word}' with a count of {most_common_count}")
