@@ -1,87 +1,159 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import classification_report
-from scipy.sparse import hstack
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
+import win32com.client as win32
+import os
 
-# Load the Excel file
-file_path = '/mnt/data/your_excel_file.xlsx'  # Update with the correct file path
-df = pd.read_excel(file_path)
+class OutlookAutomationApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Outlook Automation")
 
-# Display the first few rows of the dataframe
-print(df.head())
+        # Create Notebook
+        self.notebook = ttk.Notebook(root)
+        self.notebook.pack(pady=10, expand=True)
 
-# Features and target
-X = df.drop(columns=['Notes'])
-y = df['Notes']
+        # Tabs
+        self.create_send_email_tab()
+        self.create_read_unread_tab()
+        self.create_auto_reply_tab()
+        self.create_save_attachments_tab()
+        self.create_categorize_emails_tab()
 
-# Define preprocessing for numerical columns (scaling)
-num_features = ['Settlement Amount USD', 'Unmatched Amount USD']
-num_transformer = StandardScaler()
+    def create_send_email_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Send Email")
 
-# Define preprocessing for categorical columns (one-hot encoding)
-cat_features = X.columns.difference(num_features)
-cat_transformer = OneHotEncoder(handle_unknown='ignore')
+        ttk.Label(tab, text="Recipient:").grid(row=0, column=0, padx=10, pady=5)
+        self.recipient_entry = ttk.Entry(tab, width=40)
+        self.recipient_entry.grid(row=0, column=1, padx=10, pady=5)
 
-# Define TF-IDF vectorizer for the "Notes" column
-text_transformer = TfidfVectorizer()
+        ttk.Label(tab, text="Subject:").grid(row=1, column=0, padx=10, pady=5)
+        self.subject_entry = ttk.Entry(tab, width=40)
+        self.subject_entry.grid(row=1, column=1, padx=10, pady=5)
 
-# Preprocess the non-text features (numerical and categorical)
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', num_transformer, num_features),
-        ('cat', cat_transformer, cat_features)
-    ],
-    remainder='drop'
-)
+        ttk.Label(tab, text="Body:").grid(row=2, column=0, padx=10, pady=5)
+        self.body_entry = tk.Text(tab, width=40, height=10)
+        self.body_entry.grid(row=2, column=1, padx=10, pady=5)
 
-# Transform the non-text features
-X_preprocessed = preprocessor.fit_transform(X)
+        ttk.Button(tab, text="Send Email", command=self.send_email).grid(row=3, column=1, pady=10)
 
-# Transform the text features
-X_text = text_transformer.fit_transform(y)
+    def create_read_unread_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Read Unread Emails")
 
-# Combine non-text and text features
-X_combined = hstack([X_preprocessed, X_text])
+        ttk.Button(tab, text="Read Unread Emails", command=self.read_unread_emails).pack(pady=20)
 
-# Split the data
-X_train, X_test, y_train, y_test = train_test_split(X_combined, y, test_size=0.2, random_state=42)
+        self.unread_emails_text = tk.Text(tab, width=80, height=20)
+        self.unread_emails_text.pack(pady=10)
 
-# Define the model
-model = RandomForestClassifier(n_estimators=100, random_state=42)
+    def create_auto_reply_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Auto Reply")
 
-# Train the model
-model.fit(X_train, y_train)
+        ttk.Label(tab, text="Keyword:").grid(row=0, column=0, padx=10, pady=5)
+        self.auto_reply_keyword_entry = ttk.Entry(tab, width=40)
+        self.auto_reply_keyword_entry.grid(row=0, column=1, padx=10, pady=5)
 
-# Predict on the test set
-y_pred = model.predict(X_test)
+        ttk.Button(tab, text="Set Auto Reply", command=self.auto_reply).grid(row=1, column=1, pady=10)
 
-# Evaluate the model
-print(classification_report(y_test, y_pred))
+    def create_save_attachments_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Save Attachments")
 
-# Generate feature names manually
-num_feature_names = num_features
-cat_feature_names = preprocessor.named_transformers_['cat'].get_feature_names_out(cat_features)
-text_feature_names = text_transformer.get_feature_names_out()
+        ttk.Label(tab, text="Keyword:").grid(row=0, column=0, padx=10, pady=5)
+        self.save_attachments_keyword_entry = ttk.Entry(tab, width=40)
+        self.save_attachments_keyword_entry.grid(row=0, column=1, padx=10, pady=5)
 
-all_feature_names = list(num_feature_names) + list(cat_feature_names) + list(text_feature_names)
+        ttk.Label(tab, text="Save Path:").grid(row=1, column=0, padx=10, pady=5)
+        self.save_path_entry = ttk.Entry(tab, width=40)
+        self.save_path_entry.grid(row=1, column=1, padx=10, pady=5)
+        ttk.Button(tab, text="Browse", command=self.browse_save_path).grid(row=1, column=2, padx=10, pady=5)
 
-# Create a DataFrame for the test results
-X_test_df = pd.DataFrame(X_test.toarray(), columns=all_feature_names)
-test_results_df = pd.DataFrame({
-    'Actual Notes': y_test,
-    'Predicted Notes': y_pred
-})
+        ttk.Button(tab, text="Save Attachments", command=self.save_attachments).grid(row=2, column=1, pady=10)
 
-# Combine the test features with the results
-final_df = pd.concat([X_test_df, test_results_df.reset_index(drop=True)], axis=1)
+    def create_categorize_emails_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Categorize Emails")
 
-# Display the DataFrame with the results
-print(final_df.head())
+        ttk.Button(tab, text="Categorize Emails", command=self.categorize_emails).pack(pady=20)
 
-# Optionally, save the results to a CSV file
-final_df.to_csv('/mnt/data/test_results.csv', index=False)
+    def send_email(self):
+        recipient = self.recipient_entry.get()
+        subject = self.subject_entry.get()
+        body = self.body_entry.get("1.0", tk.END)
+        outlook = win32.Dispatch('outlook.application')
+        mail = outlook.CreateItem(0)
+        mail.To = recipient
+        mail.Subject = subject
+        mail.Body = body
+        mail.Send()
+        messagebox.showinfo("Success", "Email Sent Successfully!")
+
+    def read_unread_emails(self):
+        outlook = win32.Dispatch('outlook.application')
+        namespace = outlook.GetNamespace('MAPI')
+        inbox = namespace.GetDefaultFolder(6)
+        messages = inbox.Items
+        unread_messages = messages.Restrict("[Unread] = true")
+
+        self.unread_emails_text.delete(1.0, tk.END)
+        for message in unread_messages:
+            self.unread_emails_text.insert(tk.END, f'From: {message.SenderName}\n')
+            self.unread_emails_text.insert(tk.END, f'Subject: {message.Subject}\n\n')
+
+    def auto_reply(self):
+        keyword = self.auto_reply_keyword_entry.get().lower()
+        outlook = win32.Dispatch('outlook.application')
+        namespace = outlook.GetNamespace('MAPI')
+        inbox = namespace.GetDefaultFolder(6)
+        messages = inbox.Items
+        unread_messages = messages.Restrict("[Unread] = true")
+
+        for message in unread_messages:
+            if keyword in message.Subject.lower():
+                reply = message.Reply()
+                reply.Subject = "Re: " + message.Subject
+                reply.Body = "This is an automated response."
+                reply.Send()
+        messagebox.showinfo("Success", "Auto Replies Sent Successfully!")
+
+    def browse_save_path(self):
+        save_path = filedialog.askdirectory()
+        self.save_path_entry.insert(0, save_path)
+
+    def save_attachments(self):
+        keyword = self.save_attachments_keyword_entry.get()
+        save_path = self.save_path_entry.get()
+        outlook = win32.Dispatch('outlook.application')
+        namespace = outlook.GetNamespace('MAPI')
+        inbox = namespace.GetDefaultFolder(6)
+        messages = inbox.Items
+        target_messages = messages.Restrict(f"[Subject] LIKE '%{keyword}%'")
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        for message in target_messages:
+            attachments = message.Attachments
+            for attachment in attachments:
+                attachment.SaveAsFile(os.path.join(save_path, attachment.FileName))
+        messagebox.showinfo("Success", "Attachments Saved Successfully!")
+
+    def categorize_emails(self):
+        outlook = win32.Dispatch('outlook.application')
+        namespace = outlook.GetNamespace('MAPI')
+        inbox = namespace.GetDefaultFolder(6)
+        messages = inbox.Items
+
+        for message in messages:
+            if 'urgent' in message.Subject.lower():
+                message.Categories = 'Red Category'
+            elif 'meeting' in message.Subject.lower():
+                message.Categories = 'Blue Category'
+            message.Save()
+        messagebox.showinfo("Success", "Emails Categorized Successfully!")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = OutlookAutomationApp(root)
+    root.mainloop()
