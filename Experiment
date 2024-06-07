@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import win32com.client as win32
 import os
+from docx import Document
 
 class OutlookAutomationApp:
     def __init__(self, root):
@@ -50,11 +51,16 @@ class OutlookAutomationApp:
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="Auto Reply")
 
-        ttk.Label(tab, text="Keyword:").grid(row=0, column=0, padx=10, pady=5)
-        self.auto_reply_keyword_entry = ttk.Entry(tab, width=40)
-        self.auto_reply_keyword_entry.grid(row=0, column=1, padx=10, pady=5)
+        ttk.Label(tab, text="Email/Domain:").grid(row=0, column=0, padx=10, pady=5)
+        self.auto_reply_email_entry = ttk.Entry(tab, width=40)
+        self.auto_reply_email_entry.grid(row=0, column=1, padx=10, pady=5)
 
-        ttk.Button(tab, text="Set Auto Reply", command=self.auto_reply).grid(row=1, column=1, pady=10)
+        ttk.Label(tab, text="Template File:").grid(row=1, column=0, padx=10, pady=5)
+        self.template_file_entry = ttk.Entry(tab, width=40)
+        self.template_file_entry.grid(row=1, column=1, padx=10, pady=5)
+        ttk.Button(tab, text="Browse", command=self.browse_template_file).grid(row=1, column=2, padx=10, pady=5)
+
+        ttk.Button(tab, text="Set Auto Reply", command=self.auto_reply).grid(row=2, column=1, pady=10)
 
     def create_save_attachments_tab(self):
         tab = ttk.Frame(self.notebook)
@@ -101,8 +107,21 @@ class OutlookAutomationApp:
             self.unread_emails_text.insert(tk.END, f'From: {message.SenderName}\n')
             self.unread_emails_text.insert(tk.END, f'Subject: {message.Subject}\n\n')
 
+    def browse_template_file(self):
+        template_file = filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")])
+        self.template_file_entry.insert(0, template_file)
+
     def auto_reply(self):
-        keyword = self.auto_reply_keyword_entry.get().lower()
+        email_or_domain = self.auto_reply_email_entry.get().lower()
+        template_file = self.template_file_entry.get()
+
+        if not os.path.exists(template_file):
+            messagebox.showerror("Error", "Template file does not exist!")
+            return
+
+        doc = Document(template_file)
+        auto_reply_body = "\n".join([para.text for para in doc.paragraphs])
+
         outlook = win32.Dispatch('outlook.application')
         namespace = outlook.GetNamespace('MAPI')
         inbox = namespace.GetDefaultFolder(6)
@@ -110,11 +129,12 @@ class OutlookAutomationApp:
         unread_messages = messages.Restrict("[Unread] = true")
 
         for message in unread_messages:
-            if keyword in message.Subject.lower():
+            if email_or_domain in message.SenderEmailAddress.lower() or email_or_domain in message.SenderEmailAddress.lower().split('@')[1]:
                 reply = message.Reply()
                 reply.Subject = "Re: " + message.Subject
-                reply.Body = "This is an automated response."
+                reply.Body = auto_reply_body
                 reply.Send()
+
         messagebox.showinfo("Success", "Auto Replies Sent Successfully!")
 
     def browse_save_path(self):
