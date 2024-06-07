@@ -129,7 +129,8 @@ class OutlookAutomationApp:
         unread_messages = messages.Restrict("[Unread] = true")
 
         for message in unread_messages:
-            if email_or_domain in message.SenderEmailAddress.lower() or email_or_domain in message.SenderEmailAddress.lower().split('@')[1]:
+            sender_domain = message.SenderEmailAddress.lower().split('@')[-1]
+            if email_or_domain in message.SenderEmailAddress.lower() or email_or_domain in sender_domain:
                 reply = message.Reply()
                 reply.Subject = "Re: " + message.Subject
                 reply.Body = auto_reply_body
