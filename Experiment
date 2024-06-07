@@ -1,74 +1,49 @@
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-import string
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
 from collections import Counter
+import string
 
-# Load data
+# Load data with financial sentences
 df = pd.DataFrame({
     'Group': ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E'],
     'Row Labels': [
-        'The quick brown fox', 
-        'jumps over the lazy dog', 
-        'Lorem ipsum dolor sit amet', 
-        'consectetur adipiscing elit', 
-        'Sed do eiusmod tempor incididunt', 
-        'ut labore et dolore magna aliqua', 
-        'Ut enim ad minim veniam', 
-        'quis nostrud exercitation ullamco laboris', 
-        'nisi ut aliquip ex ea commodo consequat', 
-        'Duis aute irure dolor in reprehenderit'
+        'The stock market closed higher today', 
+        'Investors are optimistic about the earnings report', 
+        'The company announced a dividend increase', 
+        'Quarterly revenue exceeded expectations', 
+        'The central bank raised interest rates', 
+        'Inflation concerns are impacting the market', 
+        'The merger is expected to boost growth', 
+        'Share prices surged after the acquisition news', 
+        'Analysts are predicting a strong quarter', 
+        'The financial sector is showing resilience'
     ]
 })
 
-# Preprocess text
-nltk.download('stopwords')
-nltk.download('punkt')
-nltk.download('wordnet')
-
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
-
+# Preprocess text: Remove punctuation and convert to lowercase
 def preprocess_text(text):
-    text = text.lower()
-    tokens = word_tokenize(text)
-    tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
-    tokens = [lemmatizer.lemmatize(word) for word in tokens]
-    return ' '.join(tokens)
+    translator = str.maketrans('', '', string.punctuation)
+    return text.translate(translator).lower()
 
 df['Processed Text'] = df['Row Labels'].apply(preprocess_text)
 
-# Text Vectorization
-tfidf_vectorizer = TfidfVectorizer()
-tfidf_matrix = tfidf_vectorizer.fit_transform(df['Processed Text'])
+# Function to count word frequencies in a list of texts
+def count_words(texts):
+    word_count = Counter()
+    for text in texts:
+        words = text.split()
+        word_count.update(words)
+    return word_count
 
-# Clustering
-num_clusters = 3
-km = KMeans(n_clusters=num_clusters, random_state=42)
-km.fit(tfidf_matrix)
-
-df['Cluster'] = km.labels_
-
-# Frequency Analysis
-def get_top_n_words(text, n=10):
-    tokens = word_tokenize(text)
-    counter = Counter(tokens)
-    most_common = counter.most_common(n)
-    return [word for word, freq in most_common]
-
-group_clusters = df.groupby(['Group', 'Cluster'])
+# Group by 'Group' and count word frequencies for each group
+grouped = df.groupby('Group')['Processed Text'].apply(list)
 
 results = {}
+for group, texts in grouped.items():
+    word_count = count_words(texts)
+    results[group] = word_count.most_common()
 
-for (group, cluster), sub_df in group_clusters:
-    text = ' '.join(sub_df['Processed Text'])
-    top_words = get_top_n_words(text)
-    if group not in results:
-        results[group] = {}
-    results[group][cluster] = top_words
-
-print(results)
+# Display results
+for group, word_freq in results.items():
+    print(f"Group {group}:")
+    for word, freq in word_freq:
+        print(f"  {word}: {freq}")
