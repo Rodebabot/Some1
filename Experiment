@@ -1,180 +1,74 @@
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-import win32com.client as win32
-import os
-from docx import Document
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+import string
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from collections import Counter
 
-class OutlookAutomationApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Outlook Automation")
+# Load data
+df = pd.DataFrame({
+    'Group': ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E'],
+    'Row Labels': [
+        'The quick brown fox', 
+        'jumps over the lazy dog', 
+        'Lorem ipsum dolor sit amet', 
+        'consectetur adipiscing elit', 
+        'Sed do eiusmod tempor incididunt', 
+        'ut labore et dolore magna aliqua', 
+        'Ut enim ad minim veniam', 
+        'quis nostrud exercitation ullamco laboris', 
+        'nisi ut aliquip ex ea commodo consequat', 
+        'Duis aute irure dolor in reprehenderit'
+    ]
+})
 
-        # Create Notebook
-        self.notebook = ttk.Notebook(root)
-        self.notebook.pack(pady=10, expand=True)
+# Preprocess text
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('wordnet')
 
-        # Tabs
-        self.create_send_email_tab()
-        self.create_read_unread_tab()
-        self.create_auto_reply_tab()
-        self.create_save_attachments_tab()
-        self.create_categorize_emails_tab()
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
-    def create_send_email_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Send Email")
+def preprocess_text(text):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    tokens = [word for word in tokens if word.isalpha() and word not in stop_words]
+    tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    return ' '.join(tokens)
 
-        ttk.Label(tab, text="Recipient:").grid(row=0, column=0, padx=10, pady=5)
-        self.recipient_entry = ttk.Entry(tab, width=40)
-        self.recipient_entry.grid(row=0, column=1, padx=10, pady=5)
+df['Processed Text'] = df['Row Labels'].apply(preprocess_text)
 
-        ttk.Label(tab, text="Subject:").grid(row=1, column=0, padx=10, pady=5)
-        self.subject_entry = ttk.Entry(tab, width=40)
-        self.subject_entry.grid(row=1, column=1, padx=10, pady=5)
+# Text Vectorization
+tfidf_vectorizer = TfidfVectorizer()
+tfidf_matrix = tfidf_vectorizer.fit_transform(df['Processed Text'])
 
-        ttk.Label(tab, text="Body:").grid(row=2, column=0, padx=10, pady=5)
-        self.body_entry = tk.Text(tab, width=40, height=10)
-        self.body_entry.grid(row=2, column=1, padx=10, pady=5)
+# Clustering
+num_clusters = 3
+km = KMeans(n_clusters=num_clusters, random_state=42)
+km.fit(tfidf_matrix)
 
-        ttk.Button(tab, text="Send Email", command=self.send_email).grid(row=3, column=1, pady=10)
+df['Cluster'] = km.labels_
 
-    def create_read_unread_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Read Unread Emails")
+# Frequency Analysis
+def get_top_n_words(text, n=10):
+    tokens = word_tokenize(text)
+    counter = Counter(tokens)
+    most_common = counter.most_common(n)
+    return [word for word, freq in most_common]
 
-        ttk.Button(tab, text="Read Unread Emails", command=self.read_unread_emails).pack(pady=20)
+group_clusters = df.groupby(['Group', 'Cluster'])
 
-        self.unread_emails_text = tk.Text(tab, width=80, height=20)
-        self.unread_emails_text.pack(pady=10)
+results = {}
 
-    def create_auto_reply_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Auto Reply")
+for (group, cluster), sub_df in group_clusters:
+    text = ' '.join(sub_df['Processed Text'])
+    top_words = get_top_n_words(text)
+    if group not in results:
+        results[group] = {}
+    results[group][cluster] = top_words
 
-        ttk.Label(tab, text="Email/Domain:").grid(row=0, column=0, padx=10, pady=5)
-        self.auto_reply_email_entry = ttk.Entry(tab, width=40)
-        self.auto_reply_email_entry.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(tab, text="Template File:").grid(row=1, column=0, padx=10, pady=5)
-        self.template_file_entry = ttk.Entry(tab, width=40)
-        self.template_file_entry.grid(row=1, column=1, padx=10, pady=5)
-        ttk.Button(tab, text="Browse", command=self.browse_template_file).grid(row=1, column=2, padx=10, pady=5)
-
-        ttk.Button(tab, text="Set Auto Reply", command=self.auto_reply).grid(row=2, column=1, pady=10)
-
-    def create_save_attachments_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Save Attachments")
-
-        ttk.Label(tab, text="Keyword:").grid(row=0, column=0, padx=10, pady=5)
-        self.save_attachments_keyword_entry = ttk.Entry(tab, width=40)
-        self.save_attachments_keyword_entry.grid(row=0, column=1, padx=10, pady=5)
-
-        ttk.Label(tab, text="Save Path:").grid(row=1, column=0, padx=10, pady=5)
-        self.save_path_entry = ttk.Entry(tab, width=40)
-        self.save_path_entry.grid(row=1, column=1, padx=10, pady=5)
-        ttk.Button(tab, text="Browse", command=self.browse_save_path).grid(row=1, column=2, padx=10, pady=5)
-
-        ttk.Button(tab, text="Save Attachments", command=self.save_attachments).grid(row=2, column=1, pady=10)
-
-    def create_categorize_emails_tab(self):
-        tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="Categorize Emails")
-
-        ttk.Button(tab, text="Categorize Emails", command=self.categorize_emails).pack(pady=20)
-
-    def send_email(self):
-        recipient = self.recipient_entry.get()
-        subject = self.subject_entry.get()
-        body = self.body_entry.get("1.0", tk.END)
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)
-        mail.To = recipient
-        mail.Subject = subject
-        mail.Body = body
-        mail.Send()
-        messagebox.showinfo("Success", "Email Sent Successfully!")
-
-    def read_unread_emails(self):
-        outlook = win32.Dispatch('outlook.application')
-        namespace = outlook.GetNamespace('MAPI')
-        inbox = namespace.GetDefaultFolder(6)
-        messages = inbox.Items
-        unread_messages = messages.Restrict("[Unread] = true")
-
-        self.unread_emails_text.delete(1.0, tk.END)
-        for message in unread_messages:
-            self.unread_emails_text.insert(tk.END, f'From: {message.SenderName}\n')
-            self.unread_emails_text.insert(tk.END, f'Subject: {message.Subject}\n\n')
-
-    def browse_template_file(self):
-        template_file = filedialog.askopenfilename(filetypes=[("Word Documents", "*.docx")])
-        self.template_file_entry.insert(0, template_file)
-
-    def auto_reply(self):
-        email_or_domain = self.auto_reply_email_entry.get().lower()
-        template_file = self.template_file_entry.get()
-
-        if not os.path.exists(template_file):
-            messagebox.showerror("Error", "Template file does not exist!")
-            return
-
-        doc = Document(template_file)
-        auto_reply_body = "\n".join([para.text for para in doc.paragraphs])
-
-        outlook = win32.Dispatch('outlook.application')
-        namespace = outlook.GetNamespace('MAPI')
-        inbox = namespace.GetDefaultFolder(6)
-        messages = inbox.Items
-        unread_messages = messages.Restrict("[Unread] = true")
-
-        for message in unread_messages:
-            sender_domain = message.SenderEmailAddress.lower().split('@')[-1]
-            if email_or_domain in message.SenderEmailAddress.lower() or email_or_domain in sender_domain:
-                reply = message.Reply()
-                reply.Subject = "Re: " + message.Subject
-                reply.Body = auto_reply_body
-                reply.Send()
-
-        messagebox.showinfo("Success", "Auto Replies Sent Successfully!")
-
-    def browse_save_path(self):
-        save_path = filedialog.askdirectory()
-        self.save_path_entry.insert(0, save_path)
-
-    def save_attachments(self):
-        keyword = self.save_attachments_keyword_entry.get()
-        save_path = self.save_path_entry.get()
-        outlook = win32.Dispatch('outlook.application')
-        namespace = outlook.GetNamespace('MAPI')
-        inbox = namespace.GetDefaultFolder(6)
-        messages = inbox.Items
-        target_messages = messages.Restrict(f"[Subject] LIKE '%{keyword}%'")
-
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
-        for message in target_messages:
-            attachments = message.Attachments
-            for attachment in attachments:
-                attachment.SaveAsFile(os.path.join(save_path, attachment.FileName))
-        messagebox.showinfo("Success", "Attachments Saved Successfully!")
-
-    def categorize_emails(self):
-        outlook = win32.Dispatch('outlook.application')
-        namespace = outlook.GetNamespace('MAPI')
-        inbox = namespace.GetDefaultFolder(6)
-        messages = inbox.Items
-
-        for message in messages:
-            if 'urgent' in message.Subject.lower():
-                message.Categories = 'Red Category'
-            elif 'meeting' in message.Subject.lower():
-                message.Categories = 'Blue Category'
-            message.Save()
-        messagebox.showinfo("Success", "Emails Categorized Successfully!")
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = OutlookAutomationApp(root)
-    root.mainloop()
+print(results)
