@@ -1,66 +1,87 @@
 import pandas as pd
-from collections import Counter
-import string
-from nltk.corpus import stopwords
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import classification_report
+from scipy.sparse import hstack
 
-# Load data with financial sentences
-df = pd.DataFrame({
-    'Group': ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E'],
-    'Row Labels': [
-        'The stock market closed higher today', 
-        'Investors are optimistic about the earnings report', 
-        'The company announced a dividend increase', 
-        'Quarterly revenue exceeded expectations', 
-        'The central bank raised interest rates', 
-        'Inflation concerns are impacting the market', 
-        'The merger is expected to boost growth', 
-        'Share prices surged after the acquisition news', 
-        'Analysts are predicting a strong quarter', 
-        'The financial sector is showing resilience'
-    ]
+# Load the Excel file
+file_path = '/mnt/data/your_excel_file.xlsx'  # Update with the correct file path
+df = pd.read_excel(file_path)
+
+# Display the first few rows of the dataframe
+print(df.head())
+
+# Features and target
+X = df.drop(columns=['Notes'])
+y = df['Notes']
+
+# Define preprocessing for numerical columns (scaling)
+num_features = ['Settlement Amount USD', 'Unmatched Amount USD']
+num_transformer = StandardScaler()
+
+# Define preprocessing for categorical columns (one-hot encoding)
+cat_features = X.columns.difference(num_features)
+cat_transformer = OneHotEncoder(handle_unknown='ignore')
+
+# Define TF-IDF vectorizer for the "Notes" column
+text_transformer = TfidfVectorizer()
+
+# Preprocess the non-text features (numerical and categorical)
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', num_transformer, num_features),
+        ('cat', cat_transformer, cat_features)
+    ],
+    remainder='drop'
+)
+
+# Transform the non-text features
+X_preprocessed = preprocessor.fit_transform(X)
+
+# Transform the text features
+X_text = text_transformer.fit_transform(y)
+
+# Combine non-text and text features
+X_combined = hstack([X_preprocessed, X_text])
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X_combined, y, test_size=0.2, random_state=42)
+
+# Define the model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Train the model
+model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+print(classification_report(y_test, y_pred))
+
+# Generate feature names manually
+num_feature_names = num_features
+cat_feature_names = preprocessor.named_transformers_['cat'].get_feature_names(cat_features)
+text_feature_names = text_transformer.get_feature_names()
+
+all_feature_names = list(num_feature_names) + list(cat_feature_names) + list(text_feature_names)
+
+# Create a DataFrame for the test results
+X_test_df = pd.DataFrame(X_test.toarray(), columns=all_feature_names)
+test_results_df = pd.DataFrame({
+    'Actual Notes': y_test,
+    'Predicted Notes': y_pred
 })
 
-# Preprocess text: Remove punctuation, convert to lowercase, and remove stop words
-nltk.download('stopwords')
-stop_words = set(stopwords.words('english'))
+# Combine the test features with the results
+final_df = pd.concat([X_test_df, test_results_df.reset_index(drop=True)], axis=1)
 
-def preprocess_text(text):
-    translator = str.maketrans('', '', string.punctuation)
-    text = text.translate(translator).lower()
-    words = text.split()
-    filtered_words = [word for word in words if word not in stop_words]
-    return ' '.join(filtered_words)
+# Display the DataFrame with the results
+print(final_df.head())
 
-df['Processed Text'] = df['Row Labels'].apply(preprocess_text)
-
-# Function to count word frequencies in a list of texts
-def count_words(texts):
-    word_count = Counter()
-    for text in texts:
-        words = text.split()
-        word_count.update(words)
-    return word_count
-
-# Group by 'Group' and count word frequencies for each group
-grouped = df.groupby('Group')['Processed Text'].apply(list)
-
-results = {}
-for group, texts in grouped.items():
-    word_count = count_words(texts)
-    results[group] = word_count.most_common()
-
-# Display results
-for group, word_freq in results.items():
-    print(f"Group {group}:")
-    for word, freq in word_freq:
-        print(f"  {word}: {freq}")
-
-# Aggregate word counts across all groups
-all_texts = df['Processed Text'].tolist()
-overall_word_count = count_words(all_texts)
-
-# Find the overall most frequent word
-most_common_word, most_common_count = overall_word_count.most_common(1)[0]
-
-# Display the overall most frequent word
-print(f"\nOverall most frequent word: '{most_common_word}' with a count of {most_common_count}")
+# Optionally, save the results to a CSV file
+final_df.to_csv('/mnt/data/test_results.csv', index=False)
