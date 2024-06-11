@@ -74,3 +74,45 @@ for section in sections:
     for phrase, count in common_phrases:
         print(f"{phrase}: {count}")
     print("\n")
+
+
+
+
+import pandas as pd
+import re
+from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Load the Excel file
+file_path = 'path_to_your_excel_file.xlsx'  # Update this path with your actual file path
+df = pd.read_excel(file_path, sheet_name='Sheet1')  # Adjust sheet_name if necessary
+
+# Assuming there is a 'Section' column in your DataFrame
+sections = df['Section'].unique()
+
+for section in sections:
+    section_df = df[df['Section'] == section]
+    
+    # Extract the comments column
+    comments = section_df['Comments'].dropna().astype(str).tolist()
+
+    # Clean and preprocess the comments
+    cleaned_comments = [re.sub(r'[^a-zA-Z\s]', ' ', comment).lower() for comment in comments]
+
+    # Use CountVectorizer to find common phrases or words with a minimum length of 3 words
+    vectorizer = CountVectorizer(ngram_range=(3, 3), stop_words='english')
+    X = vectorizer.fit_transform(cleaned_comments)
+    phrases = vectorizer.get_feature_names()  # Updated method
+
+    # Count the occurrences of each phrase
+    counts = X.toarray().sum(axis=0)
+    phrase_counts = Counter(dict(zip(phrases, counts)))
+
+    # Get the most common phrases
+    common_phrases = phrase_counts.most_common(10)
+
+    # Display the common phrases for this section
+    print(f"Section: {section}")
+    for phrase, count in common_phrases:
+        print(f"{phrase}: {count}")
+    print("\n")
