@@ -1,118 +1,44 @@
-import pandas as pd
-import re
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
+Here is a summarized and more presentable version of the text from the image:
 
-# Load the Excel file
-file_path = 'path_to_your_excel_file.xlsx'  # Update this path with your actual file path
-df = pd.read_excel(file_path, sheet_name='Sheet1')  # Adjust sheet_name if necessary
+---
 
-# Extract the comments column
-comments = df['Comments'].dropna().astype(str).tolist()
+### Section: AXIAL vs EUCLID SPEAR TRD AS
 
-# Clean and preprocess the comments
-cleaned_comments = [re.sub(r'[^a-zA-Z\s]', ' ', comment).lower() for comment in comments]
+If a trade is booked in the front office, one leg should be in Axial SMO.
 
-# Use CountVectorizer to find common phrases or words
-vectorizer = CountVectorizer(ngram_range=(2, 3), stop_words='english')
-X = vectorizer.fit_transform(cleaned_comments)
-phrases = vectorizer.get_feature_names_out()
+**Possible Issues:**
+1. Present in Euclid but not in Axial (due to downstream failure, enrichment failure, feed failure).
+2. Break net cash mismatch in Euclid SMO.
+    - Net cash is a field present in both Euclid and SMO but there is a value mismatch (Front office record).
+    - Present in FOS but not in downstream flow, majority of the time.
 
-# Count the occurrences of each phrase
-counts = X.toarray().sum(axis=0)
-phrase_counts = Counter(dict(zip(phrases, counts)))
+**Action Required:**
+- Needs further investigation.
 
-# Get the most common phrases
-common_phrases = phrase_counts.most_common(10)
+---
 
-# Display the common phrases
-for phrase, count in common_phrases:
-    print(f"{phrase}: {count}")
+### Section: CAS vs SPEAR TRD
 
+There might be differences due to tax percentage booking.
 
+**Details:**
+- Dividend amount calculation (Overseas Tax Percentage in Spear vs CAS - different percentages).
+- This discrepancy might become obsolete when trades move to NUVO.
 
+**Action Required:**
+- Spear has to book it correctly as CAS cannot change the tax percentage due to standard tax rates.
 
+---
 
+### Section: AXL vs IMP AXL NTP AVL KOS NOV XBO TRD INTER CMPNY
 
+Intercompany reconciliation:
 
+**Issues:**
+1. Attribute mismatch:
+    - Books and loans (e.g., one party holding the position but borrowing from another).
+    - One side of the trade is booked while the other is not.
 
-import pandas as pd
-import re
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
+---
 
-# Load the Excel file
-file_path = 'path_to_your_excel_file.xlsx'  # Update this path with your actual file path
-df = pd.read_excel(file_path, sheet_name='Sheet1')  # Adjust sheet_name if necessary
-
-# Assuming there is a 'Section' column in your DataFrame
-sections = df['Section'].unique()
-
-for section in sections:
-    section_df = df[df['Section'] == section]
-    
-    # Extract the comments column
-    comments = section_df['Comments'].dropna().astype(str).tolist()
-
-    # Clean and preprocess the comments
-    cleaned_comments = [re.sub(r'[^a-zA-Z\s]', ' ', comment).lower() for comment in comments]
-
-    # Use CountVectorizer to find common phrases or words
-    vectorizer = CountVectorizer(ngram_range=(2, 3), stop_words='english')
-    X = vectorizer.fit_transform(cleaned_comments)
-    phrases = vectorizer.get_feature_names()  # Updated method
-
-    # Count the occurrences of each phrase
-    counts = X.toarray().sum(axis=0)
-    phrase_counts = Counter(dict(zip(phrases, counts)))
-
-    # Get the most common phrases
-    common_phrases = phrase_counts.most_common(10)
-
-    # Display the common phrases for this section
-    print(f"Section: {section}")
-    for phrase, count in common_phrases:
-        print(f"{phrase}: {count}")
-    print("\n")
-
-
-
-
-import pandas as pd
-import re
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
-
-# Load the Excel file
-file_path = 'path_to_your_excel_file.xlsx'  # Update this path with your actual file path
-df = pd.read_excel(file_path, sheet_name='Sheet1')  # Adjust sheet_name if necessary
-
-# Assuming there is a 'Section' column in your DataFrame
-sections = df['Section'].unique()
-
-for section in sections:
-    section_df = df[df['Section'] == section]
-    
-    # Extract the comments column
-    comments = section_df['Comments'].dropna().astype(str).tolist()
-
-    # Clean and preprocess the comments
-    cleaned_comments = [re.sub(r'[^a-zA-Z\s]', ' ', comment).lower() for comment in comments]
-
-    # Use CountVectorizer to find common phrases or words with a minimum length of 3 words
-    vectorizer = CountVectorizer(ngram_range=(3, 3), stop_words='english')
-    X = vectorizer.fit_transform(cleaned_comments)
-    phrases = vectorizer.get_feature_names()  # Updated method
-
-    # Count the occurrences of each phrase
-    counts = X.toarray().sum(axis=0)
-    phrase_counts = Counter(dict(zip(phrases, counts)))
-
-    # Get the most common phrases
-    common_phrases = phrase_counts.most_common(10)
-
-    # Display the common phrases for this section
-    print(f"Section: {section}")
-    for phrase, count in common_phrases:
-        print(f"{phrase}: {count}")
-    print("\n")
+This summary provides a clear and organized overview of the issues and necessary actions across the three sections.
