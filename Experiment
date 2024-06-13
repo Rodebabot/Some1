@@ -1,1 +1,57 @@
-The sections and issues highlighted here have been selected based on an in-depth analysis conducted using Natural Language Processing (NLP) techniques. By performing theme analysis on comments from TLM (Transaction Lifecycle Management) reconciliation data, we identified recurring themes and critical areas that require attention. This data-driven approach ensures that the most prevalent and impactful issues are addressed, leading to more efficient and accurate trade management and reconciliation processes.
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load the Excel file
+file_path = '/mnt/data/top 3 Recs.xlsx'
+df = pd.read_excel(file_path)
+
+# Convert 'Bus Date' to datetime
+df['Bus Date'] = pd.to_datetime(df['Bus Date'])
+
+# Group by 'Bus Date' to get daily totals
+daily_data = df.groupby('Bus Date').sum().reset_index()
+
+# Group by month to get monthly totals
+df['Month'] = df['Bus Date'].dt.to_period('M')
+monthly_data = df.groupby('Month').sum().reset_index()
+
+# Plot daily total volume
+plt.figure(figsize=(12, 6))
+plt.plot(daily_data['Bus Date'], daily_data['Total Volume'], label='Total Volume')
+plt.title('Daily Total Volume')
+plt.xlabel('Date')
+plt.ylabel('Total Volume')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Plot monthly total volume
+plt.figure(figsize=(12, 6))
+plt.plot(monthly_data['Month'].astype(str), monthly_data['Total Volume'], label='Total Volume')
+plt.title('Monthly Total Volume')
+plt.xlabel('Month')
+plt.ylabel('Total Volume')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# If you also want to include 'Manual Match' in the plot
+# Plot daily manual match
+plt.figure(figsize=(12, 6))
+plt.plot(daily_data['Bus Date'], daily_data['Manual Match'], label='Manual Match', color='orange')
+plt.title('Daily Manual Match')
+plt.xlabel('Date')
+plt.ylabel('Manual Match')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Plot monthly manual match
+plt.figure(figsize=(12, 6))
+plt.plot(monthly_data['Month'].astype(str), monthly_data['Manual Match'], label='Manual Match', color='orange')
+plt.title('Monthly Manual Match')
+plt.xlabel('Month')
+plt.ylabel('Manual Match')
+plt.legend()
+plt.grid(True)
+plt.show()
