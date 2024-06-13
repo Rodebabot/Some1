@@ -8,27 +8,34 @@ df = pd.read_excel(file_path)
 # Convert 'Bus Date' to datetime
 df['Bus Date'] = pd.to_datetime(df['Bus Date'])
 
-# Group by 'Bus Date' to get daily totals
-daily_data = df.groupby('Bus Date').sum().reset_index()
+# Group by 'Bus Date' and 'Rec' to get daily totals
+daily_data = df.groupby(['Bus Date', 'Rec']).sum().reset_index()
 
-# Group by month to get monthly totals
+# Group by month and 'Rec' to get monthly totals
 df['Month'] = df['Bus Date'].dt.to_period('M')
-monthly_data = df.groupby('Month').sum().reset_index()
+monthly_data = df.groupby(['Month', 'Rec']).sum().reset_index()
 
-# Plot daily total volume
+# Get unique Recs
+recs = df['Rec'].unique()
+
+# Plot daily total volume for each Rec
 plt.figure(figsize=(12, 6))
-plt.plot(daily_data['Bus Date'], daily_data['Total Volume'], label='Total Volume')
-plt.title('Daily Total Volume')
+for rec in recs:
+    rec_data = daily_data[daily_data['Rec'] == rec]
+    plt.plot(rec_data['Bus Date'], rec_data['Total Volume'], label=f'Total Volume {rec}')
+plt.title('Daily Total Volume for Different Recs')
 plt.xlabel('Date')
 plt.ylabel('Total Volume')
 plt.legend()
 plt.grid(True)
 plt.show()
 
-# Plot monthly total volume
+# Plot monthly total volume for each Rec
 plt.figure(figsize=(12, 6))
-plt.plot(monthly_data['Month'].astype(str), monthly_data['Total Volume'], label='Total Volume')
-plt.title('Monthly Total Volume')
+for rec in recs:
+    rec_data = monthly_data[monthly_data['Rec'] == rec]
+    plt.plot(rec_data['Month'].astype(str), rec_data['Total Volume'], label=f'Total Volume {rec}')
+plt.title('Monthly Total Volume for Different Recs')
 plt.xlabel('Month')
 plt.ylabel('Total Volume')
 plt.legend()
@@ -36,20 +43,24 @@ plt.grid(True)
 plt.show()
 
 # If you also want to include 'Manual Match' in the plot
-# Plot daily manual match
+# Plot daily manual match for each Rec
 plt.figure(figsize=(12, 6))
-plt.plot(daily_data['Bus Date'], daily_data['Manual Match'], label='Manual Match', color='orange')
-plt.title('Daily Manual Match')
+for rec in recs:
+    rec_data = daily_data[daily_data['Rec'] == rec]
+    plt.plot(rec_data['Bus Date'], rec_data['Manual Match'], label=f'Manual Match {rec}')
+plt.title('Daily Manual Match for Different Recs')
 plt.xlabel('Date')
 plt.ylabel('Manual Match')
 plt.legend()
 plt.grid(True)
 plt.show()
 
-# Plot monthly manual match
+# Plot monthly manual match for each Rec
 plt.figure(figsize=(12, 6))
-plt.plot(monthly_data['Month'].astype(str), monthly_data['Manual Match'], label='Manual Match', color='orange')
-plt.title('Monthly Manual Match')
+for rec in recs:
+    rec_data = monthly_data[monthly_data['Rec'] == rec]
+    plt.plot(rec_data['Month'].astype(str), rec_data['Manual Match'], label=f'Manual Match {rec}')
+plt.title('Monthly Manual Match for Different Recs')
 plt.xlabel('Month')
 plt.ylabel('Manual Match')
 plt.legend()
