@@ -1,20 +1,23 @@
-Based on the provided graph "Daily Total Volume for Different Recs", here are some analytical insights:
+import pandas as pd
+from datetime import datetime, timedelta
 
-1. **Volume Fluctuations and Stability:**
-   - The total volumes for the different Recs show significant fluctuations over time.
-   - One Rec (the orange line) shows extreme spikes, indicating days with very high trading volumes compared to other days. This could suggest events or transactions that are unusual or particularly significant on those days.
-   - The other Recs (blue and green lines) display more consistent trading volumes, suggesting more stable trading activities.
+# Load the Excel file into a DataFrame
+file_path = 'your_file.xlsx'  # Replace with your actual file path
+df = pd.read_excel(file_path)
 
-2. **Comparative Analysis:**
-   - Comparing the different Recs, it appears that the Rec represented by the orange line generally has higher variability and peaks in trading volume compared to the other two Recs.
-   - The Rec represented by the green line shows the lowest trading volumes overall and appears to have the least variability, indicating more consistent but lower volume trading activity.
+# Convert the "Pay date" column to datetime format
+df['Pay date'] = pd.to_datetime(df['Pay date'])
 
-3. **Trend Observations:**
-   - All three Recs seem to follow a general trend, with volumes rising and falling in similar periods. This could indicate market-wide influences affecting all three Recs simultaneously.
-   - There is a noticeable spike around early 2024 (orange line) that is not as pronounced in the other Recs, suggesting a Rec-specific event that caused a large volume of trades.
+# Get today's date
+today = datetime.today()
 
-4. **Potential Anomalies and Further Investigation:**
-   - The extreme peaks in the orange line could indicate anomalies or significant events specific to that Rec, warranting further investigation to understand the causes behind such spikes.
-   - Understanding these peaks can help in identifying unusual trading activities, significant transactions, or external factors impacting the trade volumes for that particular Rec.
+# Calculate the date one week from today
+next_week = today + timedelta(days=7)
 
-These insights can help in identifying trading patterns, market behaviors, and Rec-specific events that influence trading volumes. Further analysis and context would be necessary to draw more precise conclusions.
+# Filter the DataFrame for rows where the "Pay date" is between today and next week
+filtered_df = df[(df['Pay date'] >= today) & (df['Pay date'] <= next_week)]
+
+# Save the filtered DataFrame back to an Excel file (optional)
+filtered_df.to_excel('filtered_data.xlsx', index=False)
+
+print(filtered_df)
