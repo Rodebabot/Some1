@@ -1,23 +1,25 @@
 import pandas as pd
-from datetime import datetime, timedelta
 
-# Load the Excel file into a DataFrame
-file_path = 'your_file.xlsx'  # Replace with your actual file path
+# Define the file path
+file_path = "your_excel_file.xlsx"
+
+# Read the Excel file into a DataFrame
 df = pd.read_excel(file_path)
 
-# Convert the "Pay date" column to datetime format
-df['Pay date'] = pd.to_datetime(df['Pay date'])
+# Add a new column V with the sign based on Operation Type
+def assign_value(row):
+  if row["Operation Type"] in ["SELL", "CDEL"]:
+    return -row["Primary Original Quantity"]
+  else:
+    return row["Primary Original Quantity"]
 
-# Get today's date
-today = datetime.today()
+df["V"] = df.apply(assign_value, axis=1)
 
-# Calculate the date one week from today
-next_week = today + timedelta(days=7)
+# Add a new column V1 with positive Amount CCY
+df["V1"] = df["Amount CCY"]
 
-# Filter the DataFrame for rows where the "Pay date" is between today and next week
-filtered_df = df[(df['Pay date'] >= today) & (df['Pay date'] <= next_week)]
+# Save the modified DataFrame back to Excel (optional)
+# df.to_excel(file_path, index=False)  # Uncomment to save
 
-# Save the filtered DataFrame back to an Excel file (optional)
-filtered_df.to_excel('filtered_data.xlsx', index=False)
-
-print(filtered_df)
+# Print the DataFrame (optional)
+print(df)
