@@ -1,23 +1,49 @@
 import pandas as pd
-from datetime import datetime, timedelta
 
-# Load the Excel file into a DataFrame
-file_path = 'your_file.xlsx'  # Replace with your actual file path
-df = pd.read_excel(file_path)
+def fix_dataframe(df):
+  """
+  Modifies the DataFrame to ensure rows with a Net amount for Non-CLS and missing CLS
+  and vice versa have corresponding rows with Net amount as 0.
 
-# Convert the "Pay date" column to datetime format
-df['Pay date'] = pd.to_datetime(df['Pay date'])
+  Args:
+      df: The input DataFrame.
 
-# Get today's date
-today = datetime.today()
+  Returns:
+      The modified DataFrame.
+  """
 
-# Calculate the date one week from today
-next_week = today + timedelta(days=7)
+  # Group DataFrame by relevant columns
+  grouped_df = df.groupby(['Entity', 'Counterparty Name', 'CCY', 'Value Date'])
 
-# Filter the DataFrame for rows where the "Pay date" is between today and next week
-filtered_df = df[(df['Pay date'] >= today) & (df['Pay date'] <= next_week)]
+  # Define a function to handle missing values in each group
+  def g(df_group):
+    if 'CLS' not in df_group['CLS'].unique():  # Check for missing CLS rows
+      # Create a row with Net amount as 0 for Non-CLS
+      new_row = {'CLS': 'CLS', 'Net': 0}
+      df_group = df_group.append(new_row, ignore_index=True)
+    elif 'Non-CLS' not in df_group['CLS'].unique():  # Check for missing Non-CLS rows
+      # Create a row with Net amount as 0 for CLS
+      new_row = {'CLS': 'Non-CLS', 'Net': 0}
+      df_group = df_group.append(new_row, ignore_index=True)
+    return df_group
 
-# Save the filtered DataFrame back to an Excel file (optional)
-filtered_df.to_excel('filtered_data.xlsx', index=False)
+  # Apply the function to each group
+  modified_df = grouped_df.apply(g)
 
-print(filtered_df)
+  # Reset index for the final DataFrame
+  return modified_df.reset_index()
+
+# Sample DataFrame (replace with your actual data)
+data = {'Entity': ['NFPE', 'NFPE', 'NFPE', 'NFPE', 'NFPE', 'NSL', 'NSL', 'NSL', 'NSL', 'NSL'],
+        'Counterparty Name': ['NOMURA FINCL PRDTS AND SVCS', 'NOMURA FINCL PRDTS AND SVCS', 'NOMURA FINCL PROTS AND SVCS', 'NOMURA INTL PLC LDN', 'NOMURA INTL PLC LDN', 'NOMURA FINCL PRDTS AND SVCS INC', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)', 'NSL NOMURA INTERNATIONAL PLC (WMD)'],
+        'CLS': ['Non-CLS', 'Non-CLS', 'Non-CLS', 'CLS', 'EUR', 'Non-CLS', 'Non-CLS', 'Non-CLS', 'Non-CLS', 'Non-CLS'],
+        'CCY': ['CNY', 'JPY', 'USD', 'CHF', 'EUR', 'USD', 'AUD', 'EUR', 'HKD', 'USD'],
+        'Value Date': ['2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11'],
+        'Net': [1.3863e+08, 9.93832e+07, -2.0662256e+07, 9.250000e+04, 6.374300e+05, 3.754165e+08, -3.627281e+06, 2.184912e+06, -5.5792226e+08, 7.138286e-07]}
+df = pd.DataFrame(data)
+
+# Fix the DataFrame
+result_df = fix_dataframe(df.copy())
+
+# Print the modified DataFrame
+print(result_df)
