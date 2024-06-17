@@ -12,7 +12,7 @@ def create_combinations(data):
       A new pandas DataFrame with the additional rows for all combinations and CLS values.
   """
   # Select columns for combinations
-  cols = ["Entity", "Counterparty Name", "Value Date", "Net [złówka symbol]"]
+  cols = ["Entity", "Counterparty Name", "CCY", "Value Date", "Net"]
   combinations = data[cols].drop_duplicates()
 
   # Define missing CLS values
@@ -24,33 +24,40 @@ def create_combinations(data):
     # Extract data for current combination
     entity = row["Entity"]
     counterparty = row["Counterparty Name"]
+    ccy = row["CCY"]
     value_date = row["Value Date"]
-    net_amount = row["Net [złówka symbol]"]
+    net_amount = row["Net"]
 
-    # Get existing CLS value from original data
-    existing_cls = data[(data["Entity"] == entity) & 
+    # Filter data for current combination
+    filtered_data = data[(data["Entity"] == entity) & 
                          (data["Counterparty Name"] == counterparty) & 
-                         (data["Value Date"] == value_date)]["CLS"]
+                         (data["CCY"] == ccy) & 
+                         (data["Value Date"] == value_date)]
+
+    # Get existing CLS values from filtered data
+    existing_cls = filtered_data["CLS"].tolist()
 
     # Add rows for missing CLS values
     for cls in missing_cls:
-      if cls not in existing_cls.values:
+      if cls not in existing_cls:
         new_data.append({
             "Entity": entity,
             "Counterparty Name": counterparty,
             "CLS": cls,
+            "CCY": ccy,
             "Value Date": value_date,
-            "Net [złówka symbol]": 0.0  # Set net amount to 0 for missing CLS
+            "Net": 0.0  # Set net amount to 0 for missing CLS
         })
 
-    # Add row for existing CLS (if present)
-    if len(existing_cls) > 0:
+    # Add rows for each existing CLS (if present)
+    for cls in existing_cls:
       new_data.append({
           "Entity": entity,
           "Counterparty Name": counterparty,
-          "CLS": existing_cls.values[0],  # Assuming only one existing CLS
+          "CLS": cls,
+          "CCY": ccy,
           "Value Date": value_date,
-          "Net [złówka symbol]": net_amount
+          "Net": filtered_data[filtered_data["CLS"] == cls]["Net"].values[0]
       })
 
   # Combine original data with new rows
