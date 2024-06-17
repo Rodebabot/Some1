@@ -1,49 +1,63 @@
 import pandas as pd
 
-def fix_dataframe(df):
+def create_combinations(data):
   """
-  Modifies the DataFrame to ensure rows with a Net amount for Non-CLS and missing CLS
-  and vice versa have corresponding rows with Net amount as 0.
+  This function takes a pandas DataFrame and creates new rows for every combination
+  of columns 1, 2, 4, and 5 with different CLS values (C and D are added if missing).
 
   Args:
-      df: The input DataFrame.
+      data: A pandas DataFrame containing the original data.
 
   Returns:
-      The modified DataFrame.
+      A new pandas DataFrame with the additional rows for all combinations and CLS values.
   """
+  # Select columns for combinations
+  cols = ["Entity", "Counterparty Name", "Value Date", "Net [złówka symbol]"]
+  combinations = data[cols].drop_duplicates()
 
-  # Group DataFrame by relevant columns
-  grouped_df = df.groupby(['Entity', 'Counterparty Name', 'CCY', 'Value Date'])
+  # Define missing CLS values
+  missing_cls = ["C", "D"]
 
-  # Define a function to handle missing values in each group
-  def g(df_group):
-    if 'CLS' not in df_group['CLS'].unique():  # Check for missing CLS rows
-      # Create a row with Net amount as 0 for Non-CLS
-      new_row = {'CLS': 'CLS', 'Net': 0}
-      df_group = df_group.append(new_row, ignore_index=True)
-    elif 'Non-CLS' not in df_group['CLS'].unique():  # Check for missing Non-CLS rows
-      # Create a row with Net amount as 0 for CLS
-      new_row = {'CLS': 'Non-CLS', 'Net': 0}
-      df_group = df_group.append(new_row, ignore_index=True)
-    return df_group
+  # Iterate through combinations and create new rows
+  new_data = []
+  for index, row in combinations.iterrows():
+    # Extract data for current combination
+    entity = row["Entity"]
+    counterparty = row["Counterparty Name"]
+    value_date = row["Value Date"]
+    net_amount = row["Net [złówka symbol]"]
 
-  # Apply the function to each group
-  modified_df = grouped_df.apply(g)
+    # Get existing CLS value from original data
+    existing_cls = data[(data["Entity"] == entity) & 
+                         (data["Counterparty Name"] == counterparty) & 
+                         (data["Value Date"] == value_date)]["CLS"]
 
-  # Reset index for the final DataFrame
-  return modified_df.reset_index()
+    # Add rows for missing CLS values
+    for cls in missing_cls:
+      if cls not in existing_cls.values:
+        new_data.append({
+            "Entity": entity,
+            "Counterparty Name": counterparty,
+            "CLS": cls,
+            "Value Date": value_date,
+            "Net [złówka symbol]": 0.0  # Set net amount to 0 for missing CLS
+        })
 
-# Sample DataFrame (replace with your actual data)
-data = {'Entity': ['NFPE', 'NFPE', 'NFPE', 'NFPE', 'NFPE', 'NSL', 'NSL', 'NSL', 'NSL', 'NSL'],
-        'Counterparty Name': ['NOMURA FINCL PRDTS AND SVCS', 'NOMURA FINCL PRDTS AND SVCS', 'NOMURA FINCL PROTS AND SVCS', 'NOMURA INTL PLC LDN', 'NOMURA INTL PLC LDN', 'NOMURA FINCL PRDTS AND SVCS INC', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)', 'NSL NOMURA INTERNATIONAL PLC (WMD)'],
-        'CLS': ['Non-CLS', 'Non-CLS', 'Non-CLS', 'CLS', 'EUR', 'Non-CLS', 'Non-CLS', 'Non-CLS', 'Non-CLS', 'Non-CLS'],
-        'CCY': ['CNY', 'JPY', 'USD', 'CHF', 'EUR', 'USD', 'AUD', 'EUR', 'HKD', 'USD'],
-        'Value Date': ['2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11', '2024-06-11'],
-        'Net': [1.3863e+08, 9.93832e+07, -2.0662256e+07, 9.250000e+04, 6.374300e+05, 3.754165e+08, -3.627281e+06, 2.184912e+06, -5.5792226e+08, 7.138286e-07]}
-df = pd.DataFrame(data)
+    # Add row for existing CLS (if present)
+    if len(existing_cls) > 0:
+      new_data.append({
+          "Entity": entity,
+          "Counterparty Name": counterparty,
+          "CLS": existing_cls.values[0],  # Assuming only one existing CLS
+          "Value Date": value_date,
+          "Net [złówka symbol]": net_amount
+      })
 
-# Fix the DataFrame
-result_df = fix_dataframe(df.copy())
+  # Combine original data with new rows
+  return pd.concat([data, pd.DataFrame(new_data)], ignore_index=True)
 
-# Print the modified DataFrame
-print(result_df)
+# Assuming you have your data in a pandas DataFrame called 'data'
+new_data = create_combinations(data.copy())  # Operate on a copy to avoid modifying original data
+
+# Print the new DataFrame with all combinations and CLS values
+print(new_data)
