@@ -9,8 +9,12 @@ import plotly.express as px
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with your file path
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
+# Sum up all the value columns dynamically
+value_columns = df.columns[3:]  # Assuming the first three columns are fixed
+df['Total'] = df[value_columns].sum(axis=1)
+
 # Aggregate data by Entity and CCY
-aggregated_df = df.groupby(['Entity', 'CCY']).sum().reset_index()
+aggregated_df = df.groupby(['Entity', 'CCY'])['Total'].sum().reset_index()
 
 # Initialize Dash app
 app = dash.Dash(__name__)
@@ -25,7 +29,7 @@ app.layout = html.Div([
     Input('main-graph', 'clickData')
 )
 def update_main_graph(clickData):
-    fig = px.bar(aggregated_df, x='Entity', y='Value', color='CCY', barmode='group')  # Ensure 'Value' matches your sum column
+    fig = px.bar(aggregated_df, x='Entity', y='Total', color='CCY', barmode='group')
     return fig
 
 @app.callback(
@@ -37,15 +41,11 @@ def update_detailed_graph(clickData):
         entity = clickData['points'][0]['x']
         ccy = aggregated_df.loc[clickData['points'][0]['pointIndex'], 'CCY']
         filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
-        fig = px.bar(filtered_df, x='Counterparty Name', y='Value', color='CCY', barmode='group')  # Ensure 'Value' matches your sum column
+        filtered_df['Total'] = filtered_df[value_columns].sum(axis=1)
+        fig = px.bar(filtered_df, x='Counterparty Name', y='Total', color='CCY', barmode='group')
     else:
         fig = px.bar()  # Empty figure if no clickData
     return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
-
-
-!pip install dash --upgrade
-!pip install Flask==2.0.3
-!pip install werkzeug==2.0.3
