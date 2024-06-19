@@ -1,21 +1,33 @@
 import pandas as pd
 
-# Assuming your dataframe is called 'df'
-def modify_dataframe(df):
-  # Copy all values from the first row to the second row
-  df.iloc[1] = df.iloc[0]
+# Sample data creation for demonstration (replace this with reading your actual data)
+data = {
+    'Entity': ['NFPE', 'NFPE', 'NFPE', 'NSL', 'NSL', 'NSL', 'NSL'],
+    'Counterparty Name': ['Counterparty1', 'Counterparty2', 'Counterparty3', 'Nomura', 'Nomura', 'Nomura', 'Nomura'],
+    'CCY': ['EUR', 'GBP', 'JPY', 'USD', 'USD', 'USD', 'USD'],
+    'Column1': ['CLS', 'OTC', 'OTC', 'Non-CLS', 'OTC', 'OTC', 'Non-CLS'],
+    'Amount1': [10, 20, 30, 40, 50, 60, 70],
+    'Amount2': [100, 200, 300, 400, 500, 600, 700]
+}
 
-  # Set the first row (now a copy of the original first row) as the column headers
-  df.columns = df.iloc[0]
+df = pd.DataFrame(data)
 
-  # Drop the first row (now duplicated in the second row)
-  return df.drop(0)
+# Function to insert total rows
+def insert_total_rows(df):
+    new_df = pd.DataFrame(columns=df.columns)
+    for i in range(0, len(df), 3):
+        chunk = df.iloc[i:i+3]
+        new_df = pd.concat([new_df, chunk])
+        total_row = chunk.iloc[:, 4:].sum().to_frame().T
+        total_row.insert(0, 'Column1', 'Total')
+        total_row.insert(0, 'CCY', '')
+        total_row.insert(0, 'Counterparty Name', '')
+        total_row.insert(0, 'Entity', '')
+        new_df = pd.concat([new_df, total_row], ignore_index=True)
+    return new_df
 
-# Apply the function to your dataframe and store the modified version
-modified_df = modify_dataframe(df.copy())
+# Apply the function to the DataFrame
+new_df = insert_total_rows(df)
 
-# Now 'modified_df' has the desired changes
-
-
-
-df.columns = ['A', 'b', 'c', *df.columns[4:]]
+# Display the new DataFrame
+print(new_df)
