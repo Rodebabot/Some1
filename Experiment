@@ -3,15 +3,14 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-import plotly.express as px
 
 # Load data from the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with your file path
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-# Sum up all the value columns dynamically
-value_columns = df.columns[3:]  # Assuming the first three columns are fixed
-df['Total'] = df[value_columns].sum(axis=1)
+# Sum up all the date columns dynamically
+date_columns = df.columns[3:]  # Assuming the first three columns are fixed
+df['Total'] = df[date_columns].sum(axis=1)
 
 # Aggregate data by Entity and CCY
 aggregated_df = df.groupby(['Entity', 'CCY'])['Total'].sum().reset_index()
@@ -20,32 +19,48 @@ aggregated_df = df.groupby(['Entity', 'CCY'])['Total'].sum().reset_index()
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    dcc.Graph(id='main-graph'),
-    dcc.Graph(id='detailed-graph'),
+    html.H1("Entity and CCY Combinations"),
+    html.Ul(id='combo-list'),
+    html.H1("Detailed Data Distribution"),
+    html.Div(id='detailed-data')
 ])
 
 @app.callback(
-    Output('main-graph', 'figure'),
-    Input('main-graph', 'clickData')
+    Output('combo-list', 'children'),
+    Input('combo-list', 'n_clicks')
 )
-def update_main_graph(clickData):
-    fig = px.bar(aggregated_df, x='Entity', y='Total', color='CCY', barmode='group')
-    return fig
+def update_combo_list(n_clicks):
+    # Create list of combinations
+    combo_list = []
+    for i, row in aggregated_df.iterrows():
+        combo_list.append(html.Li(f"{row['Entity']} (Entity) and {row['CCY']} (CCY)",
+                                  id={'type': 'combo-item', 'index': i}))
+    return combo_list
 
 @app.callback(
-    Output('detailed-graph', 'figure'),
-    [Input('main-graph', 'clickData')]
+    Output('detailed-data', 'children'),
+    [Input({'type': 'combo-item', 'index': dash.dependencies.ALL}, 'n_clicks')],
+    [dash.dependencies.State({'type': 'combo-item', 'index': dash.dependencies.ALL}, 'id')]
 )
-def update_detailed_graph(clickData):
-    if clickData:
-        entity = clickData['points'][0]['x']
-        ccy = aggregated_df.loc[clickData['points'][0]['pointIndex'], 'CCY']
-        filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
-        filtered_df['Total'] = filtered_df[value_columns].sum(axis=1)
-        fig = px.bar(filtered_df, x='Counterparty Name', y='Total', color='CCY', barmode='group')
-    else:
-        fig = px.bar()  # Empty figure if no clickData
-    return fig
+def display_detailed_data(n_clicks, ids):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return "Click on an Entity and CCY combination to see details."
+    
+    clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    index = eval(clicked_id)['index']
+
+    entity = aggregated_df.iloc[index]['Entity']
+    ccy = aggregated_df.iloc[index]['CCY']
+    
+    filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
+
+    # Create a detailed view of the filtered data
+    detail = []
+    for i, row in filtered_df.iterrows():
+        detail.append(html.P(f"Entity: {row['Entity']}, Counterparty Name: {row['Counterparty Name']}, CCY: {row['CCY']}, Values: {row[date_columns].to_dict()}"))
+
+    return detail
 
 if __name__ == '__main__':
     app.run_server(debug=True)
