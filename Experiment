@@ -2,7 +2,7 @@ import pandas as pd
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 # Load data from the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with your file path
@@ -13,9 +13,8 @@ df.ffill(inplace=True)
 
 # Dynamically sum the date columns
 date_columns = df.columns[3:]  # Assuming the first three columns are fixed (Entity, Counterparty Name, CCY)
-df['Total'] = df[date_columns].sum(axis=1)
 
-# Aggregate data by Entity and CCY for each date column
+# Reshape the DataFrame for easier aggregation and filtering
 aggregated_df = df.melt(id_vars=['Entity', 'Counterparty Name', 'CCY'], value_vars=date_columns, var_name='Date', value_name='Value')
 sum_df = aggregated_df.groupby(['Entity', 'CCY', 'Date'])['Value'].sum().reset_index()
 
@@ -44,7 +43,7 @@ def update_sum_list(n_clicks):
 @app.callback(
     Output('detailed-data', 'children'),
     [Input({'type': 'sum-item', 'index': dash.dependencies.ALL}, 'n_clicks')],
-    [dash.dependencies.State({'type': 'sum-item', 'index': dash.dependencies.ALL}, 'id')]
+    [State({'type': 'sum-item', 'index': dash.dependencies.ALL}, 'id')]
 )
 def display_detailed_data(n_clicks, ids):
     ctx = dash.callback_context
@@ -60,11 +59,14 @@ def display_detailed_data(n_clicks, ids):
     
     filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
 
+    # Filter the detailed data for the specific date
+    detailed_data = filtered_df[['Counterparty Name', date]].rename(columns={date: 'Value'})
+    detailed_data = detailed_data[detailed_data['Value'] != 0]
+
     # Create a detailed view of the filtered data
     detail = []
-    for i, row in filtered_df.iterrows():
-        if row[date] != 0:
-            detail.append(html.P(f"Entity: {row['Entity']}, Counterparty Name: {row['Counterparty Name']}, CCY: {row['CCY']}, Date: {date}, Value: {row[date]}"))
+    for i, row in detailed_data.iterrows():
+        detail.append(html.P(f"Entity: {entity}, Counterparty Name: {row['Counterparty Name']}, CCY: {ccy}, Date: {date}, Value: {row['Value']}"))
 
     return detail
 
