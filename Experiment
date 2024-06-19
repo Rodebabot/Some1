@@ -5,7 +5,10 @@ def modify_dataframe(df):
   # Copy all values from the first row to the second row
   df.iloc[1] = df.iloc[0]
 
-  # Drop the first row (index 0) since it's now duplicated in the second row
+  # Set the first row (now a copy of the original first row) as the column headers
+  df.columns = df.iloc[0]
+
+  # Drop the first row (now duplicated in the second row)
   return df.drop(0)
 
 # Apply the function to your dataframe and store the modified version
