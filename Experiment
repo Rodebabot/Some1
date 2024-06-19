@@ -2,14 +2,11 @@ import pandas as pd
 
 # Assuming your dataframe is called 'df'
 def modify_dataframe(df):
-  # Get the value from the 5th column onwards in the 2nd row
-  values_to_copy = df.iloc[1, 4:]
+  # Copy all values from the first row to the second row
+  df.iloc[1] = df.iloc[0]
 
-  # Update the dataframe from the 3rd row onwards (excluding the 2nd row) with the copied values
-  df.iloc[2:, 4:] = values_to_copy
-
-  # Drop the first two rows (index 0 and 1)
-  return df.drop([0, 1])
+  # Drop the first row (index 0) since it's now duplicated in the second row
+  return df.drop(0)
 
 # Apply the function to your dataframe and store the modified version
 modified_df = modify_dataframe(df.copy())
