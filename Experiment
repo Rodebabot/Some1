@@ -15,7 +15,7 @@ def process_group(group_df):
   # Combine 'Entity' and 'Counterparty Name' columns
   group_df['Entity_Counterparty'] = group_df['Entity'] + ' ' + group_df['Counterparty Name']
   
-  # Select columns starting from 'CCY' onwards
+  # Select columns starting from 'CCY' onwards (assuming data columns start after that)
   data_cols = group_df.columns[2:]
   
   # Loop through each row and create a new row with combined name
@@ -32,9 +32,5 @@ def process_group(group_df):
 for i in range(len(df)):
   # Check if the current row is the start of a new group
   if i > 0 and (df.loc[i, 'Entity'] != df.loc[i-1, 'Entity'] or df.loc[i, 'Counterparty Name'] != df.loc[i-1, 'Counterparty Name']):
-    # Get the group dataframe
-    group_df = df.iloc[i:i+4]  # Assuming there can be up-to 4 additional data columns after CCY
-    
-    # Process the group and print the result
-    result_df = process_group(group_df.copy())
-    print(result_df)
+    # Get the group dataframe (boolean indexing to handle potential missing data columns)
+    group_df = df[df['CCY'].notnull() & df['Entity
