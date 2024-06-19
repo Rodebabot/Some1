@@ -18,12 +18,9 @@ def insert_total_rows(df):
     for i in range(0, len(df), 3):
         chunk = df.iloc[i:i+3]
         new_df = pd.concat([new_df, chunk])
-        total_row = chunk.iloc[:, 4:].sum().to_frame().T
-        total_row.insert(0, 'Column1', 'Total')
-        total_row.insert(0, 'CCY', '')
-        total_row.insert(0, 'Counterparty Name', '')
-        total_row.insert(0, 'Entity', '')
-        new_df = pd.concat([new_df, total_row], ignore_index=True)
+        total_row = pd.Series(chunk.iloc[:, 4:].sum(), index=chunk.columns[4:])
+        total_row['Entity'] = 'Total'
+        new_df = pd.concat([new_df, total_row.to_frame().T], ignore_index=True)
     return new_df
 
 # Apply the function to the DataFrame
