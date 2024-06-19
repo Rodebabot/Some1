@@ -1,19 +1,46 @@
 import pandas as pd
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
-# Sample DataFrame creation
-data = {
-    'Entity': ['A', 'A', 'B', 'B'],
-    'SomeCol1': [1, 2, 3, 4],  # this will be the 2nd column
-    'CCY': ['USD', 'EUR', 'USD', 'EUR'],
-    'SomeCol2': [5, 6, 7, 8],  # this will be the 4th column
-    'Value1': [10, 20, 30, 40],
-    'Value2': [100, 200, 300, 400],
-    'Value3': [1000, 2000, 3000, 4000]
-}
+# Load data from the Excel file
+file_path = '/mnt/data/your_excel_file.xlsx'  # Update with your file path
+df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-df = pd.DataFrame(data)
+# Aggregate data by Entity and CCY
+aggregated_df = df.groupby(['Entity', 'CCY']).sum().reset_index()
 
-# Group by 'Entity' and 'CCY', sum all other columns starting from the 5th column
-result = df.groupby(['Entity', 'CCY']).sum().iloc[:, 3:]
+# Initialize Dash app
+app = dash.Dash(__name__)
 
-print(result)
+app.layout = html.Div([
+    dcc.Graph(id='main-graph'),
+    dcc.Graph(id='detailed-graph'),
+])
+
+@app.callback(
+    Output('main-graph', 'figure'),
+    Input('main-graph', 'clickData')
+)
+def update_main_graph(clickData):
+    fig = px.bar(aggregated_df, x='Entity', y='Value', color='CCY', barmode='group')  # Ensure 'Value' matches your sum column
+    return fig
+
+@app.callback(
+    Output('detailed-graph', 'figure'),
+    [Input('main-graph', 'clickData')]
+)
+def update_detailed_graph(clickData):
+    if clickData:
+        entity = clickData['points'][0]['x']
+        ccy = aggregated_df.loc[clickData['points'][0]['pointIndex'], 'CCY']
+        filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
+        fig = px.bar(filtered_df, x='Counterparty Name', y='Value', color='CCY', barmode='group')  # Ensure 'Value' matches your sum column
+    else:
+        fig = px.bar()  # Empty figure if no clickData
+    return fig
+
+if __name__ == '__main__':
+    app.run_server(debug=True)
