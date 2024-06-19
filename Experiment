@@ -8,57 +8,63 @@ from dash.dependencies import Input, Output
 file_path = '/mnt/data/your_excel_file.xlsx'  # Update with your file path
 df = pd.read_excel(file_path, sheet_name='Sheet1')
 
-# Sum up all the date columns dynamically
-date_columns = df.columns[3:]  # Assuming the first three columns are fixed
+# Repeat merged cell values
+df.ffill(inplace=True)
+
+# Dynamically sum the date columns
+date_columns = df.columns[3:]  # Assuming the first three columns are fixed (Entity, Counterparty Name, CCY)
 df['Total'] = df[date_columns].sum(axis=1)
 
-# Aggregate data by Entity and CCY
-aggregated_df = df.groupby(['Entity', 'CCY'])['Total'].sum().reset_index()
+# Aggregate data by Entity and CCY for each date column
+aggregated_df = df.melt(id_vars=['Entity', 'Counterparty Name', 'CCY'], value_vars=date_columns, var_name='Date', value_name='Value')
+sum_df = aggregated_df.groupby(['Entity', 'CCY', 'Date'])['Value'].sum().reset_index()
 
 # Initialize Dash app
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
-    html.H1("Entity and CCY Combinations"),
-    html.Ul(id='combo-list'),
+    html.H1("Entity and CCY Sums by Date"),
+    html.Ul(id='sum-list'),
     html.H1("Detailed Data Distribution"),
     html.Div(id='detailed-data')
 ])
 
 @app.callback(
-    Output('combo-list', 'children'),
-    Input('combo-list', 'n_clicks')
+    Output('sum-list', 'children'),
+    Input('sum-list', 'n_clicks')
 )
-def update_combo_list(n_clicks):
-    # Create list of combinations
-    combo_list = []
-    for i, row in aggregated_df.iterrows():
-        combo_list.append(html.Li(f"{row['Entity']} (Entity) and {row['CCY']} (CCY)",
-                                  id={'type': 'combo-item', 'index': i}))
-    return combo_list
+def update_sum_list(n_clicks):
+    # Create list of sums by Entity and CCY for each date
+    sum_list = []
+    for i, row in sum_df.iterrows():
+        sum_list.append(html.Li(f"{row['Entity']} (Entity), {row['CCY']} (CCY), Date: {row['Date']}, Sum: {row['Value']}",
+                                id={'type': 'sum-item', 'index': i}))
+    return sum_list
 
 @app.callback(
     Output('detailed-data', 'children'),
-    [Input({'type': 'combo-item', 'index': dash.dependencies.ALL}, 'n_clicks')],
-    [dash.dependencies.State({'type': 'combo-item', 'index': dash.dependencies.ALL}, 'id')]
+    [Input({'type': 'sum-item', 'index': dash.dependencies.ALL}, 'n_clicks')],
+    [dash.dependencies.State({'type': 'sum-item', 'index': dash.dependencies.ALL}, 'id')]
 )
 def display_detailed_data(n_clicks, ids):
     ctx = dash.callback_context
     if not ctx.triggered:
-        return "Click on an Entity and CCY combination to see details."
+        return "Click on a sum to see details."
     
     clicked_id = ctx.triggered[0]['prop_id'].split('.')[0]
     index = eval(clicked_id)['index']
 
-    entity = aggregated_df.iloc[index]['Entity']
-    ccy = aggregated_df.iloc[index]['CCY']
+    entity = sum_df.iloc[index]['Entity']
+    ccy = sum_df.iloc[index]['CCY']
+    date = sum_df.iloc[index]['Date']
     
     filtered_df = df[(df['Entity'] == entity) & (df['CCY'] == ccy)]
 
     # Create a detailed view of the filtered data
     detail = []
     for i, row in filtered_df.iterrows():
-        detail.append(html.P(f"Entity: {row['Entity']}, Counterparty Name: {row['Counterparty Name']}, CCY: {row['CCY']}, Values: {row[date_columns].to_dict()}"))
+        if row[date] != 0:
+            detail.append(html.P(f"Entity: {row['Entity']}, Counterparty Name: {row['Counterparty Name']}, CCY: {row['CCY']}, Date: {date}, Value: {row[date]}"))
 
     return detail
 
