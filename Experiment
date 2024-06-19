@@ -15,3 +15,7 @@ def modify_dataframe(df):
 modified_df = modify_dataframe(df.copy())
 
 # Now 'modified_df' has the desired changes
+
+
+
+df.columns = ['A', 'b', 'c', *df.columns[4:]]
