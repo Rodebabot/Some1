@@ -44,3 +44,8 @@ def update_detailed_graph(clickData):
 
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
+!pip install dash --upgrade
+!pip install Flask==2.0.3
+!pip install werkzeug==2.0.3
