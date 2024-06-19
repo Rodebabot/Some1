@@ -1,41 +1,17 @@
 import pandas as pd
 
-# Sample DataFrame creation based on your image
-data = {
-    'Entity': ['NFPE', 'NFPE', 'NFPE', 'NSL', 'NSL', 'NSL'],
-    'Counterparty Name': ['NFPS', 'NFPS', 'NFPS', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)', 'NOMURA INTERNATIONAL PLC (WMD)'],
-    'CCY': ['EUR', 'EUR', 'EUR', 'HKD', 'HKD', 'HKD'],
-    'CLS': ['CLS', 'Non-CLS', 'OTC', 'Non-CLS', 'OTC', 'Non-CLS'],
-    'Net': [0.00, 0.00, -8636589.87, float('nan'), 0.00, -5.57922e+08],
-    'Value Date': [45443, 45443, 45443, 45443, 45443, 45443]
-}
+# Assuming your dataframe is called 'df'
+def modify_dataframe(df):
+  # Get the value from the 5th column onwards in the 2nd row
+  values_to_copy = df.iloc[1, 4:]
 
-df = pd.DataFrame(data)
+  # Update the dataframe from the 3rd row onwards (excluding the 2nd row) with the copied values
+  df.iloc[2:, 4:] = values_to_copy
 
-# Function to add totals row after each group of three rows
-def add_totals(df):
-    grouped = df.groupby(['Entity', 'Counterparty Name', 'CCY', 'Value Date'])
-    result = pd.DataFrame()
-    
-    for name, group in grouped:
-        # Append original group
-        result = pd.concat([result, group])
-        
-        # Calculate sums
-        totals = group[['Net']].sum().to_frame().T
-        totals['Entity'] = name[0]
-        totals['Counterparty Name'] = name[1]
-        totals['CCY'] = name[2]
-        totals['Value Date'] = name[3]
-        totals['CLS'] = 'Total'
-        
-        # Append totals row
-        result = pd.concat([result, totals], ignore_index=True)
-    
-    return result
+  # Drop the first two rows (index 0 and 1)
+  return df.drop([0, 1])
 
-# Applying the function
-result_df = add_totals(df)
+# Apply the function to your dataframe and store the modified version
+modified_df = modify_dataframe(df.copy())
 
-# Print the result
-print(result_df)
+# Now 'modified_df' has the desired changes
