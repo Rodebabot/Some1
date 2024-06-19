@@ -1,30 +1,19 @@
 import pandas as pd
 
-# Sample data creation for demonstration (replace this with reading your actual data)
+# Sample DataFrame creation
 data = {
-    'Entity': ['NFPE', 'NFPE', 'NFPE', 'NSL', 'NSL', 'NSL', 'NSL'],
-    'Counterparty Name': ['Counterparty1', 'Counterparty2', 'Counterparty3', 'Nomura', 'Nomura', 'Nomura', 'Nomura'],
-    'CCY': ['EUR', 'GBP', 'JPY', 'USD', 'USD', 'USD', 'USD'],
-    'Column1': ['CLS', 'OTC', 'OTC', 'Non-CLS', 'OTC', 'OTC', 'Non-CLS'],
-    'Amount1': [10, 20, 30, 40, 50, 60, 70],
-    'Amount2': [100, 200, 300, 400, 500, 600, 700]
+    'Entity': ['A', 'A', 'B', 'B'],
+    'SomeCol1': [1, 2, 3, 4],  # this will be the 2nd column
+    'CCY': ['USD', 'EUR', 'USD', 'EUR'],
+    'SomeCol2': [5, 6, 7, 8],  # this will be the 4th column
+    'Value1': [10, 20, 30, 40],
+    'Value2': [100, 200, 300, 400],
+    'Value3': [1000, 2000, 3000, 4000]
 }
 
 df = pd.DataFrame(data)
 
-# Function to insert total rows
-def insert_total_rows(df):
-    new_df = pd.DataFrame(columns=df.columns)
-    for i in range(0, len(df), 3):
-        chunk = df.iloc[i:i+3]
-        new_df = pd.concat([new_df, chunk])
-        total_row = pd.Series(chunk.iloc[:, 4:].sum(), index=chunk.columns[4:])
-        total_row['Entity'] = 'Total'
-        new_df = pd.concat([new_df, total_row.to_frame().T], ignore_index=True)
-    return new_df
+# Group by 'Entity' and 'CCY', sum all other columns starting from the 5th column
+result = df.groupby(['Entity', 'CCY']).sum().iloc[:, 3:]
 
-# Apply the function to the DataFrame
-new_df = insert_total_rows(df)
-
-# Display the new DataFrame
-print(new_df)
+print(result)
