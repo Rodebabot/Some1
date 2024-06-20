@@ -1,21 +1,24 @@
 import pandas as pd
-from datetime import datetime
 
-# Assuming your dataframe is named result_f
-def convert_date_format(df):
-  # Parse existing date format
-  df['Value Date'] = pd.to_datetime(df['Value Date'], format='%Y-%m-%d')
+def reorder_columns(df, desired_order):
+  """
+  Reorders columns in a dataframe to match a desired order.
 
-  # Create new column with desired format (assuming time is 00:00:00)
-  df['Value Datetime'] = df['Value Date'].dt.strftime('%Y-%m-%d-%H-%M-%S')
+  Args:
+      df (pandas.DataFrame): The dataframe to reorder.
+      desired_order (list): A list containing the desired order of columns.
 
-  # Optionally, drop the original column
-  # df.drop('Value Date', axis=1, inplace=True)
+  Returns:
+      pandas.DataFrame: The dataframe with reordered columns.
+  """
+  existing_columns = set(df.columns)
+  reordered_columns = desired_order[: len(existing_columns)]  # Limit to existing columns
+  remaining_columns = [col for col in df.columns if col not in reordered_columns]
+  return df[reordered_columns + remaining_columns]
 
-  return df
+# Assuming your dataframe is named 'df'
+desired_order = ["Entity", "cpty", "Deb", "rib"]
+df_reordered = reorder_columns(df.copy(), desired_order)
 
-# Apply the function to your dataframe
-result_f = convert_date_format(result_f.copy())
-
-# Print the modified dataframe (optional)
-print(result_f)
+# Print the dataframe with reordered columns (optional)
+print(df_reordered)
