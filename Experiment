@@ -1,36 +1,37 @@
 import pandas as pd
 
-# Create a pandas dataframe (replace with your actual data)
-df = pd.DataFrame({
-    'Entity': ['12345', 'NFPS', 'NFPE', 'NIP', 'NFPS', 'NGFP', 'NIP'],
-    'Counterparty Name': ['', 'WMA', 'NEPE', '', 'NEPE', '', ''],
-    'CCY': ['EUR', 'EUR', 'GBP', 'EUR', 'GBP', 'EUR', 'EUR'],
-    'Value1': [100, None, 200, None, 300, None, None],
-    'Value2': [None, 50, None, None, None, 40, None],
-    # You can add more columns here with any name
-})
+def convert_date_format(df, date_col="Value Date", target_format="%Y-%m-%d-%H-%M-%S"):
+  """
+  Converts a date column in a DataFrame to the specified format.
 
-# Define a function to process each group
-def process_group(group_df):
-  # Combine 'Entity' and 'Counterparty Name' columns
-  group_df['Entity_Counterparty'] = group_df['Entity'] + ' ' + group_df['Counterparty Name']
-  
-  # Select columns starting from 'CCY' onwards (assuming data columns start after that)
-  data_cols = group_df.columns[2:]
-  
-  # Loop through each row and create a new row with combined name
-  new_df = pd.DataFrame(columns=['Entity_Counterparty'])
-  for index, row in group_df.iterrows():
-    combined_name = row['Entity_Counterparty']
-    for col in data_cols:
-      value = row[col]
-      new_row = pd.DataFrame([[combined_name, value]], columns=['Entity_Counterparty', col])
-      new_df = pd.concat([new_df, new_row], ignore_index=True)
-  return new_df
+  Args:
+      df (pandas.DataFrame): The DataFrame containing the date column.
+      date_col (str, optional): The name of the column containing the dates. Defaults to "Value Date".
+      target_format (str, optional): The desired format for the converted dates. Defaults to "%Y-%m-%d-%H-%M-%S".
 
-# Loop through each group of 'Entity' and 'Counterparty Name'
-for i in range(len(df)):
-  # Check if the current row is the start of a new group
-  if i > 0 and (df.loc[i, 'Entity'] != df.loc[i-1, 'Entity'] or df.loc[i, 'Counterparty Name'] != df.loc[i-1, 'Counterparty Name']):
-    # Get the group dataframe (boolean indexing to handle potential missing data columns)
-    group_df = df[df['CCY'].notnull() & df['Entity
+  Returns:
+      pandas.DataFrame: The DataFrame with the converted date column.
+  """
+  # Try different parsing formats to handle potential variations
+  for fmt in [
+      "%d/%m/%Y", "%m/%d/%Y", "%Y-%m-%d", "%d-%m-%Y", "%Y/%m/%d", "%m-%d-%Y"
+  ]:
+    try:
+      # Attempt parsing with the current format
+      df[date_col] = pd.to_datetime(df[date_col], format=fmt)
+      break  # Successful parsing, break the loop
+    except ValueError:
+      pass  # Parsing failed, continue trying other formats
+
+  # If parsing failed with all formats, raise an error
+  else:
+    raise ValueError(f"Failed to parse dates in column '{date_col}' with any provided format.")
+
+  # Convert the parsed datetime objects to the target format
+  df[date_col] = df[date_col].dt.strftime(target_format)
+  return df
+
+# Example usage
+df = pd.DataFrame({'Value Date': ['10/20/2023', '01-02-2024', '2024-03-05']})
+df = convert_date_format(df.copy())  # Avoid modifying original DataFrame
+print(df)
