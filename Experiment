@@ -15,9 +15,8 @@ def insert_total_rows(df):
     for key, group in df.groupby('Entity'):
         total_row = group.iloc[:, 2:].sum().to_frame().T
         total_row['Entity'] = 'Total'
-        total_row['CCY'] = ''
-        total_row = total_row[group.columns]  # Ensure column order
-        result = pd.concat([result, group, total_row], ignore_index=True)
+        total_row = pd.concat([group, total_row], ignore_index=True)
+        result = pd.concat([result, total_row], ignore_index=True)
     return result
 
 # Apply the function
