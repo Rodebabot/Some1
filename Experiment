@@ -1,24 +1,32 @@
 import pandas as pd
 
-def reorder_columns(df, desired_order):
-  """
-  Reorders columns in a dataframe to match a desired order.
+# Sample DataFrame creation (replace this with your actual DataFrame)
+# df = pd.read_csv('your_dataframe.csv')  # Example of loading a DataFrame
 
-  Args:
-      df (pandas.DataFrame): The dataframe to reorder.
-      desired_order (list): A list containing the desired order of columns.
+# Assuming 'df' is the DataFrame we have
+# Get the columns starting from the 5th
+cols_to_sum = df.columns[4:]
 
-  Returns:
-      pandas.DataFrame: The dataframe with reordered columns.
-  """
-  existing_columns = set(df.columns)
-  reordered_columns = desired_order[: len(existing_columns)]  # Limit to existing columns
-  remaining_columns = [col for col in df.columns if col not in reordered_columns]
-  return df[reordered_columns + remaining_columns]
+# Create a new DataFrame to store the results
+result = pd.DataFrame(columns=df.columns)
 
-# Assuming your dataframe is named 'df'
-desired_order = ["Entity", "cpty", "Deb", "rib"]
-df_reordered = reorder_columns(df.copy(), desired_order)
+# Iterate over the DataFrame in chunks of 3 rows
+for i in range(0, len(df), 3):
+    # Get the chunk of 3 rows
+    chunk = df.iloc[i:i+3]
+    
+    # Calculate the sum of the chunk
+    sum_row = chunk[cols_to_sum].sum()
+    
+    # Create a new row with the sums and 'Total' in the 'Entity' column
+    new_row = pd.Series(['Total'] + ['']*(len(df.columns) - len(cols_to_sum) - 1) + sum_row.tolist(), index=df.columns)
+    
+    # Append the chunk and the new row to the result DataFrame
+    result = result.append(chunk, ignore_index=True)
+    result = result.append(new_row, ignore_index=True)
 
-# Print the dataframe with reordered columns (optional)
-print(df_reordered)
+# Reset the index of the result DataFrame
+result.reset_index(drop=True, inplace=True)
+
+# Print the resulting DataFrame
+print(result)
