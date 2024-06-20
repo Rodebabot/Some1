@@ -1,7 +1,28 @@
-Handling Blank Comments:
-Identify Patterns:
-Check for commonalities in recon types, dates, or other variables where comments are missing.
-Compare with Filled Comments:
-Analyze if the data with blank comments has any significant differences compared to those with filled comments.
-Investigate Causes:
-Engage with recon handlers to understand possible reasons for blank comments (e.g., data entry issues, lack of information, procedural lapses).
+import pandas as pd
+
+# Load the Excel file
+file_path = '/mnt/data/20240620_203038.jpg'  # Update this with the correct path to your file
+df = pd.read_excel(file_path, engine='openpyxl')
+
+# Identify unique entities
+entities = df['Entity'].unique()
+
+# Create an empty DataFrame to store the results
+result_df = pd.DataFrame(columns=df.columns)
+
+for entity in entities:
+    # Filter the rows for the current entity
+    entity_df = df[df['Entity'] == entity]
+    
+    # Calculate the sum for each column starting from the 3rd column
+    sum_row = entity_df.iloc[:, 2:].sum(axis=0)
+    
+    # Create a new row with the label "Total" and the calculated sums
+    total_row = pd.Series([entity, 'Total'] + sum_row.tolist(), index=df.columns)
+    
+    # Append the original rows and the total row to the result DataFrame
+    result_df = pd.concat([result_df, entity_df, pd.DataFrame([total_row])], ignore_index=True)
+
+# Save the updated DataFrame back to an Excel file
+output_file_path = '/mnt/data/updated_file.xlsx'  # Update this with the desired output path
+result_df.to_excel(output_file_path, index=False)
