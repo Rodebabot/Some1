@@ -1,25 +1,35 @@
-## Business Problem:
+Certainly! Here's a more presentable version using bullet points:
 
-* High frequency of breaks in the operational flow is causing delays and impacting overall efficiency.
-* Understanding the reasons behind these breaks can help identify areas for improvement.
+---
 
-## Analytical Problem:
+### Business Problem:
+- **Issue:** High frequency of breaks in the operational flow.
+- **Impact:** Causing delays and impacting overall efficiency.
+- **Objective:** Understanding the reasons behind these breaks to identify areas for improvement.
 
-* Analyze unstructured text data (comments or reasons) associated with breaks.
-* Identify the underlying themes and categorize the breaks based on their causes.
+### Analytical Problem:
+- **Focus:** Understanding reasons for breaks where comments are not mentioned through data plotting and distribution mapping.
+- **Goal:** Finding if there are any variables particularly affecting the data.
 
-## Methods:
+### Methods:
+1. **Variable Analysis:**
+   - Plotting each variable recon-wise for each business date.
+   - Generating frequency charts (Histograms) to get data distribution.
+   
+2. **Topic Modeling (Themes & Categories):**
+   - **Clustering:** Grouping different variables of same recons to cluster similar trades.
+   - **Histogram Plotting:** Determining changes in data distribution on a monthly basis.
 
-* **Natural Language Processing (NLP):**
-    * Preprocess text data (cleaning, tokenization, stemming/lemmatization).
-    * Extract keywords and identify sentiment (positive, negative, neutral) in comments.
-* **Topic Modeling (Themes & Categories):**
-    * Use techniques like Latent Dirichlet Allocation (LDA) to discover hidden topics (themes) in the comments.
-    * Group similar comments under these themes, creating categories for break reasons.
+### Action Required:
+- **Request:** Kindly connect with the following people based on MO Owners as indicated in TLM breaks data for the top 5 recons:
+   - **TOTORI vs LCH CASH & PORTFOLIO:** Nilesh Jain
+   - **EUCLID vs EUCLID:** Nirav Soni, Shane McQuade
+   - **TOTORO vs JSCC:** [No names mentioned]
+   - **AXL vs AXL INTER COMPANY:** Shekhar Parptadter, Philippe Girard, Nirav Soni, Shane McQuade
+   - **AXIAL vs APEX:** Philippe Girard, Roger Low, Ricky Shah
 
-**Additional Considerations:**
+- **Note:** Since there is no factor affecting the variables from data visualization, we need to speak with the MO recon handlers to understand if there are any prevailing conditions due to which they do not comment on these breaks. These are the largest recons by volume based on data from Jan - May 2024.
 
-* You can explore sentiment analysis within themes to understand if specific break types are more frustrating or disruptive.
-* Depending on the volume of data, consider using pre-trained NLP models or cloud-based solutions for efficiency.
+---
 
-These bullet points outline the business problem, analytical problem, and methods you can use with NLP and topic modeling to analyze break reasons and identify areas for improvement in your operational flow.
+Let me know if you need any further adjustments!
