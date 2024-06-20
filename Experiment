@@ -1,23 +1,24 @@
 import pandas as pd
 
-# Sample dataframe
-data = {'Col1': ['A', 'A', 'B', 'B'], 'col2': ['B', 'v', 'A', 'r'], 'col3': [2, 3, 2, 1]}
+# Create a sample dataframe
+data = {
+    'Col1': ['A', 'A', 'B', 'B'],
+    'Col2': ['B', 'v', 'A', 'r'],
+    'col3': [2, 3, 2, 1],
+    'col4': [4, 5, 1, 2]
+}
 df = pd.DataFrame(data)
 
-def add_sum_row(df):
-  """Adds a row with the sum of all columns from the 3rd onwards
+# Function to insert total row
+def insert_total_rows(df):
+    result = pd.DataFrame()
+    for key, group in df.groupby('Col1'):
+        total_row = pd.DataFrame(group.iloc[:, 2:].sum()).T
+        total_row.insert(0, 'Col1', 'Total')
+        total_row.insert(1, 'Col2', '')
+        result = pd.concat([result, group, total_row], ignore_index=True)
+    return result
 
-  Args:
-      df: The pandas DataFrame
-
-  Returns:
-      A new pandas DataFrame with the sum row added
-  """
-  df['Total'] = df.iloc[:, 2:].sum(axis=1)  # Sum columns from 3rd onwards
-  df_with_total = df.append(df.sum(numeric_only=True).rename('Total'), ignore_index=True)  # Add sum row at the end
-  return df_with_total
-
-# Add the sum row
-df = add_sum_row(df.copy())
-
-print(df)
+# Apply the function
+result_df = insert_total_rows(df)
+print(result_df)
