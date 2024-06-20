@@ -1,32 +1,11 @@
 import pandas as pd
 
-# Sample DataFrame creation (replace this with your actual DataFrame)
-# df = pd.read_csv('your_dataframe.csv')  # Example of loading a DataFrame
+# Sample DataFrame (replace this with your actual DataFrame loading)
+# df2 = pd.read_csv('your_dataframe.csv')  # Example of loading a DataFrame
 
-# Assuming 'df' is the DataFrame we have
-# Get the columns starting from the 5th
-cols_to_sum = df.columns[4:]
+# Convert the columns starting from the 5th column to float
+df2.iloc[:, 4:] = df2.iloc[:, 4:].astype(float)
 
-# Create a new DataFrame to store the results
-result = pd.DataFrame(columns=df.columns)
-
-# Iterate over the DataFrame in chunks of 3 rows
-for i in range(0, len(df), 3):
-    # Get the chunk of 3 rows
-    chunk = df.iloc[i:i+3]
-    
-    # Calculate the sum of the chunk
-    sum_row = chunk[cols_to_sum].sum()
-    
-    # Create a new row with the sums and 'Total' in the 'Entity' column
-    new_row = pd.Series(['Total'] + ['']*(len(df.columns) - len(cols_to_sum) - 1) + sum_row.tolist(), index=df.columns)
-    
-    # Append the chunk and the new row to the result DataFrame
-    result = result.append(chunk, ignore_index=True)
-    result = result.append(new_row, ignore_index=True)
-
-# Reset the index of the result DataFrame
-result.reset_index(drop=True, inplace=True)
-
-# Print the resulting DataFrame
-print(result)
+# Print the updated DataFrame to verify the changes
+print(df2.dtypes)
+print(df2)
