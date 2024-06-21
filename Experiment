@@ -1,24 +1,29 @@
 import pandas as pd
 
-# Create a sample dataframe with the new column names
-data = {
-    'Entity': ['A', 'A', 'B', 'B'],
-    'CCY': ['B', 'v', 'A', 'r'],
-    'col3': [2, 3, 2, 1],
-    'col4': [4, 5, 1, 2]
-}
-df = pd.DataFrame(data)
+def convert_date_format(df):
+    # Function to convert Excel serial number to datetime
+    def excel_date_to_datetime(excel_serial):
+        return pd.to_datetime('1899-12-30') + pd.to_timedelta(excel_serial, 'D')
 
-# Function to insert total rows
-def insert_total_rows(df):
-    result = pd.DataFrame()
-    for key, group in df.groupby('Entity'):
-        total_row = group.iloc[:, 2:].sum().to_frame().T
-        total_row['Entity'] = 'Total'
-        total_row = pd.concat([group, total_row], ignore_index=True)
-        result = pd.concat([result, total_row], ignore_index=True)
-    return result
+    def parse_date(value):
+        try:
+            # Try to parse the date assuming it's in %Y%m%d format
+            return pd.to_datetime(value, format='%Y%m%d')
+        except ValueError:
+            try:
+                # If that fails, try to convert from Excel serial number
+                return excel_date_to_datetime(int(value))
+            except ValueError:
+                # If all else fails, return NaT (Not a Time)
+                return pd.NaT
 
-# Apply the function
-result_df = insert_total_rows(df)
-print(result_df)
+    # Apply the parse_date function to each 'Value Date' entry
+    df['Value Date'] = df['Value Date'].apply(parse_date)
+
+    # Convert to the desired format %Y%m%d%H%M%S
+    df['Value Date'] = df['Value Date'].dt.strftime('%Y%m%d%H%M%S')
+    
+    return df
+
+# Apply the function to your dataframe
+result_df = convert_date_format(result_df)
