@@ -1,29 +1,22 @@
 import pandas as pd
+from datetime import datetime, timedelta
 
-def convert_date_format(df):
-    # Function to convert Excel serial number to datetime
-    def excel_date_to_datetime(excel_serial):
-        return pd.to_datetime('1899-12-30') + pd.to_timedelta(excel_serial, 'D')
+# Example dataframe
+data = {
+    'Value Date': ['2024-06-10', 45453, '2023-05-15', 45454]
+}
+result_df = pd.DataFrame(data)
 
-    def parse_date(value):
-        try:
-            # Try to parse the date assuming it's in %Y%m%d format
-            return pd.to_datetime(value, format='%Y%m%d')
-        except ValueError:
-            try:
-                # If that fails, try to convert from Excel serial number
-                return excel_date_to_datetime(int(value))
-            except ValueError:
-                # If all else fails, return NaT (Not a Time)
-                return pd.NaT
+def convert_to_datetime(value):
+    if isinstance(value, int):  # Excel serial number format
+        date = datetime(1899, 12, 30) + timedelta(days=value)
+    else:  # String format YYYY-MM-DD
+        date = datetime.strptime(value, '%Y-%m-%d')
+    return date
 
-    # Apply the parse_date function to each 'Value Date' entry
-    df['Value Date'] = df['Value Date'].apply(parse_date)
+def format_date(date):
+    return date.strftime('%y%m%d%H%M%S')
 
-    # Convert to the desired format %Y%m%d%H%M%S
-    df['Value Date'] = df['Value Date'].dt.strftime('%Y%m%d%H%M%S')
-    
-    return df
+result_df['Formatted Date'] = result_df['Value Date'].apply(lambda x: format_date(convert_to_datetime(x)))
 
-# Apply the function to your dataframe
-result_df = convert_date_format(result_df)
+print(result_df)
