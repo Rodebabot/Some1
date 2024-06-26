@@ -1,19 +1,27 @@
 import pandas as pd
 
-# Sample data
-data = {
-    'Entity': ['A', 'A', 'B', 'B'],
-    'CCY': ['USD', 'USD', 'EUR', 'EUR'],
-    'Counterparty Name': ['X', 'Y', 'X', 'Y'],
-    'Value1': [10, 20, 30, 40],
-    'Value2': [50, 60, 70, 80],
-    'Value3': [90, 100, 110, 120]
-}
+# Load the Excel file
+file_path = '/mnt/data/depo_projection.xlsx'  # Replace with your actual file path
+df = pd.read_excel(file_path)
 
-# Create DataFrame
-df = pd.DataFrame(data)
+# Convert 'Pay Date' to datetime
+df['Pay Date'] = pd.to_datetime(df['Pay Date'])
 
-# Group by 'Entity', 'CCY', 'Counterparty Name' and sum the remaining columns
-result = df.groupby(['Entity', 'CCY', 'Counterparty Name']).sum().reset_index()
+# Create a new DataFrame to hold the result
+result_df = pd.DataFrame()
 
-print(result)
+# Group by 'Pay Date' and calculate the sum for each group
+for date, group in df.groupby('Pay Date'):
+    # Append the group to the result DataFrame
+    result_df = pd.concat([result_df, group], ignore_index=True)
+    
+    # Calculate the sum for the group for all columns starting from the 3rd column
+    sum_row = group.iloc[:, 2:].sum()
+    sum_row['Pay Date'] = 'Total'
+    sum_row['Sett Act Ref'] = ''
+    
+    # Append the sum row to the result DataFrame
+    result_df = result_df.append(sum_row, ignore_index=True)
+
+# Save the result to a new Excel file
+result_df.to_excel('/mnt/data/summed_file.xlsx', index=False)
