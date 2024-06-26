@@ -22,6 +22,7 @@ for i in range(1, len(df)):
         total_row = df.iloc[start_idx:i, 2:].sum()
         total_row['Category'] = 'Total'
         total_row['Value1'] = ''  # Assuming Value1 should be empty for the Total row
+        total_row = total_row.reindex(df.columns, fill_value='')  # Ensure column order
         new_rows.append(pd.DataFrame([total_row]))
         
         # Update the start index
@@ -32,6 +33,7 @@ new_rows.append(df.iloc[start_idx:])
 total_row = df.iloc[start_idx:, 2:].sum()
 total_row['Category'] = 'Total'
 total_row['Value1'] = ''
+total_row = total_row.reindex(df.columns, fill_value='')
 new_rows.append(pd.DataFrame([total_row]))
 
 # Concatenate all rows to form the final DataFrame
