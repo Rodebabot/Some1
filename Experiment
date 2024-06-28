@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from datetime import datetime
 
 # Specify the directory containing the Excel files
 directory = 'path/to/your/files'
@@ -15,8 +16,14 @@ for filename in os.listdir(directory):
         df = pd.read_excel(file_path)
         dataframes.append((filename, df))
 
+# Get the current month name
+current_month = datetime.now().strftime('%B')
+
+# Create the output file name
+output_filename = f'18_{current_month}_Inter_Entity.xlsx'
+output_path = os.path.join(directory, output_filename)
+
 # Create a new Excel writer object
-output_path = os.path.join(directory, 'merged_file.xlsx')
 with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
     for i, (filename, df) in enumerate(dataframes):
         # Write each DataFrame to a different sheet
