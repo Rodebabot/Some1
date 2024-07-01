@@ -1,32 +1,17 @@
-import pandas as pd
-import os
-from datetime import datetime
+Subject: Update on Asset Servicing Capacity Tracking Project (Phase 1) and Request for Handover
 
-# Specify the directory containing the Excel files
-directory = 'path/to/your/files'
+Dear Kewal/Huzefa,
 
-# Initialize an empty list to hold the DataFrames
-dataframes = []
+I am writing to provide an update on the Python code development for the asset servicing capacity tracking project (Phase 1). I've been making steady progress, but due to a recent shift in priorities requiring my focus on the OTC confirms team, I won't be able to dedicate the necessary time for timely completion.
 
-# Loop through the files in the directory
-for filename in os.listdir(directory):
-    if '18' in filename and filename.endswith('.xlsx'):
-        # Read the Excel file into a DataFrame
-        file_path = os.path.join(directory, filename)
-        df = pd.read_excel(file_path)
-        dataframes.append((filename, df))
+Considering this, I'd like to propose handing over the remaining Phase 1 tasks to Soham, who has also been involved in the project. Soham's familiarity with the codebase and the project goals will ensure a smooth transition. I'm happy to provide any handover documentation or answer any questions Soham may have to facilitate a seamless continuation.
 
-# Get the current month name
-current_month = datetime.now().strftime('%B')
+While I transition to my new priorities, I'll certainly offer support to Soham whenever possible. However, I believe Soham taking the lead will allow for more focused development and ensure timely completion of Phase 1.
 
-# Create the output file name
-output_filename = f'18_{current_month}_Inter_Entity.xlsx'
-output_path = os.path.join(directory, output_filename)
+Please let me know if you have any questions or require further details.
 
-# Create a new Excel writer object
-with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
-    for i, (filename, df) in enumerate(dataframes):
-        # Write each DataFrame to a different sheet
-        df.to_excel(writer, sheet_name=f'Sheet{i+1}', index=False)
+Thank you for your understanding.
 
-print(f'New Excel file created at {output_path}')
+Sincerely,
+
+[Your Name]
