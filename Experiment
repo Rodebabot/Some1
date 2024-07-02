@@ -1,1 +1,18 @@
-f[df['Counterparty_GLDA'].str.contains('25342')]
+import pandas as pd
+
+def filter_g1_ref(df):
+  """Filters rows in 'df' based on conditions in 'G1_REF' column."""
+
+  # Filter for non-blank values
+  df_filtered = df[df['G1_REF'].notna()]
+
+  # Filter for non-decimal values (assuming strings)
+  df_filtered = df_filtered[~df['G1_REF'].str.contains("\.")]
+
+  return df_filtered
+
+# Apply filtering to 'df3'
+df_filtered = filter_g1_ref(df3.copy())  # Avoid modifying original DataFrame
+
+# Now 'df_filtered' contains the rows you need
+print(df_filtered)
