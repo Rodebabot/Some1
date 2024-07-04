@@ -1,18 +1,35 @@
 import pandas as pd
+import os
+from datetime import datetime
 
-def filter_g1_ref(df):
-  """Filters rows in 'df' based on conditions in 'G1_REF' column."""
+# Specify the directory containing the Excel files
+directory = 'path/to/your/files'
 
-  # Filter for non-blank values
-  df_filtered = df[df['G1_REF'].notna()]
+# Get today's date in the format "dd MMM"
+today_date = datetime.now().strftime('%d %b')
 
-  # Filter for non-decimal values (assuming strings)
-  df_filtered = df_filtered[~df['G1_REF'].str.contains("\.")]
+# Initialize an empty list to hold the DataFrames
+dataframes = []
 
-  return df_filtered
+# Loop through the files in the directory
+for filename in os.listdir(directory):
+    if today_date in filename and filename.endswith('.xlsx'):
+        # Read the Excel file into a DataFrame
+        file_path = os.path.join(directory, filename)
+        df = pd.read_excel(file_path)
+        dataframes.append((filename, df))
 
-# Apply filtering to 'df3'
-df_filtered = filter_g1_ref(df3.copy())  # Avoid modifying original DataFrame
+# Get the current month name
+current_month = datetime.now().strftime('%B')
 
-# Now 'df_filtered' contains the rows you need
-print(df_filtered)
+# Create the output file name with today's date in "dd MMM" format
+output_filename = f'{today_date.replace(" ", "")}_{current_month}_Inter_Entity.xlsx'
+output_path = os.path.join(directory, output_filename)
+
+# Create a new Excel writer object
+with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+    for i, (filename, df) in enumerate(dataframes):
+        # Write each DataFrame to a different sheet
+        df.to_excel(writer, sheet_name=f'Sheet{i+1}', index=False)
+
+print(f'New Excel file created at {output_path}')
