@@ -27,9 +27,14 @@ output_filename = f'{today_date.replace(" ", "")}_{current_month}_Inter_Entity.x
 output_path = os.path.join(directory, output_filename)
 
 # Create a new Excel writer object
-with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+writer = pd.ExcelWriter(output_path, engine='openpyxl')
+
+try:
     for i, (filename, df) in enumerate(dataframes):
         # Write each DataFrame to a different sheet
         df.to_excel(writer, sheet_name=f'Sheet{i+1}', index=False)
+finally:
+    # Make sure the writer is properly closed
+    writer.close()
 
 print(f'New Excel file created at {output_path}')
