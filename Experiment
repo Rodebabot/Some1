@@ -1,42 +1,16 @@
 import pandas as pd
-import os
 from datetime import datetime
 
-# Specify the directory containing the Excel files
-directory = 'path/to/your/files'
+# Assuming your dataframe is named df55
+df55 = pd.DataFrame({'data': [1, 2, 3]})  # Replace with your actual data
 
-# Get today's date in the format "dd MMM"
-today_date = datetime.now().strftime('%d %b')
+# Get today's date in the desired format (18 Jun)
+today = datetime.today().strftime('%d %b')
 
-# Initialize an empty list to hold the DataFrames and their corresponding sheet names
-dataframes = []
+# Create the filename with the date appended
+filename = f'df55_{today}.xlsx'
 
-# Loop through the files in the directory
-for filename in os.listdir(directory):
-    if today_date in filename and filename.endswith('.xlsx'):
-        # Read the Excel file into a DataFrame
-        file_path = os.path.join(directory, filename)
-        df = pd.read_excel(file_path)
-        # Extract the part of the filename after the date part
-        sheet_name = filename.replace(today_date, '').replace('.xlsx', '').strip()
-        dataframes.append((sheet_name, df))
+# Export the dataframe to Excel
+df55.to_excel(filename, index=False)  # Set index=False to avoid index column
 
-# Get the current month name
-current_month = datetime.now().strftime('%B')
-
-# Create the output file name with today's date in "dd MMM" format
-output_filename = f'{today_date.replace(" ", "")}_{current_month}_Inter_Entity.xlsx'
-output_path = os.path.join(directory, output_filename)
-
-# Create a new Excel writer object
-writer = pd.ExcelWriter(output_path, engine='openpyxl')
-
-try:
-    for sheet_name, df in dataframes:
-        # Write each DataFrame to a different sheet with the extracted sheet name
-        df.to_excel(writer, sheet_name=sheet_name, index=False)
-finally:
-    # Make sure the writer is properly closed
-    writer.close()
-
-print(f'New Excel file created at {output_path}')
+print(f'Dataframe exported to: {filename}')
