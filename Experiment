@@ -1,15 +1,19 @@
 import pandas as pd
 from datetime import date, timedelta
+import os  # Import os for path manipulation
 
 # Assuming your dataframe is named df55
 df55 = pd.DataFrame({'data': [1, 2, 3]})  # Replace with your actual data
 
 # Get yesterday's date in the desired format (18 Jun)
-yesterday = date.today() - timedelta(days=1)  # Subtract 1 day
+yesterday = date.today() - timedelta(days=1)
 yesterday_str = yesterday.strftime('%d %b')
 
+# Define your desired location (replace with your actual path)
+location = r"C:\MyData"  # Use raw string (r prefix) to avoid backslash issues
+
 # Create the filename with yesterday's date appended
-filename = f'df55_{yesterday_str}.xlsx'
+filename = os.path.join(location, f'df55_{yesterday_str}.xlsx')
 
 # Export the dataframe to Excel
 df55.to_excel(filename, index=False)
