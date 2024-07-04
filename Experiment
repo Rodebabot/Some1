@@ -1,16 +1,17 @@
 import pandas as pd
-from datetime import datetime
+from datetime import date, timedelta
 
 # Assuming your dataframe is named df55
 df55 = pd.DataFrame({'data': [1, 2, 3]})  # Replace with your actual data
 
-# Get today's date in the desired format (18 Jun)
-today = datetime.today().strftime('%d %b')
+# Get yesterday's date in the desired format (18 Jun)
+yesterday = date.today() - timedelta(days=1)  # Subtract 1 day
+yesterday_str = yesterday.strftime('%d %b')
 
-# Create the filename with the date appended
-filename = f'df55_{today}.xlsx'
+# Create the filename with yesterday's date appended
+filename = f'df55_{yesterday_str}.xlsx'
 
 # Export the dataframe to Excel
-df55.to_excel(filename, index=False)  # Set index=False to avoid index column
+df55.to_excel(filename, index=False)
 
 print(f'Dataframe exported to: {filename}')
