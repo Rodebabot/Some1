@@ -1,21 +1,37 @@
-import pandas as pd
-from datetime import date, timedelta
-import os  # Import os for path manipulation
+import os
+import re
+from datetime import datetime
+import shutil
 
-# Assuming your dataframe is named df55
-df55 = pd.DataFrame({'data': [1, 2, 3]})  # Replace with your actual data
+def extract_date(filename):
+    match = re.search(r'(\d{4}-\d{2}-\d{2})', filename)
+    if match:
+        return datetime.strptime(match.group(1), '%Y-%m-%d')
+    return None
 
-# Get yesterday's date in the desired format (18 Jun)
-yesterday = date.today() - timedelta(days=1)
-yesterday_str = yesterday.strftime('%d %b')
+def get_latest_file(directory):
+    latest_date = None
+    latest_file = None
 
-# Define your desired location (replace with your actual path)
-location = r"C:\MyData"  # Use raw string (r prefix) to avoid backslash issues
+    for filename in os.listdir(directory):
+        date = extract_date(filename)
+        if date and (latest_date is None or date > latest_date):
+            latest_date = date
+            latest_file = filename
 
-# Create the filename with yesterday's date appended
-filename = os.path.join(location, f'df55_{yesterday_str}.xlsx')
+    return latest_file
 
-# Export the dataframe to Excel
-df55.to_excel(filename, index=False)
+def copy_latest_file(src_directory, dest_directory):
+    latest_file = get_latest_file(src_directory)
+    if latest_file:
+        src_path = os.path.join(src_directory, latest_file)
+        dest_path = os.path.join(dest_directory, 'FX_Latest.xlsx')
+        shutil.copyfile(src_path, dest_path)
+        print(f"Copied {latest_file} to {dest_path}")
+    else:
+        print("No files found with a valid date in the filename.")
 
-print(f'Dataframe exported to: {filename}')
+# Example usage
+src_directory = 'path_to_source_directory'
+dest_directory = 'path_to_destination_directory'
+copy_latest_file(src_directory, dest_directory)
