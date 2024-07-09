@@ -1,37 +1,19 @@
-import os
-import re
-from datetime import datetime
-import shutil
+import pandas as pd
 
-def extract_date(filename):
-    match = re.search(r'(\d{2} \w+)\.xlsx', filename)
-    if match:
-        return datetime.strptime(match.group(1), '%d %B')
-    return None
+def calculate_client_delay(row):
+  confirmation_status = row["Confirmation Status"]
+  dispatched_date = row["Dispatched Date"]
+  entry_date = row["Entry Date"]
+  today = pd.Timestamp('today')
 
-def get_latest_file(directory):
-    latest_date = None
-    latest_file = None
+  if confirmation_status == "Executed":
+    client_delay = (row["Confirmation Status changed Date"] - (dispatched_date - entry_date))
+  elif confirmation_status == "Outstanding":
+    client_delay = today - entry_date
+  else:
+    # Set client delay to NaN (Not a Number) or any other placeholder for non-processed statuses
+    client_delay = pd.NA  # You can change pd.NA to a different placeholder if needed
+  return client_delay
 
-    for filename in os.listdir(directory):
-        date = extract_date(filename)
-        if date and (latest_date is None or date > latest_date):
-            latest_date = date
-            latest_file = filename
-
-    return latest_file
-
-def copy_latest_file(src_directory, dest_directory):
-    latest_file = get_latest_file(src_directory)
-    if latest_file:
-        src_path = os.path.join(src_directory, latest_file)
-        dest_path = os.path.join(dest_directory, 'FX_Latest.xlsx')
-        shutil.copyfile(src_path, dest_path)
-        print(f"Copied {latest_file} to {dest_path}")
-    else:
-        print("No files found with a valid date in the filename.")
-
-# Example usage
-src_directory = 'path_to_source_directory'  # Replace with your source directory path
-dest_directory = 'path_to_destination_directory'  # Replace with your destination directory path
-copy_latest_file(src_directory, dest_directory)
+# Apply the function to create a new column
+df["Client Delay"] = df.apply(calculate_client_delay, axis=1)
