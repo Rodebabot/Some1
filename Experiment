@@ -2,18 +2,47 @@ import pandas as pd
 
 def calculate_client_delay(row):
   confirmation_status = row["Confirmation Status"]
-  dispatched_date = row["Dispatched Date"]
-  entry_date = row["Entry Date"]
+  dispatched_date_str = row["Dispatched Date"]
+  entry_date_str = row["Entry Date"]
+  confirmation_status_changed_date_str = row.get("Confirmation Status changed Date", None)  # Handle potential missing value
+
   today = pd.Timestamp('today')
 
+  # Define format string for datetime conversion
+  date_format = "%d/%m/%y"
+
+  # Convert strings to datetime (handle potential errors)
+  try:
+    dispatched_date = pd.to_datetime(dispatched_date_str, format=date_format)
+    entry_date = pd.to_datetime(entry_date_str, format=date_format)
+  except ValueError:
+    # Handle cases where date format is invalid
+    print(f"Error parsing date: {dispatched_date_str} or {entry_date_str}")
+    return pd.NA
+
+  if confirmation_status_changed_date_str is not None:
+    try:
+      confirmation_status_changed_date = pd.to_datetime(confirmation_status_changed_date_str, format=date_format)
+    except ValueError:
+      # Handle cases where date format is invalid
+      print(f"Error parsing date: {confirmation_status_changed_date_str}")
+      return pd.NA
+  else:
+    confirmation_status_changed_date = None
+
   if confirmation_status == "Executed":
-    client_delay = (row["Confirmation Status changed Date"] - (dispatched_date - entry_date))
+    client_delay = (confirmation_status_changed_date - (dispatched_date - entry_date))
   elif confirmation_status == "Outstanding":
     client_delay = today - entry_date
   else:
-    # Set client delay to NaN (Not a Number) or any other placeholder for non-processed statuses
-    client_delay = pd.NA  # You can change pd.NA to a different placeholder if needed
+    client_delay = pd.NA  # Placeholder for non-processed statuses
+
   return client_delay
 
 # Apply the function to create a new column
 df["Client Delay"] = df.apply(calculate_client_delay, axis=1)
+
+# Convert the original columns to datetime format (inplace modification)
+df["Dispatched Date"] = pd.to_datetime(df["Dispatched Date"], format=date_format, errors='coerce')  # Handle potential parsing errors
+df["Entry Date"] = pd.to_datetime(df["Entry Date"], format=date_format, errors='coerce')
+df["Confirmation Status changed Date"] = pd.to_datetime(df["Confirmation Status changed Date"], format=date_format, errors='coerce')
