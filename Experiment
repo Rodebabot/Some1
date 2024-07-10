@@ -1,13 +1,27 @@
 import pandas as pd
+import os
 
-# Assuming your dataframe is named 'result'
-result = pd.DataFrame(...)  # Replace ... with your actual data
+def append_excel_files(directory):
+    # List to hold DataFrames
+    df_list = []
 
-# Select columns from the 4th column onwards (inclusive)
-cols_to_modify = result.columns[3:]
+    # Loop through all files in the directory
+    for filename in os.listdir(directory):
+        if filename.endswith(".xlsx") or filename.endswith(".xls"):
+            file_path = os.path.join(directory, filename)
+            # Read the Excel file into a DataFrame
+            df = pd.read_excel(file_path)
+            # Append the DataFrame to the list
+            df_list.append(df)
+    
+    # Concatenate all DataFrames in the list into a single DataFrame
+    combined_df = pd.concat(df_list, ignore_index=True)
+    
+    return combined_df
 
-# Apply the absolute value function (.abs()) to selected columns
-result[cols_to_modify] = result[cols_to_modify].abs()
+# Example usage:
+directory_path = '/path/to/your/excel/files'
+combined_df = append_excel_files(directory_path)
 
-# Print the modified dataframe (optional)
-print(result)
+# Optionally, save the combined DataFrame to a new Excel file
+combined_df.to_excel('combined_excel_files.xlsx', index=False)
