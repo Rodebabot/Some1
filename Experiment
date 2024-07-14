@@ -1,8 +1,4 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-from sklearn.cluster import KMeans
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Load the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -11,33 +7,13 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Encode categorical variables
-label_encoder = LabelEncoder()
-df['Legal Entity Encoded'] = label_encoder.fit_transform(df['Legal Entity'])
-df['Business Event Encoded'] = label_encoder.fit_transform(df['Business Event'])
-df['Product Representation Encoded'] = label_encoder.fit_transform(df['Product Representation'])
+# Group by ROC and Age Band and count the occurrences of each combination of Legal Entity, Business Event, and Product Representation
+combo_counts = df.groupby(['ROC', 'Age Band', 'Legal Entity', 'Business Event', 'Product Representation']).size().reset_index(name='Count')
 
-# Select relevant columns for clustering
-clustering_data = df[['Legal Entity Encoded', 'Business Event Encoded', 'Product Representation Encoded']]
-
-# Apply KMeans clustering
-kmeans = KMeans(n_clusters=5, random_state=42)  # Adjust number of clusters as needed
-df['Cluster'] = kmeans.fit_predict(clustering_data)
-
-# Analyze clusters for each ROC and Age Band combination
-cluster_summary = df.groupby(['ROC', 'Age Band', 'Cluster']).size().reset_index(name='Count')
-top_clusters = cluster_summary.groupby(['ROC', 'Age Band']).apply(lambda x: x.nlargest(3, 'Count')).reset_index(drop=True)
-
-# Visualize the top clusters
-plt.figure(figsize=(12, 8))
-sns.scatterplot(data=top_clusters, x='ROC', y='Age Band', size='Count', hue='Cluster', palette='tab10', sizes=(20, 200))
-plt.title('Top Clusters for Each ROC and Age Band Combination')
-plt.xlabel('ROC')
-plt.ylabel('Age Band')
-plt.legend(title='Cluster')
-plt.show()
+# Get the top 3 combinations for each ROC and Age Band
+top_combos = combo_counts.groupby(['ROC', 'Age Band']).apply(lambda x: x.nlargest(3, 'Count')).reset_index(drop=True)
 
 # Save the summary to a new Excel file
-top_clusters.to_excel('/mnt/data/top_clusters_summary.xlsx', index=False)
+top_combos.to_excel('/mnt/data/top_combinations_roc_age_band.xlsx', index=False)
 
-print("Analysis completed. Summary saved to top_clusters_summary.xlsx")
+print("Analysis completed. Summary saved to top_combinations_roc_age_band.xlsx")
