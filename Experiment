@@ -7,13 +7,13 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Group by ROC and Age Band and count the occurrences of each combination of Legal Entity, Business Event, and Product Representation
-combo_counts = df.groupby(['ROC', 'Age Band', 'Legal Entity', 'Business Event', 'Product Representation']).size().reset_index(name='Count')
+# Group by ROC, Age Band, Legal Entity, Business Event, Product Representation and count unique Unique Eventid
+combo_counts = df.groupby(['ROC', 'Age Band', 'Legal Entity', 'Business Event', 'Product Representation'])['Unique Eventid'].nunique().reset_index(name='Unique Eventid Count')
 
-# Get the top 3 combinations for each ROC and Age Band
-top_combos = combo_counts.groupby(['ROC', 'Age Band']).apply(lambda x: x.nlargest(3, 'Count')).reset_index(drop=True)
+# Get the top 3 combinations for each ROC and Age Band based on the number of unique Unique Eventid
+top_combos = combo_counts.groupby(['ROC', 'Age Band']).apply(lambda x: x.nlargest(3, 'Unique Eventid Count')).reset_index(drop=True)
 
 # Save the summary to a new Excel file
-top_combos.to_excel('/mnt/data/top_combinations_roc_age_band.xlsx', index=False)
+top_combos.to_excel('/mnt/data/top_combinations_roc_age_band_unique_eventid.xlsx', index=False)
 
-print("Analysis completed. Summary saved to top_combinations_roc_age_band.xlsx")
+print("Analysis completed. Summary saved to top_combinations_roc_age_band_unique_eventid.xlsx")
