@@ -1,27 +1,33 @@
 import pandas as pd
-import os
 
-def append_excel_files(directory):
-    # List to hold DataFrames
-    df_list = []
+# Load the Excel file
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-    # Loop through all files in the directory
-    for filename in os.listdir(directory):
-        if filename.endswith(".xlsx") or filename.endswith(".xls"):
-            file_path = os.path.join(directory, filename)
-            # Read the Excel file into a DataFrame
-            df = pd.read_excel(file_path)
-            # Append the DataFrame to the list
-            df_list.append(df)
-    
-    # Concatenate all DataFrames in the list into a single DataFrame
-    combined_df = pd.concat(df_list, ignore_index=True)
-    
-    return combined_df
+# Group by Unique EventID, ROC, and Age Band
+grouped = df.groupby(['Unique Eventid', 'ROC', 'Age Band']).agg({'Days Spent': 'sum'}).reset_index()
 
-# Example usage:
-directory_path = '/path/to/your/excel/files'
-combined_df = append_excel_files(directory_path)
+# Calculate the total days spent for each Unique EventID
+total_days = df.groupby('Unique Eventid')['Days Spent'].sum().reset_index()
+total_days.rename(columns={'Days Spent': 'Total Days Spent'}, inplace=True)
 
-# Optionally, save the combined DataFrame to a new Excel file
-combined_df.to_excel('combined_excel_files.xlsx', index=False)
+# Merge the grouped data with the total days
+merged = pd.merge(grouped, total_days, on='Unique Eventid')
+
+# Calculate the percentage of days spent for each combination
+merged['Percentage of Days'] = (merged['Days Spent'] / merged['Total Days Spent']) * 100
+
+# Create the summary table
+summary = merged.groupby(['ROC', 'Age Band']).agg({
+    'Percentage of Days': 'mean',
+    'Days Spent': 'sum',
+    'Unique Eventid': 'nunique'
+}).reset_index()
+
+# Sort the summary table by the percentage of days in descending order
+summary = summary.sort_values(by='Percentage of Days', ascending=False)
+
+# Save the summary to a new Excel file
+summary.to_excel('/mnt/data/summary_analysis.xlsx', index=False)
+
+print("Analysis completed. Summary saved to summary_analysis.xlsx")
