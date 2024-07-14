@@ -7,16 +7,19 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Group by Counterparty Name, ROC, and Age Band to get the count of events
-df_grouped = df.groupby(['Counterparty Name', 'ROC', 'Age Band']).size().reset_index(name='Count')
+# Calculate the total Days Spent for each Counterparty Name and Unique Eventid combination
+df_total_days = df.groupby(['Counterparty Name', 'Unique Eventid', 'ROC', 'Age Band'])['Days Spent'].sum().reset_index()
 
-# Create a function to get the top 3 ROC and Age Band combinations for each Counterparty Name
+# Calculate the average Days Spent for each Counterparty Name, ROC, and Age Band combination
+df_avg_days = df_total_days.groupby(['Counterparty Name', 'ROC', 'Age Band'])['Days Spent'].mean().reset_index(name='Average Days Spent')
+
+# Create a function to get the top 3 ROC and Age Band combinations based on average Days Spent for each Counterparty Name
 def get_top_roc_age_bands(group):
-    top_combos = group.nlargest(3, 'Count')
-    return ', '.join(top_combos.apply(lambda x: f"{x['ROC']} ({x['Age Band']})", axis=1))
+    top_combos = group.nlargest(3, 'Average Days Spent')
+    return ', '.join(top_combos.apply(lambda x: f"{x['ROC']} ({x['Age Band']}) - {x['Average Days Spent']:.2f} days", axis=1))
 
 # Apply the function to get top ROC and Age Band combinations for each Counterparty Name
-top_roc_age_bands = df_grouped.groupby('Counterparty Name').apply(get_top_roc_age_bands).reset_index(name='Top ROC and Age Band Combinations')
+top_roc_age_bands = df_avg_days.groupby('Counterparty Name').apply(get_top_roc_age_bands).reset_index(name='Top ROC and Age Band Combinations')
 
 # Save the results to a new Excel file
 top_roc_age_bands.to_excel('/mnt/data/top_roc_age_bands_by_counterparty.xlsx', index=False)
