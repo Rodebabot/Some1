@@ -7,32 +7,18 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Group by Unique Eventid to find the maximum age
-df['Total Age'] = df.groupby('Unique Eventid')['Age'].transform('max')
+# Group by Counterparty Name, ROC, and Age Band to get the count of events
+df_grouped = df.groupby(['Counterparty Name', 'ROC', 'Age Band']).size().reset_index(name='Count')
 
-# For each Unique Eventid, find the ROC and Age Band where the maximum days were spent
-df_max_days = df.loc[df.groupby('Unique Eventid')['Days Spent'].idxmax()]
+# Create a function to get the top 3 ROC and Age Band combinations for each Counterparty Name
+def get_top_roc_age_bands(group):
+    top_combos = group.nlargest(3, 'Count')
+    return ', '.join(top_combos.apply(lambda x: f"{x['ROC']} ({x['Age Band']})", axis=1))
 
-# Calculate the percentage of each ROC and Age Band combination contributing to the total age
-roc_age_counts = df_max_days.groupby(['ROC', 'Age Band']).size().reset_index(name='Count')
-total_event_ids = df['Unique Eventid'].nunique()
-roc_age_counts['Percentage'] = (roc_age_counts['Count'] / total_event_ids) * 100
-
-# Sort the summary table by the percentage in descending order
-roc_age_counts = roc_age_counts.sort_values(by='Percentage', ascending=False)
-
-# Group by ROC, Age Band, Legal Entity, Business Event, and Product Representation to get counts
-df_cluster = df_max_days.groupby(['ROC', 'Age Band', 'Legal Entity', 'Business Event', 'Product Representation']).size().reset_index(name='Cluster Count')
-
-# Create a function to get the top 3 clusters for each ROC and Age Band combination
-def get_top_clusters(group):
-    return group.nlargest(3, 'Cluster Count')
-
-# Apply the function to get top clusters
-top_clusters = df_cluster.groupby(['ROC', 'Age Band']).apply(get_top_clusters).reset_index(drop=True)
+# Apply the function to get top ROC and Age Band combinations for each Counterparty Name
+top_roc_age_bands = df_grouped.groupby('Counterparty Name').apply(get_top_roc_age_bands).reset_index(name='Top ROC and Age Band Combinations')
 
 # Save the results to a new Excel file
-roc_age_counts.to_excel('/mnt/data/roc_age_band_contribution_summary.xlsx', index=False)
-top_clusters.to_excel('/mnt/data/top_clusters_summary.xlsx', index=False)
+top_roc_age_bands.to_excel('/mnt/data/top_roc_age_bands_by_counterparty.xlsx', index=False)
 
-print("Analysis completed. Summary saved to roc_age_band_contribution_summary.xlsx and top_clusters_summary.xlsx")
+print("Analysis completed. Results saved to top_roc_age_bands_by_counterparty.xlsx")
