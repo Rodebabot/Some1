@@ -4,30 +4,25 @@ import pandas as pd
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
 df = pd.read_excel(file_path)
 
-# Group by Unique EventID, ROC, and Age Band
-grouped = df.groupby(['Unique Eventid', 'ROC', 'Age Band']).agg({'Days Spent': 'sum'}).reset_index()
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Calculate the total days spent for each Unique EventID
-total_days = df.groupby('Unique Eventid')['Days Spent'].sum().reset_index()
-total_days.rename(columns={'Days Spent': 'Total Days Spent'}, inplace=True)
+# Group by Unique Eventid to find the maximum age
+df['Total Age'] = df.groupby('Unique Eventid')['Age'].transform('max')
 
-# Merge the grouped data with the total days
-merged = pd.merge(grouped, total_days, on='Unique Eventid')
+# For each Unique Eventid, find the ROC and Age Band where the maximum days were spent
+df_max_days = df.loc[df.groupby('Unique Eventid')['Days Spent'].idxmax()]
 
-# Calculate the percentage of days spent for each combination
-merged['Percentage of Days'] = (merged['Days Spent'] / merged['Total Days Spent']) * 100
+# Calculate the percentage of each ROC and Age Band combination contributing to the total age
+roc_age_counts = df_max_days.groupby(['ROC', 'Age Band']).size().reset_index(name='Count')
+total_event_ids = df['Unique Eventid'].nunique()
 
-# Create the summary table
-summary = merged.groupby(['ROC', 'Age Band']).agg({
-    'Percentage of Days': 'mean',
-    'Days Spent': 'sum',
-    'Unique Eventid': 'nunique'
-}).reset_index()
+roc_age_counts['Percentage'] = (roc_age_counts['Count'] / total_event_ids) * 100
 
-# Sort the summary table by the percentage of days in descending order
-summary = summary.sort_values(by='Percentage of Days', ascending=False)
+# Sort the summary table by the percentage in descending order
+roc_age_counts = roc_age_counts.sort_values(by='Percentage', ascending=False)
 
 # Save the summary to a new Excel file
-summary.to_excel('/mnt/data/summary_analysis.xlsx', index=False)
+roc_age_counts.to_excel('/mnt/data/roc_age_band_contribution_summary.xlsx', index=False)
 
-print("Analysis completed. Summary saved to summary_analysis.xlsx")
+print("Analysis completed. Summary saved to roc_age_band_contribution_summary.xlsx")
