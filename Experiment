@@ -1,4 +1,8 @@
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.cluster import KMeans
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # Load the Excel file
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -7,22 +11,33 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Group by Unique Eventid to find the maximum age
-df['Total Age'] = df.groupby('Unique Eventid')['Age'].transform('max')
+# Encode categorical variables
+label_encoder = LabelEncoder()
+df['Legal Entity Encoded'] = label_encoder.fit_transform(df['Legal Entity'])
+df['Business Event Encoded'] = label_encoder.fit_transform(df['Business Event'])
+df['Product Representation Encoded'] = label_encoder.fit_transform(df['Product Representation'])
 
-# For each Unique Eventid, find the ROC and Age Band where the maximum days were spent
-df_max_days = df.loc[df.groupby('Unique Eventid')['Days Spent'].idxmax()]
+# Select relevant columns for clustering
+clustering_data = df[['Legal Entity Encoded', 'Business Event Encoded', 'Product Representation Encoded']]
 
-# Calculate the percentage of each ROC and Age Band combination contributing to the total age
-roc_age_counts = df_max_days.groupby(['ROC', 'Age Band']).size().reset_index(name='Count')
-total_event_ids = df['Unique Eventid'].nunique()
+# Apply KMeans clustering
+kmeans = KMeans(n_clusters=5, random_state=42)  # Adjust number of clusters as needed
+df['Cluster'] = kmeans.fit_predict(clustering_data)
 
-roc_age_counts['Percentage'] = (roc_age_counts['Count'] / total_event_ids) * 100
+# Analyze clusters for each ROC and Age Band combination
+cluster_summary = df.groupby(['ROC', 'Age Band', 'Cluster']).size().reset_index(name='Count')
+top_clusters = cluster_summary.groupby(['ROC', 'Age Band']).apply(lambda x: x.nlargest(3, 'Count')).reset_index(drop=True)
 
-# Sort the summary table by the percentage in descending order
-roc_age_counts = roc_age_counts.sort_values(by='Percentage', ascending=False)
+# Visualize the top clusters
+plt.figure(figsize=(12, 8))
+sns.scatterplot(data=top_clusters, x='ROC', y='Age Band', size='Count', hue='Cluster', palette='tab10', sizes=(20, 200))
+plt.title('Top Clusters for Each ROC and Age Band Combination')
+plt.xlabel('ROC')
+plt.ylabel('Age Band')
+plt.legend(title='Cluster')
+plt.show()
 
 # Save the summary to a new Excel file
-roc_age_counts.to_excel('/mnt/data/roc_age_band_contribution_summary.xlsx', index=False)
+top_clusters.to_excel('/mnt/data/top_clusters_summary.xlsx', index=False)
 
-print("Analysis completed. Summary saved to roc_age_band_contribution_summary.xlsx")
+print("Analysis completed. Summary saved to top_clusters_summary.xlsx")
