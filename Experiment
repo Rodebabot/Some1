@@ -1,56 +1,16 @@
-Sure, I can help you organize this information in a structured and detailed manner. Here's a well-structured description of your process and methodology:
+import pandas as pd
 
----
+# Sample DataFrame
+data = {'col1': ['apple', 'banana', 'orange', 'apple', 'grapefruit']}
+df = pd.DataFrame(data)
 
-**Trade Stuck Analysis Using Clustering and Machine Learning Models**
+# Get the value counts
+value_counts = df['col1'].value_counts(normalize=True)
 
-In this analysis, we aim to identify and understand the root causes of trades getting stuck in various stages of the trade lifecycle, focusing on specific `ROC` and `Age Band` combinations. Our approach involves a comprehensive dataset and employs both clustering and machine learning techniques to derive insights and predict outcomes for new counterparties.
+# Convert to percentages and format with two decimal places
+percentages = value_counts * 100
+percentages = percentages.round(2)
 
-### 1. **Dataset Overview**
-The dataset contains detailed information on trades, including:
-- ROC (Region of Control)
-- Age Band (Age classification of trades)
-- Legal Entity
-- Business Event
-- Product Representation
-- Counterparty information
-- Various stages of the trade lifecycle
-
-### 2. **Identifying Stuck Trades**
-To determine where trades are getting stuck, we analyze the dataset to show the quantity of trades stuck in each `ROC` and `Age Band` combination. This initial step helps in understanding the distribution of stuck trades across different regions and age categories.
-
-### 3. **Root Cause Analysis**
-After identifying the stuck trades, we perform a root cause analysis to determine the underlying factors causing trades to get stuck. This involves:
-- Deep diving into the values of other variables (Legal Entity, Business Event, Product Representation) associated with the stuck trades.
-- Identifying patterns and correlations that contribute to trades ending up in specific `ROC` and `Age Band` combinations.
-
-### 4. **Clustering Analysis**
-We employ clustering techniques to group trades based on similarities in their characteristics. This helps in:
-- Recognizing clusters of `Legal Entity`, `Business Event`, and `Product Representation` that predominantly contribute to specific `ROC` and `Age Band` combinations.
-- Facilitating a deeper understanding of common traits among stuck trades.
-
-### 5. **Counterparty-Wise Analysis**
-For a detailed examination, we analyze trades on a counterparty basis to determine:
-- Specific stages in the trade lifecycle where trades from each counterparty are getting stuck.
-- The duration for which trades remain stuck at each stage.
-
-### 6. **Predictive Modeling**
-To extend our analysis to new counterparties, we implement machine learning models that can predict the likelihood of a trade getting stuck. The model is trained on historical data and can:
-- Predict outcomes for new counterparties.
-- Provide early warnings and insights for potential issues.
-
-### 7. **Flow and Methodology**
-The entire process follows a structured flow:
-1. **Data Collection**: Gather and preprocess data from relevant sources.
-2. **Initial Analysis**: Identify stuck trades by `ROC` and `Age Band`.
-3. **Root Cause Analysis**: Investigate variable values contributing to stuck trades.
-4. **Clustering**: Group similar trades to find patterns.
-5. **Counterparty Analysis**: Detail the lifecycle stages and duration of stuck trades for each counterparty.
-6. **Predictive Modeling**: Develop and deploy machine learning models to predict stuck trades for new counterparties.
-
-### 8. **Conclusion**
-By combining clustering and machine learning, this methodology provides a comprehensive approach to understanding and predicting trade lifecycle issues. The insights derived can help in proactive management and mitigation of stuck trades, ensuring smoother trade operations and improved efficiency.
-
----
-
-This structure provides a clear and detailed flow of your analysis process, making it easier to understand and follow. Let me know if there are any specific details you'd like to add or adjust.
+# Print the results
+print("Percentage Distribution of Unique Values:")
+print(percentages)
