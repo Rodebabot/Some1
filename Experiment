@@ -1,16 +1,31 @@
 import pandas as pd
 
-# Sample DataFrame
-data = {'col1': ['apple', 'banana', 'orange', 'apple', 'grapefruit']}
-df = pd.DataFrame(data)
+# Load the Excel file
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-# Get the value counts
-value_counts = df['col1'].value_counts(normalize=True)
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent']
 
-# Convert to percentages and format with two decimal places
-percentages = value_counts * 100
-percentages = percentages.round(2)
+# Identify Unique Eventid that have at least one 'Closed' in the ROC column
+closed_event_ids = df[df['ROC'] == 'Closed']['Unique Eventid'].unique()
 
-# Print the results
-print("Percentage Distribution of Unique Values:")
-print(percentages)
+# Identify Unique Eventid that do not have any 'Closed' in the ROC column
+all_event_ids = df['Unique Eventid'].unique()
+non_closed_event_ids = list(set(all_event_ids) - set(closed_event_ids))
+
+# Count the Unique Eventid that have and do not have 'Closed' in the ROC column
+count_closed_event_ids = len(closed_event_ids)
+count_non_closed_event_ids = len(non_closed_event_ids)
+
+# Print the counts
+print(f"Count of Unique Eventid with at least one 'Closed' in ROC: {count_closed_event_ids}")
+print(f"Count of Unique Eventid without 'Closed' in ROC: {count_non_closed_event_ids}")
+
+# Filter the DataFrame to keep only rows corresponding to Unique Eventid that have 'Closed' in the ROC column
+filtered_df = df[df['Unique Eventid'].isin(closed_event_ids)]
+
+# Save the filtered DataFrame to a new Excel file
+filtered_df.to_excel('/mnt/data/filtered_data_with_closed_roc.xlsx', index=False)
+
+print("Filtering completed. Results saved to filtered_data_with_closed_roc.xlsx")
