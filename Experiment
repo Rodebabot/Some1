@@ -1,6 +1,5 @@
 import pandas as pd
 import re
-from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 
 # Load the data from the Excel file
@@ -35,15 +34,15 @@ def analyze_comments(business_event, roc, age_band):
     # Combine all comments into a single text
     combined_text = ' '.join(filtered_df['cleaned_comment'].dropna())
     
-    # Use CountVectorizer to find the most common phrases
-    vectorizer = CountVectorizer(ngram_range=(1, 2), stop_words='english')  # Use n-grams of 1 and 2 words
+    # Use CountVectorizer to find the most common 3-4 word phrases
+    vectorizer = CountVectorizer(ngram_range=(3, 4), stop_words='english')  # Use n-grams of 3 and 4 words
     X = vectorizer.fit_transform([combined_text])
     sum_words = X.sum(axis=0)
     words_freq = [(word, sum_words[0, idx]) for word, idx in vectorizer.vocabulary_.items()]
     words_freq = sorted(words_freq, key=lambda x: x[1], reverse=True)
     
     # Return the most common phrases
-    common_phrases = [word for word, freq in words_freq[:5]]
+    common_phrases = [word for word, freq in words_freq[:5]]  # Select top 5 common phrases
     return ', '.join(common_phrases)
 
 # Add a new column for the most common phrases in comments
