@@ -1,11 +1,11 @@
 import pandas as pd
+import re
+from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
 
-# Load the data
+# Load the data from the Excel file
 file_path = '/mnt/data/your_file.xlsx'
 df = pd.read_excel(file_path)
-
-# Inspect the data to understand its structure
-print(df.head())
 
 # Group by Business Event, ROC, and Age Band and calculate the average Days Spent
 grouped_df = df.groupby(['Business Event', 'ROC', 'Age Band'])['Days Spent'].mean().reset_index()
@@ -13,5 +13,41 @@ grouped_df = df.groupby(['Business Event', 'ROC', 'Age Band'])['Days Spent'].mea
 # Sort the values to see which combinations have the highest average Days Spent
 sorted_grouped_df = grouped_df.sort_values(by='Days Spent', ascending=False)
 
+# Take the top 10 rows
+top_10_df = sorted_grouped_df.head(10)
+
+# Function to clean and preprocess comments
+def clean_text(text):
+    text = re.sub(r'[^a-zA-Z\s]', '', str(text))  # Remove special characters and numbers
+    text = text.lower()  # Convert to lowercase
+    return text
+
+# Analyze comments for each combination in the top 10
+def analyze_comments(business_event, roc, age_band):
+    # Filter the original dataframe for the specific combination
+    filtered_df = df[(df['Business Event'] == business_event) & 
+                     (df['ROC'] == roc) & 
+                     (df['Age Band'] == age_band)]
+    
+    # Clean the comments
+    filtered_df['cleaned_comment'] = filtered_df['Latest Confirmation Status Comment'].apply(clean_text)
+    
+    # Combine all comments into a single text
+    combined_text = ' '.join(filtered_df['cleaned_comment'].dropna())
+    
+    # Use CountVectorizer to find the most common phrases
+    vectorizer = CountVectorizer(ngram_range=(1, 2), stop_words='english')  # Use n-grams of 1 and 2 words
+    X = vectorizer.fit_transform([combined_text])
+    sum_words = X.sum(axis=0)
+    words_freq = [(word, sum_words[0, idx]) for word, idx in vectorizer.vocabulary_.items()]
+    words_freq = sorted(words_freq, key=lambda x: x[1], reverse=True)
+    
+    # Return the most common phrases
+    common_phrases = [word for word, freq in words_freq[:5]]
+    return ', '.join(common_phrases)
+
+# Add a new column for the most common phrases in comments
+top_10_df['Common Phrases'] = top_10_df.apply(lambda row: analyze_comments(row['Business Event'], row['ROC'], row['Age Band']), axis=1)
+
 # Display the result
-print(sorted_grouped_df)
+print(top_10_df)
