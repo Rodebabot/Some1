@@ -3,18 +3,35 @@ import pandas as pd
 # Assuming you have already read your CSV into a DataFrame named top_clusters
 # top_clusters = pd.read_csv('path_to_csv_file.csv')
 
-# Filter out rows where Age Band is "0-5 Days"
-filtered_df = top_clusters[(top_clusters['Action Items'] == 'Unactioned') & (top_clusters['Age Band'] != '0-5 Days')]
+# List of action items to include
+action_items = [
+    "Unactioned", 
+    "Counterparty", 
+    "Powai Ops - Inbound - Suppression", 
+    "Cancelled", 
+    "Powai Ops - Inbound - Review", 
+    "Transaction Legal Owned", 
+    "MO/FO", 
+    "Template Negotiation"
+]
 
-# Calculate the number of rows to keep for the top quarter
-num_rows = len(filtered_df)
-top_quarter = int(num_rows * 0.25)
+# Function to filter the top quarter for given action item excluding "0-5 Days"
+def filter_top_quarter(df, action_item):
+    filtered_df = df[(df['Action Items'] == action_item) & (df['Age Band'] != '0-5 Days')]
+    num_rows = len(filtered_df)
+    top_quarter = int(num_rows * 0.25)
+    return filtered_df.sort_values(by='Cluster Count', ascending=False).head(top_quarter)
 
-# Sort by Cluster Count in descending order and select the top quarter
-top_quarter_df = filtered_df.sort_values(by='Cluster Count', ascending=False).head(top_quarter)
+# Initialize an empty DataFrame to hold the results
+result_df = pd.DataFrame()
+
+# Apply the filter function for each action item and concatenate the results
+for action_item in action_items:
+    top_quarter_df = filter_top_quarter(top_clusters, action_item)
+    result_df = pd.concat([result_df, top_quarter_df], ignore_index=True)
 
 # Display the result
-print(top_quarter_df)
+print(result_df)
 
 # Optionally, save the filtered DataFrame to a new CSV
-# top_quarter_df.to_csv('path_to_save_filtered_csv.csv', index=False)
+# result_df.to_csv('path_to_save_filtered_csv.csv', index=False)
