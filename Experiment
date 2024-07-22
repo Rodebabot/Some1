@@ -22,16 +22,21 @@ def filter_top_quarter(df, action_item):
     top_quarter = int(num_rows * 0.25)
     return filtered_df.sort_values(by='Cluster Count', ascending=False).head(top_quarter)
 
-# Initialize an empty DataFrame to hold the results
-result_df = pd.DataFrame()
+# Dictionary to hold the DataFrames for each action item
+dfs = {}
 
-# Apply the filter function for each action item and concatenate the results
+# Apply the filter function for each action item and store the DataFrame in the dictionary
 for action_item in action_items:
-    top_quarter_df = filter_top_quarter(top_clusters, action_item)
-    result_df = pd.concat([result_df, top_quarter_df], ignore_index=True)
+    df_name = f"df_{action_item.replace(' ', '_').replace('-', '_').replace('/', '_').lower()}"
+    dfs[df_name] = filter_top_quarter(top_clusters, action_item)
 
-# Display the result
-print(result_df)
+# Now dfs dictionary contains DataFrames for each action item
+# You can access them like dfs['df_unactioned'], dfs['df_counterparty'], etc.
+for df_name, df in dfs.items():
+    print(f"DataFrame for {df_name}:")
+    print(df)
+    print("\n")
 
-# Optionally, save the filtered DataFrame to a new CSV
-# result_df.to_csv('path_to_save_filtered_csv.csv', index=False)
+# Optionally, save each DataFrame to a new CSV
+# for df_name, df in dfs.items():
+#     df.to_csv(f'{df_name}.csv', index=False)
