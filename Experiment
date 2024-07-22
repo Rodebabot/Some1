@@ -1,23 +1,20 @@
 import pandas as pd
 
-# Load the data from the Excel file
-file_path = '/mnt/data/your_file.xlsx'
-df = pd.read_excel(file_path)
+# Assuming you have already read your CSV into a DataFrame named top_clusters
+# top_clusters = pd.read_csv('path_to_csv_file.csv')
 
-# Group by Business Event, ROC, and Age Band and calculate the average Days Spent
-grouped_df = df.groupby(['Business Event', 'ROC', 'Age Band'])['Days Spent'].mean().reset_index()
+# Filter out rows where Age Band is "0-5 Days"
+filtered_df = top_clusters[(top_clusters['Action Items'] == 'Unactioned') & (top_clusters['Age Band'] != '0-5 Days')]
 
-# Sort the values to see which combinations have the highest average Days Spent
-sorted_grouped_df = grouped_df.sort_values(by='Days Spent', ascending=False)
+# Calculate the number of rows to keep for the top quarter
+num_rows = len(filtered_df)
+top_quarter = int(num_rows * 0.25)
 
-# Calculate the occurrences of each combination in the original dataframe
-occurrences = df.groupby(['Business Event', 'ROC', 'Age Band']).size().reset_index(name='Occurrences')
+# Sort by Cluster Count in descending order and select the top quarter
+top_quarter_df = filtered_df.sort_values(by='Cluster Count', ascending=False).head(top_quarter)
 
-# Filter combinations that have at least 10 occurrences
-filtered_occurrences = occurrences[occurrences['Occurrences'] >= 10]
+# Display the result
+print(top_quarter_df)
 
-# Merge the filtered occurrences with the sorted grouped dataframe
-filtered_grouped_df = pd.merge(sorted_grouped_df, filtered_occurrences, on=['Business Event', 'ROC', 'Age Band'])
-
-# Display the filtered result
-print(filtered_grouped_df)
+# Optionally, save the filtered DataFrame to a new CSV
+# top_quarter_df.to_csv('path_to_save_filtered_csv.csv', index=False)
