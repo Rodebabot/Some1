@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -23,13 +24,29 @@ roc_stats['Volatility Tag'] = roc_stats['Coefficient of Variation'].apply(lambda
 # Create a new column for average days spent tagging
 roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' if x > median_days_spent else 'Low')
 
-# Rename columns for clarity
-roc_stats.columns = ['ROC', 'Average Days Spent', 'Standard Deviation', 'Volatility (Coefficient of Variation)', 'Volatility Tag', 'Average Days Spent Tag']
+# Combine the tags into a single category
+roc_stats['Category'] = roc_stats.apply(lambda row: f"{row['Average Days Spent Tag']} Days Spent, {row['Volatility Tag']} Volatility", axis=1)
 
-# Display the results
-print(roc_stats)
+# Plotting
+plt.figure(figsize=(10, 8))
 
-# Save the results to an Excel file
-roc_stats.to_excel('/mnt/data/roc_analysis_with_tags.xlsx', index=False)
+# Plot points and annotate with ROC names
+for i, row in roc_stats.iterrows():
+    x = 1 if row['Average Days Spent Tag'] == 'High' else 0
+    y = 1 if row['Volatility Tag'] == 'High' else 0
+    plt.scatter(x, y, color='blue')
+    plt.text(x, y, row['ROC'], fontsize=9, ha='right')
 
-print("ROC analysis with volatility and average days spent tagging saved to roc_analysis_with_tags.xlsx")
+# Add grid and labels
+plt.xticks([0, 1], ['Low Days Spent', 'High Days Spent'])
+plt.yticks([0, 1], ['Low Volatility', 'High Volatility'])
+plt.xlabel('Average Days Spent')
+plt.ylabel('Volatility')
+plt.title('ROC Categorization based on Average Days Spent and Volatility')
+plt.grid(True)
+
+# Show the plot
+plt.show()
+
+# Save the plot to a file
+plt.savefig('/mnt/data/roc_categorization_plot.png')
