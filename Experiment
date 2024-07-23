@@ -1,85 +1,77 @@
-import pandas as pd
-import numpy as np
+### Introduction
+- **Overview of the Dataset**:
+  - The dataset contains various attributes related to confirms, including `Unique Eventid`, `ROC`, `Age`, `Age Band`, `Counterparty Name`, `Business Event`, `Product Representation`, `Days Spent`, and `Action Items`.
+  - The goal is to understand the lifecycle of confirms, identify bottlenecks, and enhance process efficiency.
 
-# Load the dataset
-file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
-df = pd.read_excel(file_path)
+### Data Preprocessing
+- **Loading and Cleaning**:
+  - The dataset is loaded and cleaned to ensure all necessary columns are correctly formatted and usable.
+  - Combined some `ROCs` or stages into a new column named `Action Items` for more meaningful analysis.
 
-# Ensure the column names are correct as per the provided screenshot
-df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
+### Analysis 1: Identify the Most Prevalent Combinations of ROC and Age Band
+- **Objective**: Determine which combinations of `ROC` and `Age Band` contribute most to the increase in the age of `Unique Eventid`.
+- **Method**:
+  - For each `Unique Eventid`, identify the combination of `ROC` and `Age Band` where it spent the most time.
+  - Calculate the percentage of events where each combination is the highest contributor to the age.
+- **Findings**:
+  - Provided insights into which stages and combinations are the biggest contributors to the overall age of confirms.
 
-# Sort the data by Unique Eventid and a time-related column (e.g., Age) to ensure transitions are in order
-df = df.sort_values(by=['Unique Eventid', 'Age'])
+### Analysis 2: Top 3 Clusters Within Each ROC and Age Band Combination
+- **Objective**: Identify the top 3 combinations of `Legal Entity`, `Business Event`, and `Product Representation` within each `ROC` and `Age Band` combination.
+- **Method**:
+  - For each `ROC` and `Age Band` combination, determine the most frequent combinations of `Legal Entity`, `Business Event`, and `Product Representation`.
+- **Findings**:
+  - Highlighted key clusters within each `ROC` and `Age Band` combination, providing a deeper understanding of the distribution and behavior of confirms.
 
-# Calculate transitions between Action Items
-transition_counts = pd.crosstab(df['Action Items'], df['Action Items'].shift(-1), dropna=False)
+### Analysis 3: Counterparty Performance
+- **Objective**: Evaluate the performance of different counterparties by identifying the top 3 `ROC` and `Age Band` combinations where they spend the most time.
+- **Method**:
+  - For each `Counterparty Name` and `Unique Eventid` combination, calculate the average time spent in each `ROC` and `Age Band`.
+  - Identify the top 3 combinations contributing to the total time spent.
+- **Findings**:
+  - Provided a performance overview of counterparties, highlighting which `ROC` and `Age Band` combinations are most problematic.
 
-# Exclude transitions to NaN values as they don't represent actual state transitions
-transition_counts = transition_counts.iloc[:-1, :-1]
+### Analysis 4: Filtering for Closed ROC Status
+- **Objective**: Isolate data for `Unique Eventid` that have a closed status in `ROC` at any point.
+- **Method**:
+  - Filter the dataset to keep all rows for `Unique Eventid` that have at least one occurrence of a closed status in `ROC`.
+- **Findings**:
+  - Enabled a focused analysis on confirms that have reached a closed status, distinguishing them from those still open.
 
-# Normalize the matrix to get transition probabilities
-transition_matrix = transition_counts.div(transition_counts.sum(axis=1), axis=0)
+### Analysis 5: Count of Unique Eventids
+- **Objective**: Determine the count of unique `Unique Eventid` with and without a closed status in `ROC`.
+- **Method**:
+  - Calculate the number of unique `Unique Eventid` that have at least one closed status in `ROC`.
+  - Calculate the number of unique `Unique Eventid` that do not have any closed status in `ROC`.
+- **Findings**:
+  - Provided a clear count of how many confirms have reached closure versus those that have not.
 
-# Display the transition matrix
-print(transition_matrix)
+### Analysis 6: Transition Probability Matrix
+- **Objective**: Understand the likelihood of moving from one `Action Item` to another.
+- **Method**:
+  - Create a transition matrix showing the probabilities of moving from one `Action Item` to the next within the lifecycle of a confirm.
+- **Findings**:
+  - Highlighted common transition paths and potential areas to streamline the confirm process.
 
-# Save the transition matrix to an Excel file
-transition_matrix.to_excel('/mnt/data/transition_probability_matrix.xlsx')
+### Analysis 7: Action Item Impact Analysis
+- **Objective**: Determine the impact of different `Action Items` on the overall age of confirms.
+- **Method**:
+  - Calculate the total time spent in each `Action Item` for each `Unique Eventid`.
+  - Analyze how changes in `Action Items` affect the total age of confirms.
+- **Findings**:
+  - Identified which `Action Items` have the most significant impact on the overall age, enabling targeted process improvements.
 
-print("Transition probability matrix saved to transition_probability_matrix.xlsx")
+### Conclusion
+- **Summary of Findings**:
+  - Comprehensive analysis of the confirm lifecycle using `ROC` and `Age Band` combinations provided detailed insights.
+  - Identified key bottlenecks, performance issues, and impactful stages within the confirm process.
+  - Recommendations for targeted interventions and process improvements to enhance efficiency.
 
+### Future Work
+- **Further Analysis**:
+  - Deeper dive into variable values to identify factors that increase the likelihood of confirms getting stuck in specific `ROC` and `Age Band` combinations.
+  - Continuous monitoring and adjustment based on newly emerging patterns and trends.
 
+---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import pandas as pd
-
-# Load the dataset
-file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
-df = pd.read_excel(file_path)
-
-# Ensure the column names are correct as per the provided screenshot
-df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
-
-# Calculate the total time spent in each Action Item for each Unique Eventid
-total_days_per_action = df.groupby(['Unique Eventid', 'Action Items'])['Days Spent'].sum().reset_index()
-
-# Calculate the total age for each Unique Eventid
-total_age_per_event = df.groupby('Unique Eventid')['Age'].max().reset_index()
-total_age_per_event.columns = ['Unique Eventid', 'Total Age']
-
-# Merge the dataframes to relate total days spent in Action Items with the total age of each event
-merged_df = pd.merge(total_days_per_action, total_age_per_event, on='Unique Eventid')
-
-# Calculate the percentage contribution of each Action Item to the total age of each event
-merged_df['Contribution (%)'] = (merged_df['Days Spent'] / merged_df['Total Age']) * 100
-
-# Aggregate the contributions to get the average contribution of each Action Item across all events
-action_item_impact = merged_df.groupby('Action Items')['Contribution (%)'].mean().reset_index()
-action_item_impact.columns = ['Action Items', 'Average Contribution (%)']
-
-# Sort the Action Items by their average contribution in descending order
-action_item_impact = action_item_impact.sort_values(by='Average Contribution (%)', ascending=False)
-
-# Display the Action Item Impact Analysis
-print(action_item_impact)
-
-# Save the action item impact analysis to an Excel file
-action_item_impact.to_excel('/mnt/data/action_item_impact_analysis.xlsx', index=False)
-
-print("Action Item Impact Analysis saved to action_item_impact_analysis.xlsx")
+This structured flow provides a comprehensive overview of the analyses you've conducted, making it easier to create detailed and informative presentation slides.
