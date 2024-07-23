@@ -1,77 +1,35 @@
-### Introduction
-- **Overview of the Dataset**:
-  - The dataset contains various attributes related to confirms, including `Unique Eventid`, `ROC`, `Age`, `Age Band`, `Counterparty Name`, `Business Event`, `Product Representation`, `Days Spent`, and `Action Items`.
-  - The goal is to understand the lifecycle of confirms, identify bottlenecks, and enhance process efficiency.
+import pandas as pd
 
-### Data Preprocessing
-- **Loading and Cleaning**:
-  - The dataset is loaded and cleaned to ensure all necessary columns are correctly formatted and usable.
-  - Combined some `ROCs` or stages into a new column named `Action Items` for more meaningful analysis.
+# Load the dataset
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-### Analysis 1: Identify the Most Prevalent Combinations of ROC and Age Band
-- **Objective**: Determine which combinations of `ROC` and `Age Band` contribute most to the increase in the age of `Unique Eventid`.
-- **Method**:
-  - For each `Unique Eventid`, identify the combination of `ROC` and `Age Band` where it spent the most time.
-  - Calculate the percentage of events where each combination is the highest contributor to the age.
-- **Findings**:
-  - Provided insights into which stages and combinations are the biggest contributors to the overall age of confirms.
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-### Analysis 2: Top 3 Clusters Within Each ROC and Age Band Combination
-- **Objective**: Identify the top 3 combinations of `Legal Entity`, `Business Event`, and `Product Representation` within each `ROC` and `Age Band` combination.
-- **Method**:
-  - For each `ROC` and `Age Band` combination, determine the most frequent combinations of `Legal Entity`, `Business Event`, and `Product Representation`.
-- **Findings**:
-  - Highlighted key clusters within each `ROC` and `Age Band` combination, providing a deeper understanding of the distribution and behavior of confirms.
+# Group by ROC and calculate the average days spent and the standard deviation
+roc_stats = df.groupby('ROC')['Days Spent'].agg(['mean', 'std']).reset_index()
 
-### Analysis 3: Counterparty Performance
-- **Objective**: Evaluate the performance of different counterparties by identifying the top 3 `ROC` and `Age Band` combinations where they spend the most time.
-- **Method**:
-  - For each `Counterparty Name` and `Unique Eventid` combination, calculate the average time spent in each `ROC` and `Age Band`.
-  - Identify the top 3 combinations contributing to the total time spent.
-- **Findings**:
-  - Provided a performance overview of counterparties, highlighting which `ROC` and `Age Band` combinations are most problematic.
+# Calculate the coefficient of variation (CV) as std/mean
+roc_stats['Coefficient of Variation'] = roc_stats['std'] / roc_stats['mean']
 
-### Analysis 4: Filtering for Closed ROC Status
-- **Objective**: Isolate data for `Unique Eventid` that have a closed status in `ROC` at any point.
-- **Method**:
-  - Filter the dataset to keep all rows for `Unique Eventid` that have at least one occurrence of a closed status in `ROC`.
-- **Findings**:
-  - Enabled a focused analysis on confirms that have reached a closed status, distinguishing them from those still open.
+# Determine the median CV and average days spent for tagging
+median_cv = roc_stats['Coefficient of Variation'].median()
+median_days_spent = roc_stats['mean'].median()
 
-### Analysis 5: Count of Unique Eventids
-- **Objective**: Determine the count of unique `Unique Eventid` with and without a closed status in `ROC`.
-- **Method**:
-  - Calculate the number of unique `Unique Eventid` that have at least one closed status in `ROC`.
-  - Calculate the number of unique `Unique Eventid` that do not have any closed status in `ROC`.
-- **Findings**:
-  - Provided a clear count of how many confirms have reached closure versus those that have not.
+# Create a new column for volatility tagging
+roc_stats['Volatility Tag'] = roc_stats['Coefficient of Variation'].apply(lambda x: 'High' if x > median_cv else 'Low')
 
-### Analysis 6: Transition Probability Matrix
-- **Objective**: Understand the likelihood of moving from one `Action Item` to another.
-- **Method**:
-  - Create a transition matrix showing the probabilities of moving from one `Action Item` to the next within the lifecycle of a confirm.
-- **Findings**:
-  - Highlighted common transition paths and potential areas to streamline the confirm process.
+# Create a new column for average days spent tagging
+roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' if x > median_days_spent else 'Low')
 
-### Analysis 7: Action Item Impact Analysis
-- **Objective**: Determine the impact of different `Action Items` on the overall age of confirms.
-- **Method**:
-  - Calculate the total time spent in each `Action Item` for each `Unique Eventid`.
-  - Analyze how changes in `Action Items` affect the total age of confirms.
-- **Findings**:
-  - Identified which `Action Items` have the most significant impact on the overall age, enabling targeted process improvements.
+# Rename columns for clarity
+roc_stats.columns = ['ROC', 'Average Days Spent', 'Standard Deviation', 'Volatility (Coefficient of Variation)', 'Volatility Tag', 'Average Days Spent Tag']
 
-### Conclusion
-- **Summary of Findings**:
-  - Comprehensive analysis of the confirm lifecycle using `ROC` and `Age Band` combinations provided detailed insights.
-  - Identified key bottlenecks, performance issues, and impactful stages within the confirm process.
-  - Recommendations for targeted interventions and process improvements to enhance efficiency.
+# Display the results
+print(roc_stats)
 
-### Future Work
-- **Further Analysis**:
-  - Deeper dive into variable values to identify factors that increase the likelihood of confirms getting stuck in specific `ROC` and `Age Band` combinations.
-  - Continuous monitoring and adjustment based on newly emerging patterns and trends.
+# Save the results to an Excel file
+roc_stats.to_excel('/mnt/data/roc_analysis_with_tags.xlsx', index=False)
 
----
-
-This structured flow provides a comprehensive overview of the analyses you've conducted, making it easier to create detailed and informative presentation slides.
+print("ROC analysis with volatility and average days spent tagging saved to roc_analysis_with_tags.xlsx")
