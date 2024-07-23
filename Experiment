@@ -28,13 +28,20 @@ roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' i
 roc_stats['Category'] = roc_stats.apply(lambda row: f"{row['Average Days Spent Tag']} Days Spent, {row['Volatility Tag']} Volatility", axis=1)
 
 # Plotting
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(12, 8))
+
+# Define the positions for the four quadrants
+positions = {
+    'High Days Spent, High Volatility': (1, 1),
+    'Low Days Spent, High Volatility': (0, 1),
+    'High Days Spent, Low Volatility': (1, 0),
+    'Low Days Spent, Low Volatility': (0, 0)
+}
 
 # Plot points and annotate with ROC names
 for i, row in roc_stats.iterrows():
-    x = 1 if row['Average Days Spent Tag'] == 'High' else 0
-    y = 1 if row['Volatility Tag'] == 'High' else 0
-    plt.scatter(x, y, color='blue')
+    x, y = positions[row['Category']]
+    plt.scatter(x, y, color='blue', s=100)  # Adjust size for better visibility
     plt.text(x, y, row['ROC'], fontsize=9, ha='right')
 
 # Add grid and labels
@@ -45,7 +52,12 @@ plt.ylabel('Volatility')
 plt.title('ROC Categorization based on Average Days Spent and Volatility')
 plt.grid(True)
 
+# Draw quadrant lines for better visualization
+plt.axhline(0.5, color='black', linewidth=0.5)
+plt.axvline(0.5, color='black', linewidth=0.5)
+
 # Show the plot
+plt.tight_layout()
 plt.show()
 
 # Save the plot to a file
