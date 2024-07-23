@@ -38,11 +38,20 @@ positions = {
     'Low Days Spent, Low Volatility': (0, 0)
 }
 
+# Define an offset for text annotations to prevent overlap
+offsets = {
+    'High Days Spent, High Volatility': (0.03, 0.03),
+    'Low Days Spent, High Volatility': (-0.03, 0.03),
+    'High Days Spent, Low Volatility': (0.03, -0.03),
+    'Low Days Spent, Low Volatility': (-0.03, -0.03)
+}
+
 # Plot points and annotate with ROC names
 for i, row in roc_stats.iterrows():
     x, y = positions[row['Category']]
+    dx, dy = offsets[row['Category']]
     plt.scatter(x, y, color='blue', s=100)  # Adjust size for better visibility
-    plt.text(x, y, row['ROC'], fontsize=9, ha='right')
+    plt.text(x + dx, y + dy, row['ROC'], fontsize=9, ha='center')
 
 # Add grid and labels
 plt.xticks([0, 1], ['Low Days Spent', 'High Days Spent'])
