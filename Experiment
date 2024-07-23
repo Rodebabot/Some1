@@ -27,3 +27,59 @@ print(transition_matrix)
 transition_matrix.to_excel('/mnt/data/transition_probability_matrix.xlsx')
 
 print("Transition probability matrix saved to transition_probability_matrix.xlsx")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import pandas as pd
+
+# Load the dataset
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
+
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
+
+# Calculate the total time spent in each Action Item for each Unique Eventid
+total_days_per_action = df.groupby(['Unique Eventid', 'Action Items'])['Days Spent'].sum().reset_index()
+
+# Calculate the total age for each Unique Eventid
+total_age_per_event = df.groupby('Unique Eventid')['Age'].max().reset_index()
+total_age_per_event.columns = ['Unique Eventid', 'Total Age']
+
+# Merge the dataframes to relate total days spent in Action Items with the total age of each event
+merged_df = pd.merge(total_days_per_action, total_age_per_event, on='Unique Eventid')
+
+# Calculate the percentage contribution of each Action Item to the total age of each event
+merged_df['Contribution (%)'] = (merged_df['Days Spent'] / merged_df['Total Age']) * 100
+
+# Aggregate the contributions to get the average contribution of each Action Item across all events
+action_item_impact = merged_df.groupby('Action Items')['Contribution (%)'].mean().reset_index()
+action_item_impact.columns = ['Action Items', 'Average Contribution (%)']
+
+# Sort the Action Items by their average contribution in descending order
+action_item_impact = action_item_impact.sort_values(by='Average Contribution (%)', ascending=False)
+
+# Display the Action Item Impact Analysis
+print(action_item_impact)
+
+# Save the action item impact analysis to an Excel file
+action_item_impact.to_excel('/mnt/data/action_item_impact_analysis.xlsx', index=False)
+
+print("Action Item Impact Analysis saved to action_item_impact_analysis.xlsx")
