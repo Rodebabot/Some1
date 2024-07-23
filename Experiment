@@ -1,30 +1,29 @@
 import pandas as pd
+import numpy as np
 
-# Assuming you have already read your CSV into a DataFrame named top_clusters
-# top_clusters = pd.read_csv('path_to_csv_file.csv')
+# Load the dataset
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-# List of action items to include
-action_items = [
-    "Unactioned", 
-    "Counterparty", 
-    "Powai Ops - Inbound - Suppression", 
-    "Cancelled", 
-    "Powai Ops - Inbound - Review", 
-    "Transaction Legal Owned", 
-    "MO/FO", 
-    "Template Negotiation"
-]
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Function to filter the top quarter for a given action item excluding "0-5 Days"
-def filter_top_quarter(df, action_item):
-    filtered_df = df[(df['Action Items'] == action_item) & (df['Age Band'] != '0-5 Days')]
-    num_rows = len(filtered_df)
-    top_quarter = int(num_rows * 0.25)
-    return filtered_df.sort_values(by='Cluster Count', ascending=False).head(top_quarter)
+# Sort the data by Unique Eventid and a time-related column (e.g., Age) to ensure transitions are in order
+df = df.sort_values(by=['Unique Eventid', 'Age'])
 
-# Create separate DataFrames for each action item
-for action_item in action_items:
-    df_name = f"df_{action_item.replace(' ', '_').replace('-', '_').replace('/', '_').lower()}"
-    globals()[df_name] = filter_top_quarter(top_clusters, action_item)
+# Calculate transitions between Action Items
+transition_counts = pd.crosstab(df['Action Items'], df['Action Items'].shift(-1), dropna=False)
 
-# Now you can use these DataFrames separately, e.g., df_unactioned, df_counterparty, etc.
+# Exclude transitions to NaN values as they don't represent actual state transitions
+transition_counts = transition_counts.iloc[:-1, :-1]
+
+# Normalize the matrix to get transition probabilities
+transition_matrix = transition_counts.div(transition_counts.sum(axis=1), axis=0)
+
+# Display the transition matrix
+print(transition_matrix)
+
+# Save the transition matrix to an Excel file
+transition_matrix.to_excel('/mnt/data/transition_probability_matrix.xlsx')
+
+print("Transition probability matrix saved to transition_probability_matrix.xlsx")
