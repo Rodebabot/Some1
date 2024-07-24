@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -7,24 +8,51 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Count ROC iterations per Unique Eventid
-roc_iterations = df.groupby(['Unique Eventid', 'ROC']).size().reset_index(name='Iteration Count')
+# Group by ROC and calculate the average days spent, standard deviation, min, and max
+roc_stats = df.groupby('ROC')['Days Spent'].agg(['mean', 'std', 'min', 'max']).reset_index()
 
-# Pivot the table to see counts per ROC for each Unique Eventid
-pivot_table = roc_iterations.pivot(index='Unique Eventid', columns='ROC', values='Iteration Count').fillna(0)
+# Calculate the coefficient of variation (CV) as std/mean
+roc_stats['Coefficient of Variation'] = roc_stats['std'] / roc_stats['mean']
 
-print("ROC Iterations per Unique Eventid:")
-print(pivot_table)
+# Determine the median CV and average days spent for tagging
+median_cv = roc_stats['Coefficient of Variation'].median()
+median_days_spent = roc_stats['mean'].median()
 
-# Save pivot table to CSV for further analysis if needed
-pivot_table.to_csv('/mnt/data/roc_iterations_per_eventid.csv')
+# Create new columns for volatility and average days spent tagging
+roc_stats['Volatility Tag'] = roc_stats['Coefficient of Variation'].apply(lambda x: 'High' if x > median_cv else 'Low')
+roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' if x > median_days_spent else 'Low')
 
+# Define a function to calculate the percentage distribution for each quarter
+def calculate_quarter_percentage(roc):
+    # Filter the data for the specific ROC
+    roc_data = df[df['ROC'] == roc]['Days Spent']
+    min_val, max_val = roc_data.min(), roc_data.max()
+    range_val = max_val - min_val
+    
+    # Define the range for each quarter
+    q1 = (min_val, min_val + range_val * 0.25)
+    q2 = (min_val + range_val * 0.25, min_val + range_val * 0.5)
+    q3 = (min_val + range_val * 0.5, min_val + range_val * 0.75)
+    q4 = (min_val + range_val * 0.75, max_val)
+    
+    # Calculate the percentage of values in each quarter
+    q1_pct = ((roc_data >= q1[0]) & (roc_data <= q1[1])).mean() * 100
+    q2_pct = ((roc_data > q2[0]) & (roc_data <= q2[1])).mean() * 100
+    q3_pct = ((roc_data > q3[0]) & (roc_data <= q3[1])).mean() * 100
+    q4_pct = ((roc_data > q4[0]) & (roc_data <= q4[1])).mean() * 100
+    
+    return f"{q1[0]}-{q1[1]} ({q1_pct:.2f}%)", f"{q2[0]}-{q2[1]} ({q2_pct:.2f}%)", f"{q3[0]}-{q3[1]} ({q3_pct:.2f}%)", f"{q4[0]}-{q4[1]} ({q4_pct:.2f}%)"
 
-# Calculate overall average iterations for each ROC
-average_iterations = roc_iterations.groupby('ROC')['Iteration Count'].mean().reset_index(name='Average Iterations')
+# Apply the function to each ROC and create new columns for each quarter
+roc_stats[['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']] = roc_stats.apply(lambda row: calculate_quarter_percentage(row['ROC']), axis=1, result_type="expand")
 
-print("Overall Average Iterations per ROC:")
-print(average_iterations)
+# Rename columns for clarity
+roc_stats.columns = ['ROC', 'Average Days Spent', 'Standard Deviation', 'Min Days Spent', 'Max Days Spent', 'Volatility (Coefficient of Variation)', 'Volatility Tag', 'Average Days Spent Tag', '1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
 
-# Save average iterations to CSV for further analysis if needed
-average_iterations.to_csv('/mnt/data/average_iterations_per_roc.csv')
+# Display the results
+print(roc_stats)
+
+# Save the results to an Excel file
+roc_stats.to_excel('/mnt/data/roc_analysis_with_quarters.xlsx', index=False)
+
+print("ROC analysis with quarters and volatility tagging saved to roc_analysis_with_quarters.xlsx")
