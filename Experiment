@@ -1,5 +1,4 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -8,66 +7,24 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Group by ROC and calculate the average days spent and the standard deviation
-roc_stats = df.groupby('ROC')['Days Spent'].agg(['mean', 'std']).reset_index()
+# Count ROC iterations per Unique Eventid
+roc_iterations = df.groupby(['Unique Eventid', 'ROC']).size().reset_index(name='Iteration Count')
 
-# Calculate the coefficient of variation (CV) as std/mean
-roc_stats['Coefficient of Variation'] = roc_stats['std'] / roc_stats['mean']
+# Pivot the table to see counts per ROC for each Unique Eventid
+pivot_table = roc_iterations.pivot(index='Unique Eventid', columns='ROC', values='Iteration Count').fillna(0)
 
-# Determine the median CV and average days spent for tagging
-median_cv = roc_stats['Coefficient of Variation'].median()
-median_days_spent = roc_stats['mean'].median()
+print("ROC Iterations per Unique Eventid:")
+print(pivot_table)
 
-# Create a new column for volatility tagging
-roc_stats['Volatility Tag'] = roc_stats['Coefficient of Variation'].apply(lambda x: 'High' if x > median_cv else 'Low')
+# Save pivot table to CSV for further analysis if needed
+pivot_table.to_csv('/mnt/data/roc_iterations_per_eventid.csv')
 
-# Create a new column for average days spent tagging
-roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' if x > median_days_spent else 'Low')
 
-# Combine the tags into a single category
-roc_stats['Category'] = roc_stats.apply(lambda row: f"{row['Average Days Spent Tag']} Days Spent, {row['Volatility Tag']} Volatility", axis=1)
+# Calculate overall average iterations for each ROC
+average_iterations = roc_iterations.groupby('ROC')['Iteration Count'].mean().reset_index(name='Average Iterations')
 
-# Plotting
-plt.figure(figsize=(12, 8))
+print("Overall Average Iterations per ROC:")
+print(average_iterations)
 
-# Define the positions for the four quadrants
-positions = {
-    'High Days Spent, High Volatility': (1, 1),
-    'Low Days Spent, High Volatility': (0, 1),
-    'High Days Spent, Low Volatility': (1, 0),
-    'Low Days Spent, Low Volatility': (0, 0)
-}
-
-# Define an offset for text annotations to prevent overlap
-offsets = {
-    'High Days Spent, High Volatility': (0.03, 0.03),
-    'Low Days Spent, High Volatility': (-0.03, 0.03),
-    'High Days Spent, Low Volatility': (0.03, -0.03),
-    'Low Days Spent, Low Volatility': (-0.03, -0.03)
-}
-
-# Plot points and annotate with ROC names
-for i, row in roc_stats.iterrows():
-    x, y = positions[row['Category']]
-    dx, dy = offsets[row['Category']]
-    plt.scatter(x, y, color='blue', s=100)  # Adjust size for better visibility
-    plt.text(x + dx, y + dy, row['ROC'], fontsize=9, ha='center')
-
-# Add grid and labels
-plt.xticks([0, 1], ['Low Days Spent', 'High Days Spent'])
-plt.yticks([0, 1], ['Low Volatility', 'High Volatility'])
-plt.xlabel('Average Days Spent')
-plt.ylabel('Volatility')
-plt.title('ROC Categorization based on Average Days Spent and Volatility')
-plt.grid(True)
-
-# Draw quadrant lines for better visualization
-plt.axhline(0.5, color='black', linewidth=0.5)
-plt.axvline(0.5, color='black', linewidth=0.5)
-
-# Show the plot
-plt.tight_layout()
-plt.show()
-
-# Save the plot to a file
-plt.savefig('/mnt/data/roc_categorization_plot.png')
+# Save average iterations to CSV for further analysis if needed
+average_iterations.to_csv('/mnt/data/average_iterations_per_roc.csv')
