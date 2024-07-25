@@ -1,5 +1,4 @@
 import pandas as pd
-from scipy.stats import trim_mean
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -11,11 +10,25 @@ df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age B
 # Group by ROC and calculate the average days spent
 roc_avg_days = df.groupby('ROC')['Days Spent'].mean().reset_index()
 
-# Define the percentage to trim from each end of the data
-trim_percent = 0.1  # Trimming 10% from each end
+# Calculate Q1 and Q3
+Q1 = roc_avg_days['Days Spent'].quantile(0.25)
+Q3 = roc_avg_days['Days Spent'].quantile(0.75)
+IQR = Q3 - Q1
 
-# Calculate the trimmed mean for the overall life days that a ROC should take
-ideal_life_days = trim_mean(roc_avg_days['Days Spent'], proportiontocut=trim_percent)
+# Define the acceptable range
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
 
-# Display the result
-print(f"The recommended overall life days that a ROC should ideally take is: {ideal_life_days:.2f} days")
+# Filter the data within the acceptable range
+filtered_avg_days = roc_avg_days[(roc_avg_days['Days Spent'] >= lower_bound) & (roc_avg_days['Days Spent'] <= upper_bound)]
+
+# Calculate the mean of the remaining values
+recommended_days = filtered_avg_days['Days Spent'].mean()
+
+# Display the recommended number of days
+print(f"The recommended number of days a ROC should ideally spend is approximately: {recommended_days:.2f} days")
+
+# Save the filtered results to an Excel file for reference
+filtered_avg_days.to_excel('/mnt/data/filtered_roc_avg_days.xlsx', index=False)
+
+print("Filtered average days spent data saved to filtered_roc_avg_days.xlsx")
