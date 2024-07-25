@@ -13,15 +13,18 @@ np.random.seed(0)
 df = pd.DataFrame({
     'A': np.random.rand(10),
     'B': np.random.rand(10),
-    'C': np.random.rand(10),
-    'D': np.random.rand(10)
+    'C': np.random.choice(['Category1', 'Category2', 'Category3'], 10),
+    'D': np.random.choice(['Group1', 'Group2'], 10)
 })
 
+# Convert categorical variables to numerical using one-hot encoding
+df_encoded = pd.get_dummies(df)
+
 # Calculate the correlation matrix
-correlation_matrix = df.corr()
+correlation_matrix = df_encoded.corr()
 
 # Plot the heatmap
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(12, 10))
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0)
 plt.title('Correlation Heatmap')
 plt.show()
