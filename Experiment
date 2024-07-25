@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy.stats import trim_mean
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -7,27 +8,14 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Create a list of all unique ROC values
-unique_rocs = df['ROC'].unique()
+# Group by ROC and calculate the average days spent
+roc_avg_days = df.groupby('ROC')['Days Spent'].mean().reset_index()
 
-# Initialize a dictionary to hold the counts of unique event IDs for each ROC
-roc_counts = {roc: 0 for roc in unique_rocs}
+# Define the percentage to trim from each end of the data
+trim_percent = 0.1  # Trimming 10% from each end
 
-# Group the data by Unique Eventid and check the presence of each ROC
-grouped = df.groupby('Unique Eventid')['ROC'].unique()
+# Calculate the trimmed mean for the overall life days that a ROC should take
+ideal_life_days = trim_mean(roc_avg_days['Days Spent'], proportiontocut=trim_percent)
 
-# Iterate over each group and count the presence of each ROC
-for unique_eventid, rocs in grouped.items():
-    for roc in rocs:
-        roc_counts[roc] += 1
-
-# Convert the dictionary to a DataFrame for better readability
-roc_counts_df = pd.DataFrame(list(roc_counts.items()), columns=['ROC', 'Count of Unique Event IDs'])
-
-# Display the results
-print(roc_counts_df)
-
-# Save the results to an Excel file
-roc_counts_df.to_excel('/mnt/data/roc_counts.xlsx', index=False)
-
-print("Counts of unique event IDs per ROC saved to roc_counts.xlsx")
+# Display the result
+print(f"The recommended overall life days that a ROC should ideally take is: {ideal_life_days:.2f} days")
