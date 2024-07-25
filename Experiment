@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -8,51 +7,27 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Group by ROC and calculate the average days spent, standard deviation, min, and max
-roc_stats = df.groupby('ROC')['Days Spent'].agg(['mean', 'std', 'min', 'max']).reset_index()
+# Create a list of all unique ROC values
+unique_rocs = df['ROC'].unique()
 
-# Calculate the coefficient of variation (CV) as std/mean
-roc_stats['Coefficient of Variation'] = roc_stats['std'] / roc_stats['mean']
+# Initialize a dictionary to hold the counts of unique event IDs for each ROC
+roc_counts = {roc: 0 for roc in unique_rocs}
 
-# Determine the median CV and average days spent for tagging
-median_cv = roc_stats['Coefficient of Variation'].median()
-median_days_spent = roc_stats['mean'].median()
+# Group the data by Unique Eventid and check the presence of each ROC
+grouped = df.groupby('Unique Eventid')['ROC'].unique()
 
-# Create new columns for volatility and average days spent tagging
-roc_stats['Volatility Tag'] = roc_stats['Coefficient of Variation'].apply(lambda x: 'High' if x > median_cv else 'Low')
-roc_stats['Average Days Spent Tag'] = roc_stats['mean'].apply(lambda x: 'High' if x > median_days_spent else 'Low')
+# Iterate over each group and count the presence of each ROC
+for unique_eventid, rocs in grouped.items():
+    for roc in rocs:
+        roc_counts[roc] += 1
 
-# Define a function to calculate the percentage distribution in 10-day groups
-def calculate_percentage_groups(roc):
-    # Filter the data for the specific ROC
-    roc_data = df[df['ROC'] == roc]['Days Spent']
-    max_val = 200  # We are considering up to 200 days
-    groups = range(0, max_val + 10, 10)
-    
-    # Calculate the percentage of values in each group
-    group_percentages = []
-    for i in range(len(groups) - 1):
-        group_range = (groups[i], groups[i + 1] - 1)
-        pct = ((roc_data >= group_range[0]) & (roc_data <= group_range[1])).mean() * 100
-        group_percentages.append(pct)
-    
-    return group_percentages
-
-# Apply the function to each ROC and create new columns for the groups
-percentage_groups = roc_stats['ROC'].apply(lambda x: calculate_percentage_groups(x))
-percentage_df = pd.DataFrame(percentage_groups.tolist(), columns=[f'{i}-{i+9} days' for i in range(0, 200, 10)])
-
-# Concatenate the percentage distribution columns with the roc_stats dataframe
-roc_stats = pd.concat([roc_stats, percentage_df], axis=1)
-
-# Rename columns for clarity
-roc_stats.columns = ['ROC', 'Average Days Spent', 'Standard Deviation', 'Min Days Spent', 'Max Days Spent', 
-                     'Volatility (Coefficient of Variation)', 'Volatility Tag', 'Average Days Spent Tag'] + [f'{i}-{i+9} days' for i in range(0, 200, 10)]
+# Convert the dictionary to a DataFrame for better readability
+roc_counts_df = pd.DataFrame(list(roc_counts.items()), columns=['ROC', 'Count of Unique Event IDs'])
 
 # Display the results
-print(roc_stats)
+print(roc_counts_df)
 
 # Save the results to an Excel file
-roc_stats.to_excel('/mnt/data/roc_analysis_with_intervals.xlsx', index=False)
+roc_counts_df.to_excel('/mnt/data/roc_counts.xlsx', index=False)
 
-print("ROC analysis with intervals and volatility tagging saved to roc_analysis_with_intervals.xlsx")
+print("Counts of unique event IDs per ROC saved to roc_counts.xlsx")
