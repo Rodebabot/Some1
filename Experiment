@@ -1,30 +1,33 @@
-# Import necessary libraries
+import win32com.client
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-# Load your DataFrame (Example: df = pd.read_csv('your_file.csv'))
-# For demonstration, let's create a sample DataFrame
-# df = pd.read_csv('your_file.csv')  # Uncomment this line if you are loading from a CSV
+# Initialize Outlook application
+outlook = win32com.client.Dispatch("Outlook.Application")
+namespace = outlook.GetNamespace("MAPI")
 
-# Sample data creation (remove if using your own dataset)
-import numpy as np
-np.random.seed(0)
-df = pd.DataFrame({
-    'A': np.random.rand(10),
-    'B': np.random.rand(10),
-    'C': np.random.choice(['Category1', 'Category2', 'Category3'], 10),
-    'D': np.random.choice(['Group1', 'Group2'], 10)
-})
+# Access the mailbox (replace 'SADDA' with the exact name of your mailbox)
+mailbox = namespace.Folders['SADDA']
 
-# Convert categorical variables to numerical using one-hot encoding
-df_encoded = pd.get_dummies(df)
+# Function to search through folders and subfolders
+def search_folder(folder):
+    emails = []
+    for item in folder.Items:
+        if item.Class == 43:  # Mail item
+            if "OTCWORK" in item.Body:
+                emails.append({
+                    'Subject': item.Subject,
+                    'ReceivedTime': item.ReceivedTime
+                })
+    for subfolder in folder.Folders:
+        emails += search_folder(subfolder)
+    return emails
 
-# Calculate the correlation matrix
-correlation_matrix = df_encoded.corr()
+# Start searching from the inbox or the root of the mailbox
+inbox = mailbox.Folders['Inbox']
+emails = search_folder(inbox)
 
-# Plot the heatmap
-plt.figure(figsize=(12, 10))
-sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', center=0)
-plt.title('Correlation Heatmap')
-plt.show()
+# Create a DataFrame and save to Excel
+df = pd.DataFrame(emails)
+df.to_excel('OTCWORK_emails.xlsx', index=False)
+
+print("Excel file created successfully.")
