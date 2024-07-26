@@ -1,5 +1,6 @@
 import win32com.client
 import pandas as pd
+from datetime import datetime
 
 # Initialize Outlook application
 outlook = win32com.client.Dispatch("Outlook.Application")
@@ -8,16 +9,21 @@ namespace = outlook.GetNamespace("MAPI")
 # Access the mailbox (replace 'SADDA' with the exact name of your mailbox)
 mailbox = namespace.Folders['SADDA']
 
+# Get today's date in the correct format
+today = datetime.today().date()
+
 # Function to search through folders and subfolders
 def search_folder(folder):
     emails = []
     for item in folder.Items:
         if item.Class == 43:  # Mail item
-            if "OTCWORK" in item.Body:
-                emails.append({
-                    'Subject': item.Subject,
-                    'ReceivedTime': item.ReceivedTime
-                })
+            received_time = item.ReceivedTime
+            if received_time.date() == today:
+                if "OTCWORK" in item.Body:
+                    emails.append({
+                        'Subject': item.Subject,
+                        'ReceivedTime': received_time
+                    })
     for subfolder in folder.Folders:
         emails += search_folder(subfolder)
     return emails
@@ -28,6 +34,6 @@ emails = search_folder(inbox)
 
 # Create a DataFrame and save to Excel
 df = pd.DataFrame(emails)
-df.to_excel('OTCWORK_emails.xlsx', index=False)
+df.to_excel('OTCWORK_emails_today.xlsx', index=False)
 
 print("Excel file created successfully.")
