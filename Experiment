@@ -15,17 +15,22 @@ today = datetime.today().date()
 # Function to search through folders and subfolders
 def search_folder(folder):
     emails = []
-    for item in folder.Items:
-        if item.Class == 43:  # Mail item
-            received_time = item.ReceivedTime
-            if received_time.date() == today:
-                if "OTCWORK" in item.Body:
-                    emails.append({
-                        'Subject': item.Subject,
-                        'ReceivedTime': received_time
-                    })
-    for subfolder in folder.Folders:
-        emails += search_folder(subfolder)
+    try:
+        items = folder.Items
+        items = items.Restrict("[ReceivedTime] >= '" + today.strftime("%m/%d/%Y") + "'")
+        for item in items:
+            if item.Class == 43:  # Mail item
+                received_time = item.ReceivedTime
+                if received_time.date() == today:
+                    if "OTCWORK" in item.Body:
+                        emails.append({
+                            'Subject': item.Subject,
+                            'ReceivedTime': received_time
+                        })
+        for subfolder in folder.Folders:
+            emails += search_folder(subfolder)
+    except Exception as e:
+        print(f"Error accessing folder {folder.Name}: {e}")
     return emails
 
 # Start searching from the inbox or the root of the mailbox
