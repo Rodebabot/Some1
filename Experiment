@@ -1,118 +1,22 @@
-Sure, I can help describe the code. From the images, here is a breakdown of what the code does point by point:
+import pandas as pd
 
-1. **Importing Libraries:**
-   ```python
-   import pdfplumber
-   import openai
-   from openai.embeddings_utils import get_embedding
-   from llama_index import SimpleDirectoryReader, GPTSimpleVectorIndex, LLMPredictor, PromptHelper
-   from langchain import OpenAI
-   import gradio as gr
-   import os
-   import time
-   ```
-   - **pdfplumber**: Used to extract text from PDF files.
-   - **openai**: The OpenAI API client for using various OpenAI models.
-   - **get_embedding**: A utility function from OpenAI to get embeddings of text.
-   - **llama_index** and **langchain**: Libraries for creating and managing document indexes and for using language models, respectively.
-   - **gradio**: A library for creating user interfaces.
+# Load the dataset
+file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-2. **Setting OpenAI API Key:**
-   ```python
-   openai.api_key = "your_openai_api_key"
-   ```
-   - The OpenAI API key is set for authentication.
+# Ensure the column names are correct as per the provided screenshot
+df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-3. **Defining Function to Parse PDF:**
-   ```python
-   def parse_pdf(file_path):
-       text = ""
-       with pdfplumber.open(file_path) as pdf:
-           for page in pdf.pages:
-               text += page.extract_text()
-       return text
-   ```
-   - This function opens a PDF file and extracts text from each page.
+# Group by ROC and Age Band to calculate the average days spent
+roc_age_band_stats = df.groupby(['ROC', 'Age Band'])['Days Spent'].mean().reset_index()
 
-4. **LLM and Index Initialization:**
-   ```python
-   max_input_size = 4096
-   num_outputs = 500
-   max_chunk_overlap = 20
-   chunk_size_limit = 600
+# Filter ROCs where the average days spent is more than 2
+bottlenecks = roc_age_band_stats[roc_age_band_stats['Days Spent'] > 2]
 
-   prompt_helper = PromptHelper(max_input_size, num_outputs, max_chunk_overlap, chunk_size_limit=chunk_size_limit)
-   llm_predictor = LLMPredictor(llm=OpenAI(temperature=0.7, model_name="text-davinci-003", max_tokens=num_outputs))
-   ```
+# Display the bottlenecks
+print(bottlenecks)
 
-5. **Index Creation or Loading:**
-   ```python
-   documents = SimpleDirectoryReader('docs').load_data()
-   index = GPTSimpleVectorIndex(documents)
-   index.save_to_disk('index.json')
-   ```
+# Save the bottlenecks to an Excel file
+bottlenecks.to_excel('/mnt/data/roc_bottlenecks.xlsx', index=False)
 
-6. **Upload and Index Handling Functions:**
-   ```python
-   def upload(file):
-       if file is None:
-           return [gr.update(value="Please upload a document first."), None]
-       text = parse_pdf(file.name)
-       return [gr.update(value="Document uploaded successfully."), text]
-
-   def ask_document(question, document_text):
-       if document_text is None:
-           return "Please upload a document first."
-       response = index.query(question, document_text)
-       return response
-   ```
-
-7. **Gradio Interface Definition:**
-   ```python
-   with gr.Blocks() as demo:
-       gr.Markdown("# Document-based Chat Application")
-
-       with gr.TabItem("Upload Document"):
-           upload_button = gr.UploadButton("Choose a PDF file", file_types=["pdf"])
-           upload_status = gr.Textbox(label="Upload Status", interactive=False)
-           document_text = gr.Textbox(label="Document Text", visible=False)
-           upload_button.upload(upload, upload_button, [upload_status, document_text])
-
-       with gr.TabItem("Ask Question"):
-           question = gr.Textbox(label="Ask a question about the document.")
-           ask_button = gr.Button("Ask")
-           answer = gr.Textbox(label="Answer", interactive=False)
-           ask_button.click(ask_document, [question, document_text], answer)
-       
-   demo.launch()
-   ```
-
-### Code Walkthrough:
-
-1. **Imports Required Libraries**:
-   - Various libraries are imported for reading PDFs, using OpenAI's models, creating and managing document indices, and building the user interface.
-
-2. **Set OpenAI API Key**:
-   - The OpenAI API key is set up for authentication to use OpenAI's services.
-
-3. **Define PDF Parsing Function**:
-   - The `parse_pdf` function reads the text from a given PDF file using `pdfplumber`.
-
-4. **LLM and Index Setup**:
-   - Several parameters for the language model and indexing are defined.
-   - A `PromptHelper` is initialized to manage inputs and outputs for the language model.
-   - A `LLMPredictor` is initialized with specified model parameters.
-
-5. **Create or Load Document Index**:
-   - Documents from a specified directory are read and indexed.
-   - The index is saved to disk for later use.
-
-6. **Define Upload and Query Functions**:
-   - `upload` handles file uploads and reads the PDF content.
-   - `ask_document` processes questions asked about the uploaded document.
-
-7. **Build Gradio Interface**:
-   - A simple interface with two tabs: one for uploading documents and one for asking questions about the uploaded document.
-   - The interface elements are defined and linked to the corresponding functions.
-
-This setup allows users to upload a PDF, parse its text, and then ask questions about the content of the PDF, which are answered using a language model.
+print("Bottlenecks saved to roc_bottlenecks.xlsx")
