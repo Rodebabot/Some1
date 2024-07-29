@@ -1,22 +1,16 @@
-import pandas as pd
+# Identify unique event IDs in the bottlenecks
+bottleneck_event_ids = df[df.apply(lambda row: (row['ROC'], row['Age Band']) in bottlenecks[['ROC', 'Age Band']].apply(tuple, axis=1).values, axis=1)]['Unique Eventid'].unique()
 
-# Load the dataset
-file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
-df = pd.read_excel(file_path)
+# Filter data for these event IDs
+bottleneck_data = df[df['Unique Eventid'].isin(bottleneck_event_ids)]
 
-# Ensure the column names are correct as per the provided screenshot
-df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
+# Analyze contributing factors
+contributing_factors = bottleneck_data.groupby(['ROC', 'Age Band', 'Legal Entity', 'Business Event', 'Product Representation'])['Days Spent'].agg(['count', 'mean']).reset_index()
 
-# Group by ROC and Age Band to calculate the average days spent
-roc_age_band_stats = df.groupby(['ROC', 'Age Band'])['Days Spent'].mean().reset_index()
+# Display contributing factors
+print(contributing_factors)
 
-# Filter ROCs where the average days spent is more than 2
-bottlenecks = roc_age_band_stats[roc_age_band_stats['Days Spent'] > 2]
+# Save the contributing factors to an Excel file
+contributing_factors.to_excel('/mnt/data/contributing_factors_analysis.xlsx', index=False)
 
-# Display the bottlenecks
-print(bottlenecks)
-
-# Save the bottlenecks to an Excel file
-bottlenecks.to_excel('/mnt/data/roc_bottlenecks.xlsx', index=False)
-
-print("Bottlenecks saved to roc_bottlenecks.xlsx")
+print("Contributing factors analysis saved to contributing_factors_analysis.xlsx")
