@@ -1,10 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error, r2_score
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # Load the dataset
 file_path = '/mnt/data/your_excel_file.xlsx'  # Replace with the actual file path
@@ -13,40 +8,65 @@ df = pd.read_excel(file_path)
 # Ensure the column names are correct as per the provided screenshot
 df.columns = ['Unique Eventid', 'Legal Entity', 'Trade ID', 'ROC', 'Age', 'Age Band', 'Counterparty Name', 'Business Event', 'Product Representation', 'Days Spent', 'Action Items']
 
-# Feature Engineering: Convert categorical columns to numerical using one-hot encoding
-df_encoded = pd.get_dummies(df, columns=['ROC', 'Age Band', 'Legal Entity', 'Counterparty Name', 'Business Event', 'Product Representation', 'Action Items'])
+# Define the threshold for good performance
+good_performance_threshold = 2  # Modify this threshold as needed
 
-# Define the features (X) and target (y)
-X = df_encoded.drop(columns=['Unique Eventid', 'Trade ID', 'Days Spent', 'Age'])
-y = df_encoded['Days Spent']
+# Calculate the average days spent per combination
+average_days_spent = df.groupby(['ROC', 'Age Band', 'Legal Entity', 'Counterparty Name', 'Business Event', 'Product Representation']).agg({'Days Spent': 'mean'}).reset_index()
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Filter for good performance
+good_performance = average_days_spent[average_days_spent['Days Spent'] < good_performance_threshold]
 
-# Train a Random Forest Regressor
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
+# Display the combinations with good performance
+print("Combinations with Good Performance:")
+print(good_performance)
 
-# Make predictions
-y_pred_train = model.predict(X_train)
-y_pred_test = model.predict(X_test)
+# Existing code for Action Item Analysis (ensure this is integrated into your Jupyter Notebook or script)
 
-# Evaluate the model
-train_mse = mean_squared_error(y_train, y_pred_train)
-test_mse = mean_squared_error(y_test, y_pred_test)
-train_r2 = r2_score(y_train, y_pred_train)
-test_r2 = r2_score(y_test, y_pred_test)
+action_items = [
+    "Technical Hold (IOF)",
+    "Technical Issue",
+    "Transaction Legal Owned",
+    "Rejected Post Review",
+    "Pending Draft",
+    "Pending Draft (Drafting)",
+    "Processing Request",
+    "Pending Action",
+    "Waiting Internal Update",
+    "Incoming client request",
+    "Incoming External Update",
+    "New Doc Update",
+    "Additional Info",
+]
 
-print(f'Train MSE: {train_mse}, Test MSE: {test_mse}')
-print(f'Train R2: {train_r2}, Test R2: {test_r2}')
+def filter_top_quarter(df, action_item):
+    filter_col = df['Action Items'].apply(lambda x: action_item in x)
+    filtered_df = df[filter_col]
+    filtered_df['Top_Quarter'] = pd.qcut(filtered_df['Days Spent'], q=4, labels=["Q1", "Q2", "Q3", "Q4"])
+    return filtered_df
 
-# Feature Importance
-feature_importances = model.feature_importances_
-features = X.columns
-importance_df = pd.DataFrame({'Feature': features, 'Importance': feature_importances}).sort_values(by='Importance', ascending=False)
+# Iterate over action items and process dataframes
+processed_dfs = []
+for item in action_items:
+    processed_df = filter_top_quarter(df, item)
+    processed_dfs.append(processed_df)
 
-# Plot Feature Importance
-plt.figure(figsize=(12, 8))
-sns.barplot(x='Importance', y='Feature', data=importance_df.head(20))
-plt.title('Top 20 Feature Importances')
-plt.show()
+# Combine all processed dataframes
+combined_df = pd.concat(processed_dfs)
+
+# Display the processed dataframes
+for idx, item in enumerate(action_items):
+    print(f"Action Item: {item}")
+    print(processed_dfs[idx].head())
+
+# Saving the data to a CSV file (if needed)
+combined_df.to_csv('processed_action_items.csv', index=False)
+
+# Integrate the 'good performance' data with action items analysis
+good_performance_action_items = combined_df[combined_df.set_index(['ROC', 'Age Band', 'Legal Entity', 'Counterparty Name', 'Business Event', 'Product Representation']).index.isin(good_performance.set_index(['ROC', 'Age Band', 'Legal Entity', 'Counterparty Name', 'Business Event', 'Product Representation']).index)]
+
+print("Good Performance Action Items:")
+print(good_performance_action_items.head())
+
+# Save good performance action items to CSV (if needed)
+good_performance_action_items.to_csv('good_performance_action_items.csv', index=False)
