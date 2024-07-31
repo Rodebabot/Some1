@@ -43,9 +43,21 @@ result['Group'] = result.apply(define_group, axis=1)
 owner_mapping = df[['ROC', 'Owner']].drop_duplicates()
 result = pd.merge(result, owner_mapping, on='ROC')
 
+# Calculate the number of unique EventIds that have touched each ROC at least once in different age bands
+unique_eventids = df.groupby('ROC')['Unique EventId'].nunique().reset_index()
+unique_eventids.columns = ['ROC', 'Unique EventIds Count']
+
+# Tag ROC based on the popularity (high or low)
+threshold_eventids = unique_eventids['Unique EventIds Count'].median()
+unique_eventids['Popularity Tag'] = unique_eventids['Unique EventIds Count'].apply(lambda x: 'High' if x > threshold_eventids else 'Low')
+
+# Merge the unique EventIds count and popularity tag with the result DataFrame
+final_result = pd.merge(result, unique_eventids, on='ROC')
+
 # Select and reorder the columns
-final_result = result[['ROC', 'Average Days Spent', 'Volatility (Coefficient of Variation)', 'Average Tag', 'Volatility Tag', 'Group', 'Owner']]
+final_result = final_result[['ROC', 'Average Days Spent', 'Volatility (Coefficient of Variation)', 'Average Tag', 'Volatility Tag', 'Group', 'Owner', 'Unique EventIds Count', 'Popularity Tag']]
 
 # Save the result to a new Excel file
-final_result.to_excel('ROC_analysis_with_groups_median.xlsx', index=False)
-print("ROC analysis with groups has been saved to 'ROC_analysis_with_groups_median.xlsx'")
+final_result.to_excel('ROC_analysis_with_groups_and_popularity.xlsx', index=False)
+print("ROC analysis with groups and popularity has been saved to 'ROC_analysis_with_groups_and_popularity.xlsx'")
+``
