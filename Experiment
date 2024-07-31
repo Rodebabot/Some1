@@ -1,56 +1,21 @@
-Certainly, here’s a more detailed and technical timeline for your project:
+import pandas as pd
 
-### Phase 1: Planning and Setup (July 30 - August 2)
-- **Day 1 (July 30)**:
-  - **Project Scope and Objectives**: Define the specific goals, success criteria, and constraints.
-  - **Environment Setup**: Install Python, Jupyter Notebook, Pandas, PyPDF2, and other necessary libraries.
+def clean_roc_column(df):
+  """Cleans the 'ROC' column in a DataFrame by converting to lowercase and removing special characters and spaces.
 
-- **Day 2 (July 31)**:
-  - **Data Collection**: Gather initial PDF and Excel datasets.
-  - **Data Preparation**: Preprocess and clean the datasets for consistency.
+  Args:
+    df: The DataFrame containing the 'ROC' column.
 
-### Phase 2: PDF Reading AI Development (August 3 - August 8)
-- **Day 3-4 (August 3-4)**:
-  - **PDF Parsing Module**: Develop and test the module to extract text and metadata from PDFs using PyPDF2 or pdfplumber.
+  Returns:
+    The DataFrame with the cleaned 'ROC' column.
+  """
 
-- **Day 5-6 (August 5-6)**:
-  - **Natural Language Processing (NLP)**: Implement NLP techniques to process extracted text (e.g., tokenization, stopword removal) using NLTK or SpaCy.
+  df['ROC'] = df['ROC'].str.lower().str.replace(r'[^a-z]', '', regex=True)
+  return df
 
-- **Day 7-8 (August 7-8)**:
-  - **Question-Answer System**: Build and integrate a QA system using pre-trained models like BERT or GPT-3 to answer questions based on extracted PDF content.
+# Example usage:
+data = {'ROC': ['ABC_123', 'def ghi', 'XYZ !@#$']}
+df = pd.DataFrame(data)
 
-### Phase 3: Excel Reading and Data Integration (August 9 - August 14)
-- **Day 9-10 (August 9-10)**:
-  - **Excel Parsing Module**: Develop and test the module to read and parse Excel files using Pandas.
-
-- **Day 11-12 (August 11-12)**:
-  - **Data Integration**: Integrate Excel and PDF data, ensuring a unified data structure.
-
-- **Day 13-14 (August 13-14)**:
-  - **Data Cleaning and Transformation**: Implement functions to clean and transform the integrated dataset.
-
-### Phase 4: Agent-Based System Development (August 15 - August 20)
-- **Day 15-16 (August 15-16)**:
-  - **Agent Framework Setup**: Define the architecture and set up the framework for creating multiple agents (e.g., Dask or Celery for parallel processing).
-
-- **Day 17-18 (August 17-18)**:
-  - **Agent Implementation**: Develop individual agents for specific tasks like data extraction, cleaning, transformation, and analysis.
-
-- **Day 19-20 (August 19-20)**:
-  - **Agent Coordination**: Implement coordination mechanisms for agents to communicate and share data.
-
-### Phase 5: Data Analytics and Insights (August 21 - August 24)
-- **Day 21-22 (August 21-22)**:
-  - **Exploratory Data Analysis (EDA)**: Perform EDA using Pandas and Matplotlib/Seaborn to identify patterns and insights.
-
-- **Day 23-24 (August 23-24)**:
-  - **Advanced Analytics**: Implement advanced data analytics techniques (e.g., clustering, regression) using Scikit-learn.
-
-### Phase 6: Testing, Validation, and Deployment (August 25 - August 26)
-- **Day 25 (August 25)**:
-  - **Testing and Validation**: Perform extensive testing and validation of the entire system, including unit tests and integration tests.
-
-- **Day 26 (August 26)**:
-  - **Deployment**: Deploy the system on a server or cloud platform. Prepare documentation and user guides.
-
-This detailed technical timeline should help you systematically approach the development of your AI project.
+cleaned_df = clean_roc_column(df)
+print(cleaned_df)
