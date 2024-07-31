@@ -1,63 +1,25 @@
 import pandas as pd
 
-# Load the Excel file
-file_path = 'path_to_your_file.xlsx'  # Replace with the actual file path
+# Load the newly created dataset
+file_path = 'ROC_analysis_with_groups_and_popularity.xlsx'  # Replace with the actual file path
 df = pd.read_excel(file_path)
 
-# Calculate average days spent in each ROC
-average_days = df.groupby('ROC')['Days Spent'].mean().reset_index()
-average_days.columns = ['ROC', 'Average Days Spent']
+# Define the tagging logic
+def assign_tag(row):
+    if row['Group'] == 'Consistently Bad' and row['Popularity Tag'] == 'High':
+        if row['Owner'] == 'External Dependency':
+            return 1
+        elif row['Owner'] == 'Internal Dependency':
+            return 2
+        elif row['Owner'] == 'Ops Action':
+            return 3
+    elif row['Group'] == 'Sometimes Bad' and row['Popularity Tag'] == 'High':
+        return 4
+    return None
 
-# Calculate the volatility of days spent in each ROC (Coefficient of Variation)
-volatility = df.groupby('ROC')['Days Spent'].std() / df.groupby('ROC')['Days Spent'].mean()
-volatility = volatility.reset_index()
-volatility.columns = ['ROC', 'Volatility (Coefficient of Variation)']
+# Apply the tagging logic to the dataframe
+df['Tag'] = df.apply(assign_tag, axis=1)
 
-# Merge average days and volatility
-result = pd.merge(average_days, volatility, on='ROC')
-
-# Define thresholds using median
-threshold_avg = result['Average Days Spent'].median()
-threshold_vol = result['Volatility (Coefficient of Variation)'].median()
-
-# Tag each ROC based on average days spent (bad if high, good if low)
-result['Average Tag'] = result['Average Days Spent'].apply(lambda x: 'Bad' if x > threshold_avg else 'Good')
-
-# Tag each ROC based on volatility (high means inconsistent, low means consistent)
-result['Volatility Tag'] = result['Volatility (Coefficient of Variation)'].apply(lambda x: 'Consistent' if x < threshold_vol else 'Inconsistent')
-
-# Define the final group based on the combinations of average and volatility tags
-def define_group(row):
-    if row['Average Tag'] == 'Good' and row['Volatility Tag'] == 'Consistent':
-        return 'Consistently Good'
-    elif row['Average Tag'] == 'Bad' and row['Volatility Tag'] == 'Consistent':
-        return 'Consistently Bad'
-    elif row['Average Tag'] == 'Good' and row['Volatility Tag'] == 'Inconsistent':
-        return 'Sometimes Good'
-    elif row['Average Tag'] == 'Bad' and row['Volatility Tag'] == 'Inconsistent':
-        return 'Sometimes Bad'
-
-result['Group'] = result.apply(define_group, axis=1)
-
-# Map the owner corresponding to each ROC
-owner_mapping = df[['ROC', 'Owner']].drop_duplicates()
-result = pd.merge(result, owner_mapping, on='ROC')
-
-# Calculate the number of unique EventIds that have touched each ROC at least once in different age bands
-unique_eventids = df.groupby('ROC')['Unique EventId'].nunique().reset_index()
-unique_eventids.columns = ['ROC', 'Unique EventIds Count']
-
-# Tag ROC based on the popularity (high or low)
-threshold_eventids = unique_eventids['Unique EventIds Count'].median()
-unique_eventids['Popularity Tag'] = unique_eventids['Unique EventIds Count'].apply(lambda x: 'High' if x > threshold_eventids else 'Low')
-
-# Merge the unique EventIds count and popularity tag with the result DataFrame
-final_result = pd.merge(result, unique_eventids, on='ROC')
-
-# Select and reorder the columns
-final_result = final_result[['ROC', 'Average Days Spent', 'Volatility (Coefficient of Variation)', 'Average Tag', 'Volatility Tag', 'Group', 'Owner', 'Unique EventIds Count', 'Popularity Tag']]
-
-# Save the result to a new Excel file
-final_result.to_excel('ROC_analysis_with_groups_and_popularity.xlsx', index=False)
-print("ROC analysis with groups and popularity has been saved to 'ROC_analysis_with_groups_and_popularity.xlsx'")
-``
+# Save the updated dataframe to a new Excel file
+df.to_excel('ROC_analysis_with_custom_tags.xlsx', index=False)
+print("ROC analysis with custom tags has been saved to 'ROC_analysis_with_custom_tags.xlsx'")
