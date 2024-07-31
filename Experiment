@@ -1,22 +1,19 @@
 import pandas as pd
 
-# Load the initial dataset and the tagged dataset
+# Load the initial dataset and the dff1 dataset
 initial_file_path = 'path_to_your_initial_file.xlsx'  # Replace with the actual file path of your initial dataset
-tagged_file_path = 'ROC_analysis_with_custom_tags.xlsx'  # Replace with the path of the tagged dataset
+dff1_file_path = 'path_to_your_dff1_file.xlsx'  # Replace with the actual file path of your dff1 dataset
 
 # Read the datasets
 initial_df = pd.read_excel(initial_file_path)
-tagged_df = pd.read_excel(tagged_file_path)
+dff1 = pd.read_excel(dff1_file_path)
 
-# Filter the tagged dataset to keep only rows with tags 1, 2, 3, or 4
-filtered_tags = tagged_df[tagged_df['Tag'].isin([1, 2, 3, 4])]
+# Extract the relevant ROC values from dff1
+relevant_rocs = dff1['ROC'].unique()
 
-# Get the unique ROCs that have been tagged with 1, 2, 3, or 4
-relevant_rocs = filtered_tags['ROC'].unique()
-
-# Filter the initial dataset to keep only the relevant ROCs
+# Filter the initial dataset to keep only the rows with relevant ROCs
 filtered_initial_df = initial_df[initial_df['ROC'].isin(relevant_rocs)]
 
 # Save the filtered initial dataset to a new Excel file
-filtered_initial_df.to_excel('filtered_initial_dataset_with_relevant_rocs.xlsx', index=False)
-print("Filtered initial dataset with relevant ROCs has been saved to 'filtered_initial_dataset_with_relevant_rocs.xlsx'")
+filtered_initial_df.to_excel('filtered_initial_dataset_based_on_dff1.xlsx', index=False)
+print("Filtered initial dataset based on dff1 ROCs has been saved to 'filtered_initial_dataset_based_on_dff1.xlsx'")
