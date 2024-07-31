@@ -1,21 +1,33 @@
 import pandas as pd
 
-def clean_roc_column(df):
-  """Cleans the 'ROC' column in a DataFrame by converting to lowercase and removing special characters and spaces.
+# Load the Excel file
+file_path = 'path_to_your_file.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
 
-  Args:
-    df: The DataFrame containing the 'ROC' column.
+# Calculate average days spent in each ROC
+average_days = df.groupby('ROC')['Days Spent'].mean().reset_index()
+average_days.columns = ['ROC', 'Average Days Spent']
 
-  Returns:
-    The DataFrame with the cleaned 'ROC' column.
-  """
+# Calculate the volatility of days spent in each ROC (Coefficient of Variation)
+volatility = df.groupby('ROC')['Days Spent'].std() / df.groupby('ROC')['Days Spent'].mean()
+volatility = volatility.reset_index()
+volatility.columns = ['ROC', 'Volatility (Coefficient of Variation)']
 
-  df['ROC'] = df['ROC'].str.lower().str.replace(r'[^a-z]', '', regex=True)
-  return df
+# Merge average days and volatility
+result = pd.merge(average_days, volatility, on='ROC')
 
-# Example usage:
-data = {'ROC': ['ABC_123', 'def ghi', 'XYZ !@#$']}
-df = pd.DataFrame(data)
+# Tag each ROC based on average days spent (high or low)
+threshold_avg = result['Average Days Spent'].mean()
+result['Average Tag'] = result['Average Days Spent'].apply(lambda x: 'High' if x > threshold_avg else 'Low')
 
-cleaned_df = clean_roc_column(df)
-print(cleaned_df)
+# Tag each ROC based on volatility (high or low)
+threshold_vol = result['Volatility (Coefficient of Variation)'].mean()
+result['Volatility Tag'] = result['Volatility (Coefficient of Variation)'].apply(lambda x: 'High' if x > threshold_vol else 'Low')
+
+# Map the owner corresponding to each ROC
+owner_mapping = df[['ROC', 'Owner']].drop_duplicates()
+result = pd.merge(result, owner_mapping, on='ROC')
+
+# Save the result to a new Excel file
+result.to_excel('ROC_analysis.xlsx', index=False)
+print("ROC analysis has been saved to 'ROC_analysis.xlsx'")
