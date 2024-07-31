@@ -13,7 +13,7 @@ def assign_tag(row):
             return 2
         elif row['Owner'] == 'Ops Action':
             return 3
-    elif row['Group'] == 'Sometimes Bad' and row['Popularity Tag'] == 'High':
+    elif row['Popularity Tag'] == 'High' and (row['Group'] == 'Sometimes Bad' or row['Group'] == 'Sometimes Good'):
         return 4
     return None
 
