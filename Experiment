@@ -11,9 +11,12 @@ tagged_df = pd.read_excel(tagged_file_path)
 # Filter the tagged dataset to keep only rows with tags 1, 2, 3, or 4
 filtered_tags = tagged_df[tagged_df['Tag'].isin([1, 2, 3, 4])]
 
-# Merge the initial dataset with the filtered tags based on ROC to keep the relevant rows
-filtered_initial_df = initial_df[initial_df['ROC'].isin(filtered_tags['ROC'])]
+# Get the unique ROCs that have been tagged with 1, 2, 3, or 4
+relevant_rocs = filtered_tags['ROC'].unique()
+
+# Filter the initial dataset to keep only the relevant ROCs
+filtered_initial_df = initial_df[initial_df['ROC'].isin(relevant_rocs)]
 
 # Save the filtered initial dataset to a new Excel file
-filtered_initial_df.to_excel('filtered_initial_dataset_with_tags.xlsx', index=False)
-print("Filtered initial dataset with relevant ROCs has been saved to 'filtered_initial_dataset_with_tags.xlsx'")
+filtered_initial_df.to_excel('filtered_initial_dataset_with_relevant_rocs.xlsx', index=False)
+print("Filtered initial dataset with relevant ROCs has been saved to 'filtered_initial_dataset_with_relevant_rocs.xlsx'")
