@@ -1,25 +1,19 @@
 import pandas as pd
 
-# Load the newly created dataset
-file_path = 'ROC_analysis_with_groups_and_popularity.xlsx'  # Replace with the actual file path
-df = pd.read_excel(file_path)
+# Load the initial dataset and the tagged dataset
+initial_file_path = 'path_to_your_initial_file.xlsx'  # Replace with the actual file path of your initial dataset
+tagged_file_path = 'ROC_analysis_with_custom_tags.xlsx'  # Replace with the path of the tagged dataset
 
-# Define the tagging logic
-def assign_tag(row):
-    if row['Group'] == 'Consistently Bad' and row['Popularity Tag'] == 'High':
-        if row['Owner'] == 'External Dependency':
-            return 1
-        elif row['Owner'] == 'Internal Dependency':
-            return 2
-        elif row['Owner'] == 'Ops Action':
-            return 3
-    elif row['Popularity Tag'] == 'High' and (row['Group'] == 'Sometimes Bad' or row['Group'] == 'Sometimes Good'):
-        return 4
-    return None
+# Read the datasets
+initial_df = pd.read_excel(initial_file_path)
+tagged_df = pd.read_excel(tagged_file_path)
 
-# Apply the tagging logic to the dataframe
-df['Tag'] = df.apply(assign_tag, axis=1)
+# Filter the tagged dataset to keep only rows with tags 1, 2, 3, or 4
+filtered_tags = tagged_df[tagged_df['Tag'].isin([1, 2, 3, 4])]
 
-# Save the updated dataframe to a new Excel file
-df.to_excel('ROC_analysis_with_custom_tags.xlsx', index=False)
-print("ROC analysis with custom tags has been saved to 'ROC_analysis_with_custom_tags.xlsx'")
+# Merge the initial dataset with the filtered tags based on ROC to keep the relevant rows
+filtered_initial_df = initial_df[initial_df['ROC'].isin(filtered_tags['ROC'])]
+
+# Save the filtered initial dataset to a new Excel file
+filtered_initial_df.to_excel('filtered_initial_dataset_with_tags.xlsx', index=False)
+print("Filtered initial dataset with relevant ROCs has been saved to 'filtered_initial_dataset_with_tags.xlsx'")
