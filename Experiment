@@ -1,19 +1,24 @@
 import pandas as pd
+import numpy as np
 
-# Load the initial dataset and the dff1 dataset
-initial_file_path = 'path_to_your_initial_file.xlsx'  # Replace with the actual file path of your initial dataset
-dff1_file_path = 'path_to_your_dff1_file.xlsx'  # Replace with the actual file path of your dff1 dataset
+# Assuming 'action' is your DataFrame
 
-# Read the datasets
-initial_df = pd.read_excel(initial_file_path)
-dff1 = pd.read_excel(dff1_file_path)
+# Group by Counterparty Name and ROC, then calculate the median of Days Spent
+median_days = action.groupby(['Counterparty Name', 'ROC'])['Days Spent'].median().reset_index()
 
-# Extract the relevant ROC values from dff1
-relevant_rocs = dff1['ROC'].unique()
+# Pivot the table to have ROCs as columns
+pivot_table = median_days.pivot(index='Counterparty Name', columns='ROC', values='Days Spent').reset_index()
 
-# Filter the initial dataset to keep only the rows with relevant ROCs
-filtered_initial_df = initial_df[initial_df['ROC'].isin(relevant_rocs)]
+# Highlight the top 3 median values for each Counterparty Name
+def highlight_top3(s):
+    is_top3 = s.nlargest(3).isin(s)
+    return ['background-color: yellow' if v else '' for v in is_top3]
 
-# Save the filtered initial dataset to a new Excel file
-filtered_initial_df.to_excel('filtered_initial_dataset_based_on_dff1.xlsx', index=False)
-print("Filtered initial dataset based on dff1 ROCs has been saved to 'filtered_initial_dataset_based_on_dff1.xlsx'")
+highlighted_table = pivot_table.style.apply(highlight_top3, axis=1)
+
+# Save to CSV
+pivot_table.to_csv('/mnt/data/median_days_per_counterparty.csv', index=False)
+
+highlighted_table.to_excel('/mnt/data/median_days_per_counterparty_highlighted.xlsx', index=False)
+
+highlighted_table
