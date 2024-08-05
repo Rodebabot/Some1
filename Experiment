@@ -2,11 +2,9 @@ import pandas as pd
 
 # List of specified ROCs
 specified_rocs = [
-    'awaiting2ndcheck', 'awaiting2ndchecknomuradocument', 'awaiting2ndchecksuppression', 
-    'awaitingpowaidrafting', 'awaitingradarapapproval', 'cancelled', 'counterpartytoaction', 
-    'cptytoactioneconomicbreak', 'cptytoactiontemplatenegotiation', 'expired', 
-    'queriedwithlegal', 'queriedwithmofo', 'revisionrequired', 'suppressionverified', 
-    'transactionlegalowned', 'unactioned'
+    'counterpartytoaction', 
+    'cptytoactioneconomicbreak', 
+    'cptytoactiontemplatenegotiation'
 ]
 
 # Ensure 'Days Spent' column is numeric
@@ -15,18 +13,18 @@ action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
 # Filter the dataframe to include only the specified ROCs
 filtered_action = action[action['ROC'].isin(specified_rocs)]
 
-# Group by Counterparty Name and ROC, then calculate the median of Days Spent
-median_days = filtered_action.groupby(['Counterparty Name', 'ROC'])['Days Spent'].median().reset_index()
+# Group by Counterparty Name, ROC, Business Event, and Product Representation, then calculate the median of Days Spent
+median_days = filtered_action.groupby(['Counterparty Name', 'ROC', 'Business Event', 'Product Representation'])['Days Spent'].median().reset_index()
 
-# For each specified ROC, find the top 20 counterparties with the highest median Days Spent
-top_20_per_roc = pd.DataFrame()
+# For each specified ROC, find the top 30 counterparties with the highest median Days Spent
+top_30_per_roc = pd.DataFrame()
 
 for roc in specified_rocs:
-    top_20 = median_days[median_days['ROC'] == roc].nlargest(20, 'Days Spent')
-    top_20['Rank'] = top_20['Days Spent'].rank(ascending=False)
-    top_20_per_roc = pd.concat([top_20_per_roc, top_20])
+    top_30 = median_days[median_days['ROC'] == roc].nlargest(30, 'Days Spent')
+    top_30['Rank'] = top_30['Days Spent'].rank(ascending=False)
+    top_30_per_roc = pd.concat([top_30_per_roc, top_30])
 
 # Save to CSV
-top_20_per_roc.to_csv('/mnt/data/top_20_counterparties_per_roc.csv', index=False)
+top_30_per_roc.to_csv('/mnt/data/top_30_counterparties_per_roc.csv', index=False)
 
-top_20_per_roc
+top_30_per_roc
