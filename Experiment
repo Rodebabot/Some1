@@ -1,4 +1,6 @@
 import pandas as pd
+from collections import Counter
+import re
 
 # List of specified ROCs
 specified_rocs = [
@@ -24,7 +26,36 @@ for roc in specified_rocs:
     top_30['Rank'] = top_30['Days Spent'].rank(ascending=False)
     top_30_per_roc = pd.concat([top_30_per_roc, top_30])
 
-# Save to CSV
-top_30_per_roc.to_csv('/mnt/data/top_30_counterparties_per_roc.csv', index=False)
+# Analyze the Latest Confirmation Status Comment for the top 30 counterparties per ROC
+def clean_text(text):
+    # Remove special characters, numbers, and extra spaces
+    text = re.sub(r'[^A-Za-z\s]', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
-top_30_per_roc
+comments_analysis = {}
+
+for roc in specified_rocs:
+    comments = filtered_action[filtered_action['ROC'] == roc]
+    top_30_counterparties = top_30_per_roc[top_30_per_roc['ROC'] == roc]['Counterparty Name'].unique()
+    relevant_comments = comments[comments['Counterparty Name'].isin(top_30_counterparties)]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
+    words = ' '.join(relevant_comments).split()
+    most_common_words = Counter(words).most_common(10)  # Change 10 to any number to get more frequent words
+    comments_analysis[roc] = most_common_words
+
+# Print the results
+for roc, words in comments_analysis.items():
+    print(f"Top words/phrases for ROC {roc}:")
+    for word, count in words:
+        print(f"{word}: {count}")
+    print("\n")
+
+# Save the results to a CSV file
+results = []
+
+for roc, words in comments_analysis.items():
+    for word, count in words:
+        results.append({'ROC': roc, 'Word/Phrase': word, 'Count': count})
+
+results_df = pd.DataFrame(results)
+results_df.to_csv('/mnt/data/comments_analysis_per_roc.csv', index=False)
