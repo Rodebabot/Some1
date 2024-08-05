@@ -48,8 +48,9 @@ for roc in specified_rocs:
         relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
         all_phrases = []
         for comment in relevant_comments:
-            all_phrases.extend(get_ngrams(comment, 2))  # Extracting bi-grams; change to 3 for tri-grams
-            all_phrases.extend(get_ngrams(comment, 3))
+            all_phrases.extend(get_ngrams(comment, 4))  # Extracting 4-grams
+            all_phrases.extend(get_ngrams(comment, 5))  # Extracting 5-grams
+            all_phrases.extend(get_ngrams(comment, 6))  # Extracting 6-grams
         common_phrases = Counter(all_phrases).most_common(10)  # Change 10 to any number to get more frequent phrases
         if roc not in comments_analysis:
             comments_analysis[roc] = {}
@@ -72,4 +73,4 @@ for roc, counterparty_phrases in comments_analysis.items():
             results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': phrase, 'Count': count})
 
 results_df = pd.DataFrame(results)
-results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv', index=False)
+results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv',
