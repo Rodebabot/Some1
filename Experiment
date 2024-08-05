@@ -49,34 +49,42 @@ for roc in specified_rocs:
     comments = filtered_action[filtered_action['ROC'] == roc]
     top_30_counterparties = top_30_per_roc[top_30_per_roc['ROC'] == roc]['Counterparty Name'].unique()
     for counterparty in top_30_counterparties:
-        relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
+        relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna()
+        all_sentences = []
         all_phrases = []
         for comment in relevant_comments:
             sentences = extract_sentences(comment)
             for sentence in sentences:
-                all_phrases.extend(get_ngrams(sentence, 4))  # Extracting 4-grams
-                all_phrases.extend(get_ngrams(sentence, 5))  # Extracting 5-grams
-                all_phrases.extend(get_ngrams(sentence, 6))  # Extracting 6-grams
-        common_phrases = Counter(all_phrases).most_common(10)  # Change 10 to any number to get more frequent phrases
-        if roc not in comments_analysis:
-            comments_analysis[roc] = {}
-        comments_analysis[roc][counterparty] = common_phrases
+                cleaned_sentence = clean_text(sentence)
+                sentence_ngrams = get_ngrams(cleaned_sentence, 4) + get_ngrams(cleaned_sentence, 5) + get_ngrams(cleaned_sentence, 6)
+                all_sentences.append({'Sentence': sentence, 'Cleaned Sentence': cleaned_sentence})
+                all_phrases.extend(sentence_ngrams)
+        phrase_counts = Counter(all_phrases).most_common(10)
+        for phrase, count in phrase_counts:
+            relevant_sentences = [sentence for sentence in all_sentences if phrase in sentence['Cleaned Sentence']]
+            if roc not in comments_analysis:
+                comments_analysis[roc] = {}
+            if counterparty not in comments_analysis[roc]:
+                comments_analysis[roc][counterparty] = []
+            for sentence in relevant_sentences:
+                comments_analysis[roc][counterparty].append({'Phrase': phrase, 'Count': count, 'Sentence': sentence['Sentence']})
 
 # Print the results
-for roc, counterparty_phrases in comments_analysis.items():
+for roc, counterparty_sentences in comments_analysis.items():
     print(f"Top phrases for ROC {roc}:")
-    for counterparty, phrases in counterparty_phrases.items():
+    for counterparty, entries in counterparty_sentences.items():
         print(f"\nCounterparty: {counterparty}")
-        for phrase, count in phrases:
-            print(f"{phrase}: {count}")
+        for entry in entries:
+            print(f"Phrase: {entry['Phrase']}, Count: {entry['Count']}")
+            print(f"Sentence: {entry['Sentence']}")
 
 # Save the results to a CSV file
 results = []
 
-for roc, counterparty_phrases in comments_analysis.items():
-    for counterparty, phrases in counterparty_phrases.items():
-        for phrase, count in phrases:
-            results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': phrase, 'Count': count})
+for roc, counterparty_sentences in comments_analysis.items():
+    for counterparty, entries in counterparty_sentences.items():
+        for entry in entries:
+            results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': entry['Phrase'], 'Count': entry['Count'], 'Sentence': entry['Sentence']})
 
 results_df = pd.DataFrame(results)
-results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv', index=False)
+results_df.to_csv('/mnt/data/comments_analysis_sentences_per_roc.csv', index=False)
