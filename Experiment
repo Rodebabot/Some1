@@ -1,6 +1,10 @@
 import pandas as pd
 from collections import Counter
 import re
+from nltk.util import ngrams
+
+# Ensure 'Days Spent' column is numeric
+action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
 
 # List of specified ROCs
 specified_rocs = [
@@ -8,9 +12,6 @@ specified_rocs = [
     'cptytoactioneconomicbreak', 
     'cptytoactiontemplatenegotiation'
 ]
-
-# Ensure 'Days Spent' column is numeric
-action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
 
 # Filter the dataframe to include only the specified ROCs
 filtered_action = action[action['ROC'].isin(specified_rocs)]
@@ -33,29 +34,42 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+def get_ngrams(text, n):
+    words = text.split()
+    n_grams = ngrams(words, n)
+    return [' '.join(gram) for gram in n_grams]
+
 comments_analysis = {}
 
 for roc in specified_rocs:
     comments = filtered_action[filtered_action['ROC'] == roc]
     top_30_counterparties = top_30_per_roc[top_30_per_roc['ROC'] == roc]['Counterparty Name'].unique()
-    relevant_comments = comments[comments['Counterparty Name'].isin(top_30_counterparties)]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
-    words = ' '.join(relevant_comments).split()
-    most_common_words = Counter(words).most_common(10)  # Change 10 to any number to get more frequent words
-    comments_analysis[roc] = most_common_words
+    for counterparty in top_30_counterparties:
+        relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
+        all_phrases = []
+        for comment in relevant_comments:
+            all_phrases.extend(get_ngrams(comment, 2))  # Extracting bi-grams; change to 3 for tri-grams
+            all_phrases.extend(get_ngrams(comment, 3))
+        common_phrases = Counter(all_phrases).most_common(10)  # Change 10 to any number to get more frequent phrases
+        if roc not in comments_analysis:
+            comments_analysis[roc] = {}
+        comments_analysis[roc][counterparty] = common_phrases
 
 # Print the results
-for roc, words in comments_analysis.items():
-    print(f"Top words/phrases for ROC {roc}:")
-    for word, count in words:
-        print(f"{word}: {count}")
-    print("\n")
+for roc, counterparty_phrases in comments_analysis.items():
+    print(f"Top phrases for ROC {roc}:")
+    for counterparty, phrases in counterparty_phrases.items():
+        print(f"\nCounterparty: {counterparty}")
+        for phrase, count in phrases:
+            print(f"{phrase}: {count}")
 
 # Save the results to a CSV file
 results = []
 
-for roc, words in comments_analysis.items():
-    for word, count in words:
-        results.append({'ROC': roc, 'Word/Phrase': word, 'Count': count})
+for roc, counterparty_phrases in comments_analysis.items():
+    for counterparty, phrases in counterparty_phrases.items():
+        for phrase, count in phrases:
+            results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': phrase, 'Count': count})
 
 results_df = pd.DataFrame(results)
-results_df.to_csv('/mnt/data/comments_analysis_per_roc.csv', index=False)
+results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv', index=False)
