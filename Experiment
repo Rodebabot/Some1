@@ -2,6 +2,7 @@ import pandas as pd
 from collections import Counter
 import re
 from nltk.util import ngrams
+from nltk.tokenize import sent_tokenize
 
 # Ensure 'Days Spent' column is numeric
 action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
@@ -34,6 +35,9 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+def extract_sentences(text):
+    return sent_tokenize(text)
+
 def get_ngrams(text, n):
     words = text.split()
     n_grams = ngrams(words, n)
@@ -48,9 +52,11 @@ for roc in specified_rocs:
         relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna().apply(clean_text)
         all_phrases = []
         for comment in relevant_comments:
-            all_phrases.extend(get_ngrams(comment, 4))  # Extracting 4-grams
-            all_phrases.extend(get_ngrams(comment, 5))  # Extracting 5-grams
-            all_phrases.extend(get_ngrams(comment, 6))  # Extracting 6-grams
+            sentences = extract_sentences(comment)
+            for sentence in sentences:
+                all_phrases.extend(get_ngrams(sentence, 4))  # Extracting 4-grams
+                all_phrases.extend(get_ngrams(sentence, 5))  # Extracting 5-grams
+                all_phrases.extend(get_ngrams(sentence, 6))  # Extracting 6-grams
         common_phrases = Counter(all_phrases).most_common(10)  # Change 10 to any number to get more frequent phrases
         if roc not in comments_analysis:
             comments_analysis[roc] = {}
@@ -73,4 +79,4 @@ for roc, counterparty_phrases in comments_analysis.items():
             results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': phrase, 'Count': count})
 
 results_df = pd.DataFrame(results)
-results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv',
+results_df.to_csv('/mnt/data/comments_analysis_phrases_per_roc.csv', index=False)
