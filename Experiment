@@ -1,90 +1,15 @@
-import pandas as pd
-from collections import Counter
-import re
-from nltk.util import ngrams
-from nltk.tokenize import sent_tokenize
+**Subject: Python Code Implementation Complete - Request for Sign-off**
 
-# Ensure 'Days Spent' column is numeric
-action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
+Dear [Recipient Name],
 
-# List of specified ROCs
-specified_rocs = [
-    'counterpartytoaction', 
-    'cptytoactioneconomicbreak', 
-    'cptytoactiontemplatenegotiation'
-]
+I am writing to inform you that the Python code for [project/task name] has been successfully implemented and is now in production. 
 
-# Filter the dataframe to include only the specified ROCs
-filtered_action = action[action['ROC'].isin(specified_rocs)]
+All the required functionalities have been integrated, and the code is performing as expected. Please review the implementation and provide your sign-off to officially close this task.
 
-# Group by Counterparty Name, ROC, Business Event, and Product Representation, then calculate the median of Days Spent
-median_days = filtered_action.groupby(['Counterparty Name', 'ROC', 'Business Event', 'Product Representation'])['Days Spent'].median().reset_index()
+I am available to address any questions or concerns you may have.
 
-# For each specified ROC, find the top 30 counterparties with the highest median Days Spent
-top_30_per_roc = pd.DataFrame()
+Thank you for your time and attention to this matter.
 
-for roc in specified_rocs:
-    top_30 = median_days[median_days['ROC'] == roc].nlargest(30, 'Days Spent')
-    top_30['Rank'] = top_30['Days Spent'].rank(ascending=False)
-    top_30_per_roc = pd.concat([top_30_per_roc, top_30])
-
-# Analyze the Latest Confirmation Status Comment for the top 30 counterparties per ROC
-def clean_text(text):
-    # Remove special characters, numbers, and extra spaces
-    text = re.sub(r'[^A-Za-z\s]', '', text)
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
-
-def extract_sentences(text):
-    return sent_tokenize(text)
-
-def get_ngrams(text, n):
-    words = text.split()
-    n_grams = ngrams(words, n)
-    return [' '.join(gram) for gram in n_grams]
-
-comments_analysis = {}
-
-for roc in specified_rocs:
-    comments = filtered_action[filtered_action['ROC'] == roc]
-    top_30_counterparties = top_30_per_roc[top_30_per_roc['ROC'] == roc]['Counterparty Name'].unique()
-    for counterparty in top_30_counterparties:
-        relevant_comments = comments[comments['Counterparty Name'] == counterparty]['Latest Confirmation Status Comment'].dropna()
-        all_sentences = []
-        all_phrases = []
-        for comment in relevant_comments:
-            sentences = extract_sentences(comment)
-            for sentence in sentences:
-                cleaned_sentence = clean_text(sentence)
-                sentence_ngrams = get_ngrams(cleaned_sentence, 4) + get_ngrams(cleaned_sentence, 5) + get_ngrams(cleaned_sentence, 6)
-                all_sentences.append({'Sentence': sentence, 'Cleaned Sentence': cleaned_sentence})
-                all_phrases.extend(sentence_ngrams)
-        phrase_counts = Counter(all_phrases).most_common(10)
-        for phrase, count in phrase_counts:
-            relevant_sentences = [sentence for sentence in all_sentences if phrase in sentence['Cleaned Sentence']]
-            if roc not in comments_analysis:
-                comments_analysis[roc] = {}
-            if counterparty not in comments_analysis[roc]:
-                comments_analysis[roc][counterparty] = []
-            for sentence in relevant_sentences:
-                comments_analysis[roc][counterparty].append({'Phrase': phrase, 'Count': count, 'Sentence': sentence['Sentence']})
-
-# Print the results
-for roc, counterparty_sentences in comments_analysis.items():
-    print(f"Top phrases for ROC {roc}:")
-    for counterparty, entries in counterparty_sentences.items():
-        print(f"\nCounterparty: {counterparty}")
-        for entry in entries:
-            print(f"Phrase: {entry['Phrase']}, Count: {entry['Count']}")
-            print(f"Sentence: {entry['Sentence']}")
-
-# Save the results to a CSV file
-results = []
-
-for roc, counterparty_sentences in comments_analysis.items():
-    for counterparty, entries in counterparty_sentences.items():
-        for entry in entries:
-            results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': entry['Phrase'], 'Count': entry['Count'], 'Sentence': entry['Sentence']})
-
-results_df = pd.DataFrame(results)
-results_df.to_csv('/mnt/data/comments_analysis_sentences_per_roc.csv', index=False)
+Sincerely,
+[Your Name]
+[Your Position]
