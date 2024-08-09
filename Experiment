@@ -1,42 +1,92 @@
-### Analysis Flow
+import pandas as pd
+from collections import Counter
+import re
+from nltk.util import ngrams
 
-1. **Data Preparation and Cleaning**
-   - **Initial Data Loading**: The dataset was loaded, ensuring that all relevant columns were correctly formatted, particularly ensuring numerical columns like 'Days Spent' were correctly typed.
+# Ensure 'Days Spent' column is numeric
+action['Days Spent'] = pd.to_numeric(action['Days Spent'], errors='coerce')
 
-2. **Feature Importance Analysis**
-   - **Random Forest Classifier**: Used to identify which features most significantly impact the overall days spent or the lifecycle of confirmations.
-     - **Why Random Forest?** Random Forest is robust to overfitting, handles both categorical and numerical data well, and provides insights into feature importance, making it suitable for complex datasets.
+# Function to clean the text
+def clean_text(text):
+    text = re.sub(r'[^A-Za-z\s]', '', text)  # Remove special characters
+    text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
+    return text
 
-3. **Cluster Analysis**
-   - **K-Means Clustering**: Performed to identify natural groupings within the data.
-     - **Why K-Means?** It's an efficient algorithm for clustering large datasets, and it helps in segmenting data into meaningful clusters based on similarities.
+# Function to get n-grams
+def get_ngrams(text, n):
+    words = text.split()
+    n_grams = ngrams(words, n)
+    return [' '.join(gram) for gram in n_grams]
 
-4. **Statistical Analysis**
-   - **Central Tendency**: Calculated measures like mean, median, and mode for 'Days Spent' to understand the average duration.
-   - **Volatility**: Assessed the variability in 'Days Spent' to identify consistency or fluctuations.
-     - **Why Central Tendency and Volatility?** These measures provide a comprehensive view of the distribution and stability of the data, which is crucial for risk assessment.
+# Function to find top 5 phrases excluding subsets
+def get_top_phrases(phrases_counter, top_n=5):
+    sorted_phrases = [phrase for phrase, count in phrases_counter.most_common()]
+    top_phrases = []
+    
+    for phrase in sorted_phrases:
+        if len(top_phrases) >= top_n:
+            break
+        if not any(phrase in bigger_phrase for bigger_phrase in top_phrases):
+            top_phrases.append(phrase)
+    
+    return top_phrases
 
-5. **Popularity Tag Analysis**
-   - **Number of ROC Touches**: Analyzed how often each ROC is touched during a confirmation's lifecycle, naming this metric the 'popularity tag'.
-     - **Why Popularity Tag?** It helps in understanding which stages are most frequently interacted with, indicating potential bottlenecks or critical stages in the process.
+# Dictionary to store results
+counterparty_phrase_analysis = {}
 
-6. **Risk Zone Creation**
-   - **Risk Zones**: Created based on the central tendency, volatility, and popularity tag, focusing on the stages where confirmations touch less than five times.
-     - **Why Risk Zones?** Identifying these zones helps in targeting areas with higher risk or inefficiencies, allowing for more focused process improvements.
+# List of specified ROCs
+specified_rocs = [
+    'counterpartytoaction', 
+    'cptytoactioneconomicbreak', 
+    'cptytoactiontemplatenegotiation'
+]
 
-7. **Deep Dive into Clusters**
-   - **Cluster Analysis**: Conducted deep dives into the identified clusters to further understand the patterns and behaviors within each group.
-   - **Top Counterparties Identification**: Identified top counterparties causing delays within each cluster.
-     - **Why Deep Dive and Counterparty Identification?** This granular analysis helps in pinpointing specific issues and actors contributing to delays, enabling targeted interventions.
+# Filter the dataframe to include only the specified ROCs
+filtered_action = action[action['ROC'].isin(specified_rocs)]
 
-8. **Pattern Analysis**
-   - **Pattern Analysis of Counterparties**: Analyzed patterns in the behavior and interactions of top counterparties identified in the previous step.
-     - **Why Pattern Analysis?** Understanding these patterns helps in anticipating issues and proactively managing counterparty interactions.
+for roc in specified_rocs:
+    comments = filtered_action[filtered_action['ROC'] == roc]
+    counterparties = comments['Counterparty Name'].unique()
+    
+    for counterparty in counterparties:
+        relevant_comments = comments[comments['Counterparty Name'] == counterparty]
+        relevant_comments = relevant_comments['Latest Confirmation Status Comment'].dropna().apply(clean_text)
+        
+        all_phrases = []
+        for comment in relevant_comments:
+            all_phrases.extend(get_ngrams(comment, 4))  # Extracting 4-grams
+            all_phrases.extend(get_ngrams(comment, 5))  # Extracting 5-grams
+            all_phrases.extend(get_ngrams(comment, 6))  # Extracting 6-grams
+        
+        phrases_counter = Counter(all_phrases)
+        top_phrases = get_top_phrases(phrases_counter)
+        
+        # Calculate the average Days Spent for each of the top phrases
+        phrase_days_spent = {}
+        for phrase in top_phrases:
+            matching_rows = comments[comments['Latest Confirmation Status Comment'].str.contains(phrase)]
+            average_days_spent = matching_rows['Days Spent'].mean()
+            phrase_days_spent[phrase] = average_days_spent
+        
+        if roc not in counterparty_phrase_analysis:
+            counterparty_phrase_analysis[roc] = {}
+        counterparty_phrase_analysis[roc][counterparty] = phrase_days_spent
 
-9. **NLP Analysis on Comments**
-   - **NLP Analysis**: Applied Natural Language Processing techniques to analyze comments in the 'Latest Confirmation Status Comment' column.
-     - **Why NLP?** NLP helps in extracting meaningful insights from text data, identifying common phrases and sentiments that can indicate underlying issues or trends.
+# Print the results
+for roc, counterparty_phrases in counterparty_phrase_analysis.items():
+    print(f"Top phrases where counterparties are getting stuck for ROC {roc}:")
+    for counterparty, phrase_info in counterparty_phrases.items():
+        print(f"\nCounterparty: {counterparty}")
+        for phrase, avg_days in phrase_info.items():
+            print(f"Phrase: {phrase} - Average Days Spent: {avg_days:.2f}")
 
-### Summary
+# Save the results to a CSV file
+results = []
 
-This comprehensive approach, combining feature importance analysis, clustering, statistical measures, popularity tags, risk zone creation, deep dives, pattern analysis, and NLP, provides a holistic view of the dataset. Each step builds on the previous ones to uncover deeper insights and actionable information, ensuring a robust analysis that can guide effective decision-making and process improvements.
+for roc, counterparty_phrases in counterparty_phrase_analysis.items():
+    for counterparty, phrase_info in counterparty_phrases.items():
+        for phrase, avg_days in phrase_info.items():
+            results.append({'ROC': roc, 'Counterparty': counterparty, 'Phrase': phrase, 'Average Days Spent': avg_days})
+
+results_df = pd.DataFrame(results)
+results_df.to_csv('/mnt/data/top_phrases_per_counterparty.csv', index=False)
