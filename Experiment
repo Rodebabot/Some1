@@ -64,7 +64,7 @@ for roc in specified_rocs:
         # Calculate the average Days Spent for each of the top phrases
         phrase_days_spent = {}
         for phrase in top_phrases:
-            matching_rows = comments[comments['Latest Confirmation Status Comment'].str.contains(phrase)]
+            matching_rows = comments[comments['Latest Confirmation Status Comment'].str.contains(phrase, na=False)]
             average_days_spent = matching_rows['Days Spent'].mean()
             phrase_days_spent[phrase] = average_days_spent
         
